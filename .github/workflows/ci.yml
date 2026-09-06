@@ -10,40 +10,66 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  quality:
-    name: Lint, typecheck, test, build
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Set up Node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Set up workspace
+        uses: ./.github/actions/setup
 
       - name: Biome
         run: pnpm lint
 
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up workspace
+        uses: ./.github/actions/setup
+
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Test
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up workspace
+        uses: ./.github/actions/setup
+
+      # Tests import workspace packages through their published `exports`, which
+      # point at dist, so the packages must be compiled before vitest runs.
+      - name: Build workspace packages
+        run: pnpm -r --filter './packages/**' build
+
+      - name: Vitest
         run: pnpm test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up workspace
+        uses: ./.github/actions/setup
 
       - name: Build
         run: pnpm build
 
   docker:
     name: Docker image
-    needs: quality
+    needs: [lint, typecheck, tests, build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
