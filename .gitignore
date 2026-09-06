@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-types/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+media/
+backups/
+coverage/
+.DS_Store
+spikes/**/out/

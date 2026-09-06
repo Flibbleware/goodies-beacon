@@ -1,0 +1,28 @@
+{
+  "name": "goodies-beacon",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Self-hosted, AI-reviewed wanted list for collectors. Polls marketplaces, judges new listings against your criteria, emails you real matches.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter './apps/*' dev",
+    "build": "pnpm -r --filter './packages/**' build && pnpm -r --filter './apps/*' build",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "lint": "biome ci .",
+    "format": "biome check --write .",
+    "clean": "pnpm -r exec rm -rf dist tsconfig.tsbuildinfo && rm -rf node_modules/.tmp"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@types/node": "24.13.3",
+    "lefthook": "2.1.12",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  }
+}

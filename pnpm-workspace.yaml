@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+  - packages/sources/*
+
+# Dependencies whose install scripts may run (pnpm blocks them by default).
+allowBuilds:
+  esbuild: true
+  lefthook: true

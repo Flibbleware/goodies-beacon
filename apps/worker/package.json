@@ -1,0 +1,20 @@
+{
+  "name": "@goodies-beacon/worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "pg-boss job subscribers: polling source adapters, running the review pipeline, sending notifications, pruning old candidates.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -b",
+    "start": "node dist/main.js",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@goodies-beacon/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "4.23.13"
+  }
+}
