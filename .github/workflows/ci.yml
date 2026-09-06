@@ -36,7 +36,7 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-  test:
+  tests:
     name: Tests
     runs-on: ubuntu-latest
     steps:
