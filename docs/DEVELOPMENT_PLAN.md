@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.11; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.12; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -12,10 +12,10 @@ Each task has an id, a size, what it depends on, and a **done when** list that i
 
 Working conventions for the repo:
 
-- One branch per task, named after the id (`p0-07-auth`). Squash-merge to `main` through a pull request so CI runs on every change, even solo.
+- One branch per task, named after the id (`p0-07-auth`). Squash-merge through a pull request so CI runs on every change, even solo. Until this document is complete the base is the integration branch `development/0.2.0`, not `main`; `main` receives a single merge at the end.
 - Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`), which also feed the release notes.
 - Nothing merges with Biome warnings, type errors or failing tests. There is no "fix it later" lane.
-- `main` is always deployable. Releases are tags (`v0.1.0`) created through GitHub Releases; the release workflow deploys them.
+- The integration branch is always deployable, and `main` after the final merge. Releases are tags (`v0.1.0`) created through GitHub Releases, cut from the integration branch until then; the release workflow deploys them. Between releases, `deploy.yml` puts any built image on the droplet on demand, so an exit test can be rehearsed without publishing a release.
 - Secrets never enter the repo. `.env.example` lists every variable with a comment; real values live in `.env` locally and on the droplet.
 
 Global definition of done, in addition to each task's own list: CI green; Biome clean; new logic has unit tests; anything user-facing has a line in `CHANGELOG.md`; anything operational has a line in `docs/RUNNING.md`.
@@ -26,7 +26,7 @@ Global definition of done, in addition to each task's own list: CI green; Biome 
 
 **Goal.** A tagged release deploys an empty Goodies Beacon to the droplet over HTTPS, you can log in, and every quality gate is already in place so nothing later is built on sand.
 
-**Exit test.** Create release `v0.1.0` on GitHub → the release workflow builds the image, deploys to the droplet, and reports healthy → open `https://beacon.<your domain>` → set the first-run password → log in → see the empty dashboard → receive a test email sent from Settings.
+**Exit test.** Create release `v0.1.0` on GitHub, tagged from the integration branch → the release workflow builds the image, deploys to the droplet, and reports healthy → open `https://beacon.<your domain>` → set the first-run password → log in → see the empty dashboard → receive a test email sent from Settings.
 
 | Id | Task | Size | Depends on |
 |---|---|---|---|
@@ -163,7 +163,7 @@ Done when:
 
 ### P0-12 Droplet bootstrap and RUNNING.md — M
 
-`docs/RUNNING.md` covering, for a fresh Ubuntu 24.04 droplet: create a `deploy` user with sudo-less Docker access; install Docker Engine and Compose from Docker's apt repository; add a 2 GB swap file; DigitalOcean cloud firewall allowing 22, 80, 443; point the DNS record at the droplet; clone or copy `docker-compose.yml`, `Caddyfile` and `.env`; first `docker compose up -d`; where backups live; how to upgrade and roll back (`GOODIES_BEACON_VERSION` in `.env`). A `scripts/bootstrap-droplet.sh` that does the mechanical parts.
+`docs/RUNNING.md` covering, for a fresh Ubuntu 24.04 droplet: create a `deploy` user with sudo-less Docker access; install Docker Engine and Compose from Docker's apt repository; add a 2 GB swap file; DigitalOcean cloud firewall allowing 22, 80, 443; point the DNS record at the droplet; clone or copy `docker-compose.yml`, `Caddyfile` and `.env`; first `docker compose up -d`; where backups live; how to upgrade and roll back (`GOODIES_BEACON_VERSION` in `.env`); how to run a manual deploy from the Actions tab. A `scripts/bootstrap-droplet.sh` that does the mechanical parts.
 
 Done when:
 
@@ -175,12 +175,16 @@ Done when:
 
 `.github/workflows/release.yml` per §16: on a published release, build multi-arch images, push with the version tag and `latest`, then SSH to the droplet as `deploy` and run `scripts/deploy.sh`, which dumps the database to the backup volume, updates `GOODIES_BEACON_VERSION` in `.env`, pulls, restarts, and polls `/healthz` for up to two minutes.
 
+Also `.github/workflows/deploy.yml`: a `workflow_dispatch` trigger taking an image tag (default `dev`) that runs the same shared deploy job, so a build can be put on the droplet as if it were a release without creating a tag or a GitHub Release. CI gains the integration-branch image push this depends on: on `development/**`, publish `dev` and `sha-<short sha>` to GHCR.
+
 Done when:
 
 - [ ] The SSH step is skipped, with a visible notice, when `DEPLOY_HOST` / `DEPLOY_KEY` secrets are absent (so forks work).
 - [ ] A failed health check fails the workflow and leaves the previous image running (the script only switches `GOODIES_BEACON_VERSION` after a successful pull, and restores it on failure).
 - [ ] The deploy user's key is restricted in `authorized_keys` to running `deploy.sh` (forced command).
 - [ ] Release notes are generated from conventional commits since the previous tag.
+- [ ] `deploy.yml` deploys a chosen image tag on demand and shares its deploy job with `release.yml`, so `deploy.sh` has exactly one caller path in CI.
+- [ ] Pushes to `development/**` publish `dev` and `sha-<short sha>` images, so there is always something for a manual deploy to pull.
 
 ### P0-14 Nightly backup job — S
 
@@ -193,7 +197,7 @@ Done when:
 
 ### P0-15 Phase 0 exit — S
 
-Run the exit test at the top of this phase. Record the date and any deviations in `docs/CHANGELOG.md` under `v0.1.0`.
+Run the exit test at the top of this phase. Record the date and any deviations in `CHANGELOG.md` under `v0.1.0`.
 
 ---
 

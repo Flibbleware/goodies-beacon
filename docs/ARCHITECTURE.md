@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.11 — 5 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.12 — 7 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -433,15 +433,19 @@ goodies-beacon/
 
 ## 16. Developer workflow, CI and deployment
 
-**Local development is the default; the droplet only runs tagged releases.** `compose.dev.yml` starts Postgres and Mailpit (a local mail catcher with a web inbox, so digest emails can be inspected without sending anything); the API, workers and web app run on the developer's machine with hot reload from `pnpm dev`. Real eBay and AI credentials are used locally — eBay's sandbox data is not useful — with the monthly budget cap set low. Scraped sources are, if anything, better tested from a home connection than from the VPS. There is no staging server: upgrades on the droplet are roll-forward with a database dump taken first, and rollback is pointing the compose file at the previous image tag.
+**Local development is the default; the droplet runs tagged releases and builds put there deliberately.** `compose.dev.yml` starts Postgres and Mailpit (a local mail catcher with a web inbox, so digest emails can be inspected without sending anything); the API, workers and web app run on the developer's machine with hot reload from `pnpm dev`. Real eBay and AI credentials are used locally — eBay's sandbox data is not useful — with the monthly budget cap set low. Scraped sources are, if anything, better tested from a home connection than from the VPS. There is no staging server: the droplet is also where a release candidate is proved, deployed on demand through the manual deploy workflow below, so an exit test can be rehearsed without publishing a release. Upgrades on the droplet are roll-forward with a database dump taken first, and rollback is pointing the compose file at the previous image tag.
+
+**Branching.** Until the plan in `DEVELOPMENT_PLAN.md` is complete, task branches merge into a long-lived integration branch (`development/0.2.0`) rather than `main`, and `main` receives a single merge at the end. Releases in that period are tagged from the integration branch: `v0.1.0` at the Phase 0 exit, `v0.2.0` at the Phase 1 exit. Once `main` is current again, task branches base on `main` as normal.
 
 **Code quality.** Biome for linting and formatting across the monorepo, run by a lefthook pre-commit hook on staged files and as `biome ci` in Actions. Strict TypeScript with `tsc -b` across the workspace.
 
 **Dependency policy.** Exact versions, pinned. New or upgraded dependencies use the newest major line that has been generally available for at least a month; never pre-releases, and never a `.0` release younger than a month while the previous line is still maintained. Renovate proposes upgrades weekly; they merge only with green CI.
 
-**Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages → `vitest` (unit tests, adapter tests against recorded HTTP fixtures, prompt evals against a fixture set of listings with expected verdicts, run against two providers so a prompt regression is caught) → Vite build of the web app → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA. Renovate keeps dependencies current.
+**Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages → `vitest` (unit tests, adapter tests against recorded HTTP fixtures, prompt evals against a fixture set of listings with expected verdicts, run against two providers so a prompt regression is caught) → Vite build of the web app → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA; pushes to the integration branch push `dev` and the commit SHA, so a manual deploy always has a built image to pull. Renovate keeps dependencies current.
 
-**Release and deploy** (`.github/workflows/release.yml`, on a published GitHub Release tagged `vX.Y.Z`): build the image for amd64 and arm64, push to GHCR tagged with the version and `latest`, then — only if the deploy secrets exist, so forks skip this step — connect to the droplet over SSH as a restricted `deploy` user with a deploy key from the repository secrets and run `deploy.sh`: `pg_dump` to the backup volume, `docker compose pull`, `docker compose up -d` (migrations run on container start), then poll `/healthz` and fail the job if the app is not healthy within two minutes. The compose file on the droplet pins `image: ghcr.io/<you>/goodies-beacon:${GOODIES_BEACON_VERSION}` so what is running is always a known release.
+**Release and deploy** (`.github/workflows/release.yml`, on a published GitHub Release tagged `vX.Y.Z`): build the image for amd64 and arm64, push to GHCR tagged with the version and `latest`, then — only if the deploy secrets exist, so forks skip this step — connect to the droplet over SSH as a restricted `deploy` user with a deploy key from the repository secrets and run `deploy.sh`: `pg_dump` to the backup volume, `docker compose pull`, `docker compose up -d` (migrations run on container start), then poll `/healthz` and fail the job if the app is not healthy within two minutes. The compose file on the droplet pins `image: ghcr.io/<you>/goodies-beacon:${GOODIES_BEACON_VERSION}` so what is running is always a known build.
+
+**Deploying without a release** (`.github/workflows/deploy.yml`, `workflow_dispatch`): takes an image tag (defaulting to the integration branch's `dev`) and runs the same shared deploy job as the release workflow, so a build reaches the droplet exactly as a release would without creating a tag or a GitHub Release. There is one deploy path, reachable from two triggers; `deploy.sh` is never duplicated.
 
 ---
 
