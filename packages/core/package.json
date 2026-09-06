@@ -1,0 +1,23 @@
+{
+  "name": "@goodies-beacon/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Domain types, Zod schemas, database schema and the matching pipeline logic shared by every other package.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommitTypeAll(chore)"],
+  "timezone": "Europe/London",
+  "schedule": ["* 0-6 * * 1"],
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 5,
+  "rangeStrategy": "pin",
+  "minimumReleaseAge": "30 days",
+  "internalChecksFilter": "strict",
+  "ignoreUnstable": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-6 * * 1"]
+  },
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": null,
+    "schedule": null,
+    "labels": ["security"]
+  },
+  "packageRules": [
+    {
+      "description": "One grouped pull request a week for everything that is not a major bump.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "weekly non-major updates"
+    },
+    {
+      "description": "Major bumps arrive one at a time so a breaking change is easy to attribute.",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "TypeScript stays on 6.x until the move to 7 is taken as its own task (CLAUDE.md).",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
+      "description": "Node stays on the 24 Active LTS line (ARCHITECTURE.md §15).",
+      "matchPackageNames": ["node", "@types/node"],
+      "matchManagers": ["npm", "nvm", "dockerfile", "docker-compose"],
+      "allowedVersions": "<25"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@goodies-beacon/source-template",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A compilable example source adapter that returns fixture data. Copy this package to start a new marketplace adapter.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@goodies-beacon/core": "workspace:*"
+  }
+}

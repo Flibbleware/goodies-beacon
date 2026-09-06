@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/dist-types
+**/*.tsbuildinfo
+.git
+.github
+.env
+.env.*
+coverage
+media
+backups
+spikes
+docs
+*.md
