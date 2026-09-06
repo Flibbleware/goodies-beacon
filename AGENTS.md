@@ -19,6 +19,7 @@ If a task conflicts with the architecture doc, or the code you find on disk conf
 - Secrets never enter the repository. Every environment variable is documented in `.env.example`.
 - Pin exact dependency versions. When adding or upgrading a dependency, choose the newest major line that has been generally available for at least a month; never a pre-release (alpha, beta, rc, canary) and never a `.0` release younger than a month when the previous line is still maintained. Check `npm view <pkg> time` rather than assuming.
 - TypeScript is pinned to the 6.0 line (the bridge release to 7: same defaults, deprecations as warnings). Move to 7.x only once 7.1 ships with its stable programmatic API and editor integration is routine — that is its own task, not a Renovate merge.
+- Comments are for the cases a reader could not reconstruct from the code: a non-obvious constraint, a workaround, an ordering that matters. Do not narrate what the code already says, and do not leave section-header or step-by-step comments. A short docblock on an exported function or a genuinely surprising line is enough.
 - Prefer small, boring solutions. The architecture already made the interesting decisions.
 
 ## Commands

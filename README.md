@@ -40,6 +40,8 @@ pnpm build
 
 A pre-commit hook (lefthook) formats staged files with Biome. Install it once with `pnpm exec lefthook install` (also runs automatically on `pnpm install`).
 
+The production image builds with `docker build -t goodies-beacon .`; CI builds it on every pull request.
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
@@ -50,4 +52,4 @@ Read `CLAUDE.md` (also provided as `AGENTS.md`). It points the agent at the arch
 
 ## Next task
 
-P0-03 (CI workflow) — see docs/DEVELOPMENT_PLAN.md. P0-01 and P0-02 are done.
+P0-04 (Configuration and secrets) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-03 are done.

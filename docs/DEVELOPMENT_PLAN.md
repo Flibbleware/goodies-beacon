@@ -68,12 +68,14 @@ Done when:
 
 `.github/workflows/ci.yml` as described in §16.
 
+Because CI builds an image, the minimal `Dockerfile` is introduced here rather than in P0-11: multi-stage on `node:24-trixie-slim`, install from the lockfile, build the workspace, final stage with production dependencies and built output only, running as a non-root user and starting `apps/api`. No Playwright, no compose files and no migrations on start yet — those stay in P0-11.
+
 Done when:
 
-- [ ] On a pull request: install (cached pnpm store) → `biome ci` → `pnpm typecheck` → `pnpm test` → `pnpm build` → `docker build` (no push). Each step is a named job or step so a failure is readable at a glance.
-- [ ] On push to `main`: the same, plus the image is pushed to GHCR tagged `edge` and `sha-<short sha>`.
+- [x] On a pull request: install (cached pnpm store) → `biome ci` → `pnpm typecheck` → `pnpm test` → `pnpm build` → `docker build` (no push). Each step is a named job or step so a failure is readable at a glance.
+- [x] On push to `main`: the same, plus the image is pushed to GHCR tagged `edge` and `sha-<short sha>`.
 - [ ] A pull request that introduces a type error or a Biome error fails CI (verified once by opening and closing such a PR).
-- [ ] Renovate (or Dependabot) is configured for weekly grouped updates.
+- [x] Renovate (or Dependabot) is configured for weekly grouped updates.
 
 ### P0-04 Configuration and secrets — S
 
@@ -150,7 +152,7 @@ Done when:
 
 ### P0-11 Docker images and compose files — M
 
-Multi-stage `Dockerfile` on `node:24-trixie-slim` producing `goodies-beacon` (with Playwright's Chromium) and `goodies-beacon:slim` (without). `docker-compose.yml` for production: `db` (postgres:18 with a named volume), `app` (`ROLE=all`, `media` volume), `caddy` (ports 80/443, `Caddyfile` templated from `GOODIES_BEACON_HOST`). `compose.dev.yml`: `db` and `mailpit` only. Images run as a non-root user.
+Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwright's Chromium) and `goodies-beacon:slim` (without), and runs migrations on start for `ROLE=api|all`. `docker-compose.yml` for production: `db` (postgres:18 with a named volume), `app` (`ROLE=all`, `media` volume), `caddy` (ports 80/443, `Caddyfile` templated from `GOODIES_BEACON_HOST`). `compose.dev.yml`: `db` and `mailpit` only. Images run as a non-root user.
 
 Done when:
 
