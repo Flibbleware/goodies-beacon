@@ -18,12 +18,19 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run --root ../.. --project @goodies-beacon/core"
+    "test": "vitest run --root ../.. --project @goodies-beacon/core",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate-cli.ts"
   },
   "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "pg": "8.23.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "24.13.3"
+    "@types/node": "24.13.3",
+    "@types/pg": "8.21.0",
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.23.13"
   }
 }

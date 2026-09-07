@@ -16,7 +16,9 @@
     "test": "vitest run",
     "lint": "biome ci .",
     "format": "biome check --write .",
-    "clean": "pnpm -r exec rm -rf dist tsconfig.tsbuildinfo && rm -rf node_modules/.tmp"
+    "clean": "pnpm -r exec rm -rf dist tsconfig.tsbuildinfo && rm -rf node_modules/.tmp",
+    "db:generate": "pnpm --filter @goodies-beacon/core db:generate",
+    "db:migrate": "pnpm --filter @goodies-beacon/core db:migrate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.12",

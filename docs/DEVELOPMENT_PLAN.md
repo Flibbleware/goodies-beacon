@@ -93,9 +93,9 @@ Drizzle schema and migration tooling. Phase 0 tables only: `settings` (single ro
 
 Done when:
 
-- [ ] `pnpm db:migrate` applies migrations idempotently; `pnpm db:generate` produces a new migration from a schema change.
-- [ ] Migrations run automatically on container start for `ROLE=api|all`, guarded by a Postgres advisory lock so two containers cannot race.
-- [ ] An encrypt/decrypt helper for settings secrets has unit tests including a wrong-key case.
+- [x] `pnpm db:migrate` applies migrations idempotently; `pnpm db:generate` produces a new migration from a schema change.
+- [x] Migrations run automatically on container start for `ROLE=api|all`, guarded by a Postgres advisory lock so two containers cannot race.
+- [x] An encrypt/decrypt helper for settings secrets has unit tests including a wrong-key case.
 
 ### P0-06 pg-boss and process roles — M
 

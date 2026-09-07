@@ -42,6 +42,17 @@ pnpm build
 
 To run one package's tests: `pnpm --filter @goodies-beacon/core test`.
 
+Database work needs a Postgres 18 to point `DATABASE_URL` at (compose files arrive in P0-11):
+
+```
+pnpm db:generate   # write a migration from a schema change
+pnpm db:migrate    # apply outstanding migrations
+```
+
+The API applies outstanding migrations itself on start when `ROLE` is `api` or `all`. Set
+`TEST_DATABASE_URL` to a throwaway database to include the database integration tests, which
+are skipped without it.
+
 Every process validates its environment at startup and exits naming any variable that is
 missing or malformed, so a bad `.env` fails immediately rather than halfway through a run.
 
@@ -59,4 +70,4 @@ Read `CLAUDE.md` (also provided as `AGENTS.md`). It points the agent at the arch
 
 ## Next task
 
-P0-05 (Postgres, Drizzle, migrations) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-04 are done.
+P0-06 (pg-boss and process roles) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-05 are done.
