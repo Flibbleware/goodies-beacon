@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --root ../.. --project @goodies-beacon/ai"
   },
   "dependencies": {
     "@goodies-beacon/core": "workspace:*"

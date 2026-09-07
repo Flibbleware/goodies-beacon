@@ -18,6 +18,6 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --root ../.. --project @goodies-beacon/email"
   }
 }
