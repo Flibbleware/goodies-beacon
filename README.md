@@ -31,12 +31,19 @@ docs/
 Requires Node 24 (`.nvmrc`) and pnpm 11 (`corepack enable` or `npm i -g pnpm@11`).
 
 ```
+cp .env.example .env
+openssl rand -base64 32          # paste into GOODIES_BEACON_SECRET_KEY
 pnpm install
 pnpm typecheck   # tsc -b across every package
 pnpm lint        # biome ci
-pnpm test        # vitest
+pnpm test        # vitest across every package
 pnpm build
 ```
+
+To run one package's tests: `pnpm --filter @goodies-beacon/core test`.
+
+Every process validates its environment at startup and exits naming any variable that is
+missing or malformed, so a bad `.env` fails immediately rather than halfway through a run.
 
 A pre-commit hook (lefthook) formats staged files with Biome. Install it once with `pnpm exec lefthook install` (also runs automatically on `pnpm install`).
 
@@ -52,4 +59,4 @@ Read `CLAUDE.md` (also provided as `AGENTS.md`). It points the agent at the arch
 
 ## Next task
 
-P0-04 (Configuration and secrets) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-03 are done.
+P0-05 (Postgres, Drizzle, migrations) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-04 are done.

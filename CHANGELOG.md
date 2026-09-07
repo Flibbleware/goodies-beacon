@@ -8,6 +8,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 - P0-01 Repository and monorepo scaffold.
 - P0-02 Biome, lefthook, editor config.
+- `pnpm --filter <pkg> test` now runs that package's tests; previously every package's `test` script
+  failed with "No projects were found" because the root Vitest `projects` globs resolved against the
+  package directory rather than the workspace root.
+- P0-04 Configuration and secrets: every process validates its environment through a Zod schema at
+  startup and exits non-zero naming the variable that is wrong, listing all problems at once. A config
+  object redacts the secret key, the database password and AI keys when logged.
 - P0-03 CI workflow: Lint, Typecheck, Test, Build and Docker image run as separate parallel checks on every pull request, sharing a cached pnpm store through a composite setup action; pushes to `main` publish the image to GHCR as `edge` and `sha-<short sha>`.
 - A minimal production `Dockerfile` (multi-stage, non-root, runs the API). Brought forward from P0-11 so CI has an image to build.
 - Renovate configured for weekly grouped dependency updates, holding TypeScript on 6.x and Node on 24.

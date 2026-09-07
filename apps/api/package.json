@@ -6,10 +6,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
     "build": "tsc -b",
     "start": "node dist/main.js",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --root ../.. --project @goodies-beacon/api"
   },
   "dependencies": {
     "@goodies-beacon/core": "workspace:*",

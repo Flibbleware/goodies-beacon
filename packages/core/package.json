@@ -18,6 +18,12 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --root ../.. --project @goodies-beacon/core"
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3"
   }
 }

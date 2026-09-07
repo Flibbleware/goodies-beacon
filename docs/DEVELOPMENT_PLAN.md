@@ -83,9 +83,9 @@ A single `config.ts` in `packages/core` that reads the environment through a Zod
 
 Done when:
 
-- [ ] Starting any process with a missing or malformed variable prints which one and exits non-zero.
-- [ ] `.env.example` lists every variable with a one-line comment and a safe example value.
-- [ ] `GOODIES_BEACON_SECRET_KEY` generation is documented (`openssl rand -base64 32`).
+- [x] Starting any process with a missing or malformed variable prints which one and exits non-zero.
+- [x] `.env.example` lists every variable with a one-line comment and a safe example value.
+- [x] `GOODIES_BEACON_SECRET_KEY` generation is documented (`openssl rand -base64 32`).
 
 ### P0-05 Postgres, Drizzle, migrations — M
 

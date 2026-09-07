@@ -1,9 +1,10 @@
+import { loadConfigOrExit } from '@goodies-beacon/core';
 import { serve } from '@hono/node-server';
 import { createApp } from './app.js';
 
-const port = Number(process.env.PORT ?? 3000);
+const config = loadConfigOrExit();
 const app = createApp();
 
-serve({ fetch: app.fetch, port }, (info) => {
+serve({ fetch: app.fetch, port: config.port }, (info) => {
   console.log(`goodies-beacon api listening on http://localhost:${info.port}`);
 });
