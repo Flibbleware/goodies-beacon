@@ -23,6 +23,7 @@
     "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate-cli.ts"
   },
   "dependencies": {
+    "@node-rs/argon2": "2.2.1",
     "drizzle-orm": "0.45.2",
     "pg": "8.23.0",
     "pg-boss": "12.31.0",

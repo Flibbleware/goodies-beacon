@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.13 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.14 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -360,12 +360,12 @@ Backups: nightly `pg_dump` to the media volume; the compose file includes the jo
 
 ## 12. Security
 
-- **Authentication.** Single user. Password set on first run via the UI, stored as an Argon2id hash in the DB. Session cookie: `HttpOnly`, `Secure`, `SameSite=Lax`, rotated on login. Login rate-limited and logged. Optional TOTP second factor is a small later addition.
+- **Authentication.** Single user. Password set on first run via the UI, stored as an Argon2id hash in the DB (OWASP's floor: 19 MiB, two passes, one lane). Session cookie `gb_session`: 256-bit random id, `HttpOnly`, `Secure`, `SameSite=Lax`, thirty-day expiry sliding on use, rotated on login and on a password change — which also ends every other session. Login is rate-limited to five failures per fifteen minutes per client address, then a lockout of the same length, and both are logged; the counters are in memory, so the limit is per API container and a restart clears them. Optional TOTP second factor is a small later addition.
 - **Secrets.** Marketplace and AI keys, SMTP password: provided through `.env` or entered in Settings; settings-entered secrets are encrypted at rest with a key from `.env` (`GOODIES_BEACON_SECRET_KEY`), masked in the UI and never logged.
 - **Seller content.** Descriptions are sanitised (DOMPurify server-side) before storage and rendered as text or sanitised HTML; never inline in emails.
 - **Images.** Fetched only by the worker through the adapter's HTTP client with size limits, content-type checks and a private-address block list (SSRF). Re-encoded on ingest.
 - **Transport.** Caddy terminates TLS with automatic certificates; behind Tailscale, HTTP on the tailnet is acceptable.
-- **Surface.** Only Caddy is published; Postgres and the app listen on the compose network. CSRF protection on state-changing routes. Dependabot/Renovate on the repo.
+- **Surface.** Only Caddy is published; Postgres and the app listen on the compose network. CSRF protection on state-changing routes: a double-submit `gb_csrf` cookie, readable by the page, echoed in `X-CSRF-Token` and compared in constant time. Because only Caddy is published, the last `X-Forwarded-For` entry is the one it wrote and the only one a client cannot forge, so that is what rate limiting counts against. Dependabot/Renovate on the repo.
 - **Email.** SMTP over TLS; digest links point at your instance URL from settings, never derived from request headers.
 
 ---

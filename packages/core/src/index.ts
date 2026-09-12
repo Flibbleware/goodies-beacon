@@ -6,6 +6,39 @@
 export const PACKAGE = '@goodies-beacon/core' as const;
 
 export {
+  ARGON2_OPTIONS,
+  hashPassword,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  verifyPassword,
+} from './auth/password.js';
+export {
+  type ChangePasswordInput,
+  changePasswordSchema,
+  type FirstRunInput,
+  firstRunSchema,
+  type LoginInput,
+  loginSchema,
+  passwordSchema,
+} from './auth/schemas.js';
+export {
+  createSession,
+  createSessionId,
+  deleteOtherSessions,
+  deleteSession,
+  loadSession,
+  SESSION_ID_BYTES,
+  SESSION_REFRESH_AFTER_MS,
+  SESSION_TTL_MS,
+} from './auth/session.js';
+export {
+  AuthUserExistsError,
+  createAuthUser,
+  findAuthUser,
+  USER_ID,
+  updatePassword,
+} from './auth/user.js';
+export {
   type AiKeys,
   type Config,
   ConfigError,
