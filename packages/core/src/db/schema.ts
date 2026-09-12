@@ -57,7 +57,7 @@ export const processHeartbeat = pgTable('process_heartbeat', {
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-export type Settings = typeof settings.$inferSelect;
+export type SettingsRow = typeof settings.$inferSelect;
 export type AuthUser = typeof authUser.$inferSelect;
 export type AuthSession = typeof authSession.$inferSelect;
 export type ProcessHeartbeat = typeof processHeartbeat.$inferSelect;

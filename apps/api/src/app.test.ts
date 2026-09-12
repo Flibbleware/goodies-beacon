@@ -3,10 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
 import { CSRF_COOKIE, CSRF_HEADER } from './auth/cookies.js';
 
-const logger: Logger = { error() {}, warn() {}, info() {}, debug() {} };
+const logger: Logger = { error() {}, warn() {}, info() {}, debug() {}, child: () => logger };
 
 /** These routes answer before touching the database, so a stub keeps them out of Postgres. */
-const app = createApp({ db: {} as Database, logger });
+const app = createApp({
+  db: { execute: async () => [] } as unknown as Database,
+  logger,
+  host: 'beacon.example.co.uk',
+  version: 'dev',
+  sha: 'unknown',
+});
 
 /**
  * Any safe request under /api mints a CSRF token. This path has no route, so it answers 401 from

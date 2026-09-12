@@ -18,7 +18,8 @@
     "format": "biome check --write .",
     "clean": "pnpm -r exec rm -rf dist tsconfig.tsbuildinfo && rm -rf node_modules/.tmp",
     "db:generate": "pnpm --filter @goodies-beacon/core db:generate",
-    "db:migrate": "pnpm --filter @goodies-beacon/core db:migrate"
+    "db:migrate": "pnpm --filter @goodies-beacon/core db:migrate",
+    "docs:api": "pnpm --filter @goodies-beacon/api docs:api"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.12",

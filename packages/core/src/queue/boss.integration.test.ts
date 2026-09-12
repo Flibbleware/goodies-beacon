@@ -5,7 +5,7 @@ import { parseConfig } from '../config.js';
 import { createDb, createPool } from '../db/client.js';
 import { runMigrations } from '../db/migrate.js';
 import { processHeartbeat } from '../db/schema.js';
-import { createConsoleLogger } from '../logger.js';
+import { createSilentLogger } from '../logger.js';
 import { createShutdown } from '../shutdown.js';
 import { createBoss } from './boss.js';
 import { heartbeatRegistration, recordHeartbeat } from './heartbeat.js';
@@ -17,7 +17,7 @@ import { registerQueues } from './registry.js';
  * survives a shutdown, which no fake of pg-boss could demonstrate.
  */
 const databaseUrl = process.env.TEST_DATABASE_URL;
-const logger = createConsoleLogger('silent');
+const logger = createSilentLogger();
 
 const config = databaseUrl
   ? parseConfig({

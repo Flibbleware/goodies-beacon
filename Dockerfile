@@ -35,8 +35,13 @@ COPY apps apps
 RUN pnpm build
 
 FROM base AS runtime
+# Baked in so /healthz reports what is actually running, not what someone believes is running.
+ARG GOODIES_BEACON_VERSION=dev
+ARG GOODIES_BEACON_SHA=unknown
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3000 \
+    GOODIES_BEACON_VERSION=$GOODIES_BEACON_VERSION \
+    GOODIES_BEACON_SHA=$GOODIES_BEACON_SHA
 COPY --from=prod-deps /app ./
 COPY --from=build /app/packages/core/dist packages/core/dist
 # SQL migrations are data, not build output, but the API applies them on start.
