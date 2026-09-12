@@ -16,4 +16,21 @@ export {
   ROLES,
   type Role,
 } from './config.js';
+export {
+  DecryptionError,
+  decryptSecret,
+  encryptSecret,
+  isEncrypted,
+  secretsEqual,
+} from './crypto.js';
+export { createDb, createPool, type Database } from './db/client.js';
+export { MIGRATIONS_FOLDER, runMigrations } from './db/migrate.js';
+export {
+  type AuthSession,
+  type AuthUser,
+  authSession,
+  authUser,
+  type Settings,
+  settings,
+} from './db/schema.js';
 export { isSourceId, SOURCE_IDS, type SourceId } from './sources.js';

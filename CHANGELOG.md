@@ -8,6 +8,10 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 - P0-01 Repository and monorepo scaffold.
 - P0-02 Biome, lefthook, editor config.
+- P0-05 Postgres, Drizzle and migrations: `settings`, `auth_user` and `auth_session` tables, `pnpm
+  db:generate` / `pnpm db:migrate`, and migrations applied on start for `ROLE=api|all` under a
+  Postgres advisory lock so concurrent containers cannot race. Settings secrets encrypt to
+  `enc:v1:<ciphertext>` with AES-256-GCM, which refuses a wrong key rather than returning rubbish.
 - `pnpm --filter <pkg> test` now runs that package's tests; previously every package's `test` script
   failed with "No projects were found" because the root Vitest `projects` globs resolved against the
   package directory rather than the workspace root.
