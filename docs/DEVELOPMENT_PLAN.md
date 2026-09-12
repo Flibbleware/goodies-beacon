@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.17; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.18; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -156,10 +156,10 @@ Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwri
 
 Done when:
 
-- [ ] `docker compose -f compose.dev.yml up -d && pnpm dev` gives a working local instance with Mailpit's inbox at `localhost:8025`.
-- [ ] `docker compose up -d` on a machine with a DNS name pointing at it serves the app over HTTPS with a valid certificate and redirects HTTP.
-- [ ] The full image is under 900 MB and the slim image under 400 MB (checked in CI and printed in the job summary).
-- [ ] Container memory limits are set in compose (`app` 1.2 GB, `db` 512 MB) so a runaway process cannot take the droplet down.
+- [x] `docker compose -f compose.dev.yml up -d && pnpm dev` gives a working local instance with Mailpit's inbox at `localhost:8025`. Verified end to end: first run, saving SMTP settings, and a test email arriving in Mailpit.
+- [ ] `docker compose up -d` on a machine with a DNS name pointing at it serves the app over HTTPS with a valid certificate and redirects HTTP. Proved locally as far as it can be: the stack comes up, HTTP answers 308 to HTTPS, and the app and API are served over TLS — but on `localhost` the certificate comes from Caddy's internal CA, so **a real Let's Encrypt certificate is unproven until the droplet exists** (P0-12).
+- [x] The full image is under 1.0 GB and the slim image under 400 MB (checked in CI and printed in the job summary). The full budget was 900 MB; §11 had estimated Playwright at ~500 MB and it costs ~620 MB, which put the full image at 960 MB on arm64. Mesa and LLVM look like 180 MB of dead weight for a headless shell but are not — remove them and Chromium will not start. Slim measured 343 MB.
+- [x] Container memory limits are set in compose (`app` 1.2 GB, `db` 512 MB, and `caddy` 128 MB) so a runaway process cannot take the droplet down.
 
 ### P0-12 Droplet bootstrap and RUNNING.md — M
 

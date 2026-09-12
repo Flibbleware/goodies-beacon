@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.17 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.18 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -329,7 +329,7 @@ services:
   app:     image: ghcr.io/<you>/goodies-beacon   # ROLE=all  (api + workers)
            env_file: .env
            volumes: [media:/data/media]
-  caddy:   image: caddy:2            # optional: auto-HTTPS in front of app
+  caddy:   image: caddy:2            # auto-HTTPS in front of app; required, see §12
 ```
 
 Split deployment (core on VPS, Vinted worker at home):
@@ -352,7 +352,7 @@ services:
 
 Tailscale (or WireGuard) is also the recommended way to let a home worker reach Postgres; the database is never exposed on a public interface in either route. Media uploaded by the remote worker goes through the API (`POST /internal/media`, worker token) rather than a shared volume.
 
-Hardware: the whole stack runs on a 2 vCPU / 2 GB VPS (e.g. a basic DigitalOcean droplet) or a Raspberry Pi 5 / Mac mini. Resting footprint is about 1 GB (Postgres 100–200 MB, Node API + workers 200–400 MB, Caddy and Docker overhead under 150 MB); a headless Chromium for the Vinted fallback adds 300–500 MB while it runs, so the worker runs at most one browser at a time and closes it after each poll. Two rules keep 2 GB comfortable: add a 2 GB swap file, and never build the image on the droplet — GitHub Actions builds and publishes it, the droplet only pulls. Resize to 4 GB only if the OOM killer ever appears in the logs. Playwright adds ~500 MB to the image; a `-slim` image without it is built for API-only deployments.
+Hardware: the whole stack runs on a 2 vCPU / 2 GB VPS (e.g. a basic DigitalOcean droplet) or a Raspberry Pi 5 / Mac mini. Resting footprint is about 1 GB (Postgres 100–200 MB, Node API + workers 200–400 MB, Caddy and Docker overhead under 150 MB); a headless Chromium for the Vinted fallback adds 300–500 MB while it runs, so the worker runs at most one browser at a time and closes it after each poll. Two rules keep 2 GB comfortable: add a 2 GB swap file, and never build the image on the droplet — GitHub Actions builds and publishes it, the droplet only pulls. Resize to 4 GB only if the OOM killer ever appears in the logs. Playwright adds ~620 MB to the image — Chromium's headless shell plus the X, GTK and Mesa libraries it links, none of which can be pared back without the browser failing to start — so the full image is budgeted at 1.0 GB and the `-slim` image without it at 400 MB. Slim is built for API-only deployments and for workers that poll no scraped source.
 
 Backups: nightly `pg_dump` to the media volume; the compose file includes the job. Media is reproducible enough (listing photos) that losing it is not critical.
 

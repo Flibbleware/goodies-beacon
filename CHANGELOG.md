@@ -11,6 +11,23 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   "HTTP on the tailnet is acceptable" allowance §12 carried would have left a Tailscale-only
   instance unable to sign in at all, with nothing on screen to say why. `localhost` is the one
   exception, so local development and the Playwright run still need no certificate.
+- P0-11 Docker images and compose files: two images from one Dockerfile — the default with
+  Chromium for the browser-driven adapters, and `:slim` without it. `docker-compose.yml` runs `db`,
+  `app` and `caddy` with per-container memory limits and only Caddy published;
+  `compose.dev.yml` runs Postgres and Mailpit for `pnpm dev`. Caddy handles TLS and the HTTP
+  redirect, with a second Caddyfile for a tailnet name that Let's Encrypt cannot certify.
+- The full image's size budget is 1.0 GB rather than 900 MB: §11 estimated Playwright at ~500 MB
+  and it costs ~620 MB. The Mesa and LLVM libraries that account for 180 MB of it cannot be
+  removed — Chromium will not start without them. The slim image measures 343 MB against its
+  unchanged 400 MB budget.
+- Fixed: the image was missing `packages/email/dist`, so every container built since P0-10 would
+  have died on start with `ERR_MODULE_NOT_FOUND`. CI now starts the built image and calls
+  `/healthz`, which is what would have caught it.
+- Fixed: `NODE_ENV=development` in `.env.example` would have overridden the image's own setting on
+  the droplet, leaving the API refusing to serve the web app. It is gone from `.env.example`, and
+  compose pins `NODE_ENV=production` where `env_file` cannot reach it.
+- The runtime image no longer installs the web app's dependencies — React, TanStack and Zod are
+  build inputs, and the image ships the compiled output.
 - P0-10 Settings and SMTP test send: the Settings page gains an account section that changes your
   password and an email section for SMTP. The SMTP password is encrypted with
   `GOODIES_BEACON_SECRET_KEY` before storage and never sent back to the browser, which is answered

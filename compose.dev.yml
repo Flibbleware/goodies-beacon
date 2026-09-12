@@ -1,0 +1,38 @@
+# Development. Postgres and a mail catcher; the API, workers and web app run on your machine with
+# `pnpm dev` so they reload as you edit.
+#
+#   docker compose -f compose.dev.yml up -d
+#   pnpm dev
+#
+# Mailpit's inbox is at http://localhost:8025 — nothing it is given ever leaves the machine.
+
+name: goodies-beacon-dev
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: goodies_beacon
+      POSTGRES_PASSWORD: goodies_beacon
+      POSTGRES_DB: goodies_beacon
+    ports:
+      - '5432:5432'
+    # postgres:18 wants the parent directory, not .../data.
+    volumes:
+      - pgdata-dev:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U goodies_beacon']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.31.1
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+volumes:
+  pgdata-dev:
