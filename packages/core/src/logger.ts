@@ -1,3 +1,4 @@
+import { type DestinationStream, type Logger as PinoLogger, pino } from 'pino';
 import type { LogLevel } from './config.js';
 
 export interface Logger {
@@ -5,39 +6,42 @@ export interface Logger {
   warn(message: string, fields?: Record<string, unknown>): void;
   info(message: string, fields?: Record<string, unknown>): void;
   debug(message: string, fields?: Record<string, unknown>): void;
+  /** A logger that stamps every line with these fields — one per request, carrying its id. */
+  child(fields: Record<string, unknown>): Logger;
 }
 
-/** pino's numbers, so LOG_LEVEL means the same thing here as it will once pino replaces this. */
-const SEVERITY: Record<LogLevel, number> = {
-  trace: 10,
-  debug: 20,
-  info: 30,
-  warn: 40,
-  error: 50,
-  fatal: 60,
-  silent: Number.POSITIVE_INFINITY,
-};
+/**
+ * JSON lines on stdout, which is where `docker compose logs` reads them from. LOG_LEVEL is
+ * pino's own vocabulary, so it is handed over unchanged. `destination` is for tests that need to
+ * read back what was written.
+ */
+export function createLogger(level: LogLevel, destination?: DestinationStream): Logger {
+  // base: null drops pid and hostname, which say nothing useful about a single container.
+  return wrap(pino({ level, base: null }, destination));
+}
+
+/** For tests and for anything that should not write: every call becomes a no-op. */
+export function createSilentLogger(): Logger {
+  const silent: Logger = {
+    error() {},
+    warn() {},
+    info() {},
+    debug() {},
+    child: () => silent,
+  };
+  return silent;
+}
 
 /**
- * Enough of a logger for the process lifecycle to be legible before P0-08 brings pino in behind
- * this interface.
+ * pino takes the fields first and the message second; the rest of the codebase reads better with
+ * the message first, so this is the only place the two orders meet.
  */
-export function createConsoleLogger(level: LogLevel): Logger {
-  const threshold = SEVERITY[level];
-  const at = (
-    name: Exclude<LogLevel, 'silent' | 'fatal'>,
-    write: (line: string) => void,
-  ): Logger['info'] => {
-    if (SEVERITY[name] < threshold) return () => {};
-    return (message, fields) => {
-      write(fields ? `${name}: ${message} ${JSON.stringify(fields)}` : `${name}: ${message}`);
-    };
-  };
-
+function wrap(logger: PinoLogger): Logger {
   return {
-    error: at('error', console.error),
-    warn: at('warn', console.warn),
-    info: at('info', console.log),
-    debug: at('debug', console.log),
+    error: (message, fields) => logger.error(fields ?? {}, message),
+    warn: (message, fields) => logger.warn(fields ?? {}, message),
+    info: (message, fields) => logger.info(fields ?? {}, message),
+    debug: (message, fields) => logger.debug(fields ?? {}, message),
+    child: (fields) => wrap(logger.child(fields)),
   };
 }

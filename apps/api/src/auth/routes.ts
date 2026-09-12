@@ -17,8 +17,8 @@ import {
 } from '@goodies-beacon/core';
 import { type Context, Hono } from 'hono';
 import { getCookie } from 'hono/cookie';
-import type { z } from 'zod';
 import { errorResponse } from '../errors.js';
+import { parseBody } from '../parse.js';
 import { clearSessionCookie, SESSION_COOKIE, setCsrfCookie, setSessionCookie } from './cookies.js';
 import { createCsrfToken } from './csrf.js';
 import { type AuthVariables, requireSession } from './guard.js';
@@ -47,7 +47,7 @@ export function createAuthRoutes({ db, logger, rateLimiter }: AuthRouteDeps) {
   });
 
   routes.post('/first-run', async (c) => {
-    const body = await parse(c, firstRunSchema);
+    const body = await parseBody(c, firstRunSchema);
     if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
 
     try {
@@ -73,7 +73,7 @@ export function createAuthRoutes({ db, logger, rateLimiter }: AuthRouteDeps) {
       return errorResponse(c, 429, 'rate_limited', message);
     }
 
-    const body = await parse(c, loginSchema);
+    const body = await parseBody(c, loginSchema);
     if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
 
     const user = await findAuthUser(db);
@@ -105,7 +105,7 @@ export function createAuthRoutes({ db, logger, rateLimiter }: AuthRouteDeps) {
   });
 
   routes.post('/password', requireSession(db), async (c) => {
-    const body = await parse(c, changePasswordSchema);
+    const body = await parseBody(c, changePasswordSchema);
     if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
 
     const user = await findAuthUser(db);
@@ -139,28 +139,4 @@ async function startSession(c: AuthContext, db: Database, userId: number): Promi
 
 function clientOf(c: AuthContext): string {
   return clientKey(c.req.header('x-forwarded-for'));
-}
-
-type ParseResult<T> = { ok: true; value: T } | { ok: false; message: string };
-
-/** One place a body is read and validated, so every route reports a bad one the same way. */
-async function parse<T extends z.ZodType>(
-  c: AuthContext,
-  schema: T,
-): Promise<ParseResult<z.infer<T>>> {
-  let body: unknown;
-  try {
-    body = await c.req.json();
-  } catch {
-    return { ok: false, message: 'Expected a JSON body.' };
-  }
-
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    const [issue] = result.error.issues;
-    const field = issue?.path.join('.') ?? 'body';
-    return { ok: false, message: `${field} ${issue?.message ?? 'is invalid'}` };
-  }
-
-  return { ok: true, value: result.data };
 }

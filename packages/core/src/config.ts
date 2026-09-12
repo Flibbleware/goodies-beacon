@@ -36,6 +36,9 @@ const schema = z.object({
     })
     .transform((ids) => ids as SourceId[]),
   LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  GOODIES_BEACON_VERSION: z.string().min(1).default('dev'),
+  GOODIES_BEACON_SHA: z.string().min(1).default('unknown'),
   MEDIA_DIR: z.string().min(1).default('/data/media'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   ANTHROPIC_API_KEY: optionalSecret,
@@ -58,6 +61,12 @@ export interface AiKeys {
 
 export interface Config {
   readonly host: string;
+  /** The image tag this build was published under, baked in at build time. `/healthz` reports it. */
+  readonly version: string;
+  /** The commit the image was built from, or 'unknown' outside a built image. */
+  readonly sha: string;
+  /** True in the image, which is the only place the API serves the built web app. */
+  readonly isProduction: boolean;
   readonly databaseUrl: string;
   /** Base64; decode to 32 bytes where the encryption helpers need them (P0-05). */
   readonly secretKey: string;
@@ -99,6 +108,9 @@ export function parseConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
   return {
     host: v.GOODIES_BEACON_HOST,
+    version: v.GOODIES_BEACON_VERSION,
+    sha: v.GOODIES_BEACON_SHA,
+    isProduction: v.NODE_ENV === 'production',
     databaseUrl: v.DATABASE_URL,
     secretKey: v.GOODIES_BEACON_SECRET_KEY,
     role: v.ROLE,
@@ -110,6 +122,9 @@ export function parseConfig(env: NodeJS.ProcessEnv = process.env): Config {
     toJSON() {
       return {
         host: this.host,
+        version: this.version,
+        sha: this.sha,
+        isProduction: this.isProduction,
         databaseUrl: redactUrlPassword(this.databaseUrl),
         secretKey: '[redacted]',
         role: this.role,

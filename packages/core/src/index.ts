@@ -56,7 +56,14 @@ export {
   isEncrypted,
   secretsEqual,
 } from './crypto.js';
-export { createDb, createPool, type Database } from './db/client.js';
+export {
+  CONNECT_TIMEOUT_MS,
+  createDb,
+  createPool,
+  type Database,
+  PING_TIMEOUT_MS,
+  pingDatabase,
+} from './db/client.js';
 export { MIGRATIONS_FOLDER, runMigrations } from './db/migrate.js';
 export {
   type AuthSession,
@@ -65,10 +72,10 @@ export {
   authUser,
   type ProcessHeartbeat,
   processHeartbeat,
-  type Settings,
+  type SettingsRow,
   settings,
 } from './db/schema.js';
-export { createConsoleLogger, type Logger } from './logger.js';
+export { createLogger, createSilentLogger, type Logger } from './logger.js';
 export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
 export {
   HEARTBEAT_CRON,
@@ -91,5 +98,16 @@ export {
   type QueueRegistration,
   registerQueues,
 } from './queue/registry.js';
+export {
+  DEFAULT_DIGEST_TIME,
+  DEFAULT_TIMEZONE,
+  instanceSettingsSchema,
+  readSettings,
+  type Settings,
+  type SettingsPatch,
+  settingsPatchSchema,
+  settingsSchema,
+  writeSettings,
+} from './settings.js';
 export { createShutdown, SHUTDOWN_TIMEOUT_MS, type Shutdown } from './shutdown.js';
 export { isSourceId, SOURCE_IDS, type SourceId } from './sources.js';

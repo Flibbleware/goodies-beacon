@@ -40,6 +40,30 @@ dashboard surfaces this in P1-16; until then:
 docker compose exec db psql -U goodies_beacon -c 'select * from process_heartbeat'
 ```
 
+## Health and logs
+
+`/healthz` needs no session and reports what is running:
+
+```json
+{ "status": "ok", "version": "0.1.0", "sha": "9f2c1ab", "db": "ok" }
+```
+
+`version` and `sha` are baked into the image at build time, so they say what is *actually* running
+rather than what the compose file asks for. A database that cannot be reached — or that accepts the
+connection and never answers — makes it `503` with `"db": "unreachable"` within about two seconds,
+so the deploy script and any monitor can act on the status code and never hang.
+
+Logs are JSON lines on stdout (`docker compose logs -f app`), one per request plus whatever the
+request itself logged, all carrying the same `requestId`. Every response repeats it in
+`X-Request-Id`, so a 500 a user reports can be found directly:
+
+```sh
+docker compose logs app | grep <request id>
+```
+
+`LOG_LEVEL` takes pino's levels: `fatal`, `error`, `warn`, `info` (the default), `debug`, `trace`,
+`silent`.
+
 ## Signing in
 
 The instance has one user (§12). On a fresh database no password is set, and the first person to
@@ -62,6 +86,16 @@ session:
 ```sh
 docker compose exec db psql -U goodies_beacon -c 'delete from auth_user'
 ```
+
+## What serves what
+
+In production the API container serves both the JSON API and the built web app: anything that is
+not `/api/*` or `/healthz` is answered from `apps/web/dist`, falling back to `index.html` so a deep
+link like `/settings` survives a refresh. An unknown `/api` path answers a JSON 404 rather than the
+page, so a typo in a URL is not mistaken for a working endpoint.
+
+`docs/API.md` lists every endpoint with whether it needs a session and whether it needs a CSRF
+token. It is generated from the route table by `pnpm docs:api`, and CI fails if it is out of date.
 
 ## Restarts and shutdown
 

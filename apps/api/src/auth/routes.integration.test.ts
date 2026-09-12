@@ -23,7 +23,7 @@ import { createLoginRateLimiter, MAX_ATTEMPTS, WINDOW_MS } from './rate-limit.js
  */
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const PASSWORD = 'a-good-enough-password';
-const logger: Logger = { error() {}, warn() {}, info() {}, debug() {} };
+const logger: Logger = { error() {}, warn() {}, info() {}, debug() {}, child: () => logger };
 
 let pool: Pool | undefined;
 let db: Database;
@@ -116,7 +116,14 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
     await db.delete(authSession);
     await db.delete(authUser);
     rateLimiter = createLoginRateLimiter();
-    app = createApp({ db, logger, rateLimiter });
+    app = createApp({
+      db,
+      logger,
+      rateLimiter,
+      host: 'beacon.example.co.uk',
+      version: 'dev',
+      sha: 'unknown',
+    });
   });
 
   describe('first run', () => {
@@ -307,8 +314,8 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
     it('lets a request through once it carries a live session', async () => {
       const cookies = await signedUp();
 
-      // Nothing is mounted here yet, so 404 is the proof the guard did not answer first.
-      const res = await send(cookies, '/api/settings');
+      // No route is mounted here, so the API's own 404 is the proof the guard let it through.
+      const res = await send(cookies, '/api/nothing-here');
       expect(res.status).toBe(404);
     });
 
@@ -317,7 +324,7 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
       const cookies = jar();
       await send(cookies, '/api/auth/session');
 
-      const res = await app.request('/api/settings', {
+      const res = await app.request('/api/nothing-here', {
         headers: { cookie: `${SESSION_COOKIE}=not-a-real-session` },
       });
 
@@ -337,7 +344,7 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
       expect(setCookieFor(res, SESSION_COOKIE)).toContain('Max-Age=0');
       expect(await loadSession(db, id)).toBeUndefined();
 
-      const replayed = await app.request('/api/settings', {
+      const replayed = await app.request('/api/nothing-here', {
         headers: { cookie: `${SESSION_COOKIE}=${id}` },
       });
       expect(replayed.status).toBe(401);
@@ -420,7 +427,7 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
       });
 
       expect(await loadSession(db, stolen)).toBeUndefined();
-      expect((await send(owner, '/api/settings')).status).toBe(404);
+      expect((await send(owner, '/api/nothing-here')).status).toBe(404);
     });
 
     it('refuses a new password shorter than the minimum', async () => {

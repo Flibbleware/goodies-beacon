@@ -6,6 +6,15 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 - Work merges into the `development/0.2.0` integration branch until Phase 1 is complete; `main` receives a single merge at the end. `v0.1.0` is still tagged from the integration branch at the Phase 0 exit.
 
+- P0-08 API skeleton: `/healthz` reports `{ status, version, sha, db }` and answers 503 when the
+  database is unreachable — including when it accepts the connection and never replies, which would
+  otherwise hang the caller. The version and commit are baked into the image at build time. pino
+  logging with a request id on every line and in every response's `X-Request-Id`; an unhandled error
+  logs its stack against that id and answers a generic 500 without one. `/api/settings` reads and
+  writes the instance section (timezone, digest time), merging a partial save rather than resetting
+  what it was not sent. In production the API also serves the built web app with a fallback to
+  `index.html`, so deep links survive a refresh.
+- `docs/API.md` is generated from the route table by `pnpm docs:api`; CI fails if it is out of date.
 - P0-07 Authentication: single user, password set on first run and hashed with Argon2id at OWASP's
   floor (19 MiB, two passes, one lane). `POST /api/auth/first-run`, `/login`, `/logout` and
   `/password`, plus `GET /api/auth/session` for the web app to ask where it stands. Sessions are a
