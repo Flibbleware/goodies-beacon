@@ -14,14 +14,6 @@ export const ARGON2_OPTIONS = {
   parallelism: 1,
 } as const;
 
-/**
- * NIST SP 800-63B: eight characters, no composition rules. The maximum only exists because
- * argon2 hashes whatever it is given, and a megabyte-long password would be a cheap way to
- * tie up the process.
- */
-export const PASSWORD_MIN_LENGTH = 8;
-export const PASSWORD_MAX_LENGTH = 256;
-
 export function hashPassword(password: string): Promise<string> {
   return hash(password, ARGON2_OPTIONS);
 }

@@ -120,9 +120,12 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
       db,
       logger,
       rateLimiter,
-      host: 'beacon.example.co.uk',
-      version: 'dev',
-      sha: 'unknown',
+      config: {
+        host: 'beacon.example.co.uk',
+        secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
+        version: 'dev',
+        sha: 'unknown',
+      },
     });
   });
 

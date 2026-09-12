@@ -8,9 +8,12 @@ function appWith(execute: () => Promise<unknown>) {
   return createApp({
     db: { execute } as unknown as Database,
     logger,
-    host: 'beacon.example.co.uk',
-    version: '1.2.3',
-    sha: 'abc1234',
+    config: {
+      host: 'beacon.example.co.uk',
+      secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
+      version: '1.2.3',
+      sha: 'abc1234',
+    },
   });
 }
 
