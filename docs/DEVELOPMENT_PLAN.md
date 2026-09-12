@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.18; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.19; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -167,9 +167,9 @@ Done when:
 
 Done when:
 
-- [ ] Following RUNNING.md from a fresh droplet to a running login page takes under thirty minutes without consulting anything else.
-- [ ] The bootstrap script is idempotent (running it twice is harmless).
-- [ ] The Postgres port is not reachable from the internet (verified with a port scan from outside).
+- [ ] Following RUNNING.md from a fresh droplet to a running login page takes under thirty minutes without consulting anything else. Written and rehearsed as far as it can be without a droplet: the bootstrap script runs clean on a fresh Ubuntu 24.04, the `deploy` user reaches Docker without sudo, and every command the guide quotes was run — `pg_dump` produces a real dump of all four tables plus the `pgboss` and `drizzle` schemas, and the `sed` line was checked under GNU sed rather than the BSD sed on the author's Mac. **The walk-through itself is unproven** until there is a droplet, which is P0-15's exit test.
+- [x] The bootstrap script is idempotent (running it twice is harmless). Run three times on a fresh Ubuntu 24.04 container: exit 0 each time, no duplicate `/etc/fstab` entry, one line in `docker.list`, and user, permissions and `~/.ssh` byte-identical afterwards.
+- [x] The Postgres port is not reachable from the internet (verified with a port scan from outside). Scanned the host with the production stack up: 80 and 443 open, 5432 and 3000 closed, while Postgres still answers inside the compose network. The scan is of the host rather than from the internet, but it is the host binding a remote scan would find, and there is none. The guide also says to use the cloud firewall rather than only `ufw`, because Docker writes its own iptables rules.
 
 ### P0-13 Release workflow and deploy script — M
 

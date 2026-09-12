@@ -1,7 +1,155 @@
 # Running Goodies Beacon
 
-Operational notes for whoever is looking after an instance. Installing on a fresh droplet is
-covered in P0-12; until then this file collects what each task adds.
+How to install Goodies Beacon on a droplet, and how to look after it once it is there. Nothing
+below assumes you have read anything else.
+
+- [Installing on a fresh droplet](#installing-on-a-fresh-droplet)
+- [Upgrading and rolling back](#upgrading-and-rolling-back)
+- [Backups](#backups)
+- [The two images](#the-two-images) · [TLS](#tls) · [Process roles](#process-roles) ·
+  [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email)
+
+---
+
+## Installing on a fresh droplet
+
+About twenty minutes, most of it waiting. Ubuntu 24.04, 2 vCPU and 2 GB is enough (§11).
+
+### 1. Create the droplet and lock it down
+
+Create an Ubuntu 24.04 droplet with your SSH key. Then, **before** pointing DNS at it, attach a
+DigitalOcean cloud firewall allowing only:
+
+| Direction | Protocol | Ports | Why |
+|---|---|---|---|
+| Inbound | TCP | 22 | SSH |
+| Inbound | TCP | 80 | HTTP, which Caddy redirects and uses for certificate challenges |
+| Inbound | TCP | 443 | HTTPS |
+| Outbound | All | All | Marketplaces, AI providers, SMTP, image pulls |
+
+Nothing else needs to be open. In particular **do not open 5432**: Postgres has no published port
+in `docker-compose.yml`, so it is reachable only from the other containers. Use the cloud firewall
+rather than only `ufw` — Docker writes its own iptables rules, and a published port can traverse
+`ufw` without being asked. Belt and braces is fine; cloud-firewall-only is safer than ufw-only.
+
+Check from another machine once it is up:
+
+```sh
+nmap -Pn -p 22,80,443,5432 beacon.example.co.uk
+# 22, 80, 443 open · 5432 filtered
+```
+
+### 2. Bootstrap it
+
+As root, over SSH:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/scripts/bootstrap-droplet.sh | sudo bash
+```
+
+That creates a `deploy` user that can use Docker without sudo, installs Docker Engine and Compose
+from Docker's apt repository, adds a 2 GB swap file (with an `/etc/fstab` entry so it survives a
+reboot), and creates `/opt/goodies-beacon` owned by `deploy`. It is safe to run again: every step
+checks for its own result first, so a second run changes nothing.
+
+It deliberately does **not** touch SSH configuration, the firewall or `authorized_keys`. Those are
+decisions rather than mechanics, and the deploy key belongs to the release workflow.
+
+### 3. Point DNS at it
+
+An `A` record for the name you intend to use — `beacon.example.co.uk` — at the droplet's IPv4
+address. Wait for it to resolve before the next step: Caddy asks Let's Encrypt for a certificate on
+first start, and that only works once the name points at the droplet.
+
+```sh
+dig +short beacon.example.co.uk
+```
+
+### 4. Put the three files in place
+
+In `/opt/goodies-beacon`, as the `deploy` user:
+
+```sh
+sudo -iu deploy
+cd /opt/goodies-beacon
+curl -fsSLO https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/docker-compose.yml
+curl -fsSLO https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/Caddyfile
+curl -fsSL  https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/.env.example -o .env
+```
+
+Then edit `.env`. The four that matter on a first install:
+
+```sh
+GOODIES_BEACON_HOST=beacon.example.co.uk        # the name you pointed at the droplet
+GOODIES_BEACON_SECRET_KEY=...                   # openssl rand -base64 32
+POSTGRES_PASSWORD=...                           # anything long; only read while the volume is empty
+GOODIES_BEACON_VERSION=latest                   # or a specific version tag
+```
+
+`chmod 600 .env` — it holds the key that decrypts your SMTP password.
+
+Tailnet-only instead of a public name? Set `GOODIES_BEACON_CADDYFILE=./Caddyfile.tailscale`,
+fetch that file too, and see [TLS](#tls).
+
+### 5. Start it
+
+```sh
+docker compose up -d
+docker compose logs -f app
+```
+
+The first start pulls about a gigabyte, applies the database migrations and asks Let's Encrypt for
+a certificate. Wait for `goodies-beacon started`, then:
+
+```sh
+curl https://beacon.example.co.uk/healthz
+# {"status":"ok","version":"0.1.0","sha":"9f2c1ab","db":"ok"}
+```
+
+### 6. Claim it
+
+Open `https://beacon.example.co.uk` and **set your password immediately**. Until you do, anyone who
+reaches the host can claim the instance — see [Signing in](#signing-in). Then open Settings and
+configure email, and send yourself a test message.
+
+---
+
+## Upgrading and rolling back
+
+What runs is whatever `GOODIES_BEACON_VERSION` in `.env` names, so both directions are the same
+two commands:
+
+```sh
+cd /opt/goodies-beacon
+# take a dump first; upgrades are roll-forward and this is the way back
+docker compose exec -T db pg_dump -U goodies_beacon goodies_beacon | gzip > backups/before-upgrade.sql.gz
+
+sed -i 's/^GOODIES_BEACON_VERSION=.*/GOODIES_BEACON_VERSION=v0.2.0/' .env
+docker compose pull app
+docker compose up -d app
+```
+
+Migrations run on start, so there is no separate step. To roll back, put the previous tag in
+`GOODIES_BEACON_VERSION` and repeat — but note that a release which migrated the database may not
+be reversible by pointing at the old image alone, which is why the dump comes first.
+
+`docker compose ps` and `/healthz` tell you whether it worked. `docker image prune -a` reclaims the
+old images when you are satisfied.
+
+**From the Actions tab.** The release workflow deploys a published GitHub Release automatically,
+and the manual *Deploy* workflow puts any built image tag on the droplet without creating a
+release — pick the tag, run the workflow, watch it poll `/healthz`. Both are delivered by P0-13;
+until then, upgrade with the commands above.
+
+## Backups
+
+Dumps live in `/opt/goodies-beacon/backups`, which the bootstrap script creates. The nightly job
+that fills it, its fourteen-day retention and the rehearsed restore procedure are P0-14; until then
+take them by hand with the `pg_dump` line above.
+
+The database is the only thing that must be backed up. Downscaled listing images in the `media`
+volume are re-fetchable, and `.env` you should already have a copy of somewhere safe — without
+`GOODIES_BEACON_SECRET_KEY` a restored dump cannot decrypt the SMTP password.
 
 ## The two images
 
@@ -14,19 +162,11 @@ Pick with `GOODIES_BEACON_IMAGE` in `.env`. Both run as an unprivileged user and
 configuration; the slim one simply cannot drive a browser, so a Vinted poll on it will fail rather
 than silently return nothing.
 
-## Running it
+## Development
 
-**Production** — `docker compose up -d`. Three services: `db`, `app` (`ROLE=all`) and `caddy`.
-Only Caddy publishes ports; Postgres and the app are reachable only on the compose network (§12).
-Memory is capped per container — `app` 1.2 GB, `db` 512 MB, `caddy` 128 MB — so nothing can take
-the droplet down by itself.
-
-**Development** — `docker compose -f compose.dev.yml up -d` for Postgres and Mailpit, then
-`pnpm dev` for the API, workers and web app with hot reload. The app is at `localhost:5173` and
-Mailpit's inbox at `localhost:8025`; nothing Mailpit is given ever leaves the machine.
-
-Copy `.env.example` to `.env` first and set at least `GOODIES_BEACON_HOST`, `POSTGRES_PASSWORD`
-and `GOODIES_BEACON_SECRET_KEY` (`openssl rand -base64 32`).
+`docker compose -f compose.dev.yml up -d` for Postgres and Mailpit, then `pnpm dev` for the API,
+workers and web app with hot reload. The app is at `localhost:5173` and Mailpit's inbox at
+`localhost:8025`; nothing Mailpit is given ever leaves the machine.
 
 ## TLS
 
@@ -34,7 +174,15 @@ Caddy gets the certificate, renews it, and redirects HTTP to HTTPS without being
 public hostname the stock `Caddyfile` is all you need. For a tailnet-only instance set
 `GOODIES_BEACON_CADDYFILE=./Caddyfile.tailscale`, which takes the certificate from tailscaled
 instead — Let's Encrypt cannot certify a `*.ts.net` name — and mount its socket into the caddy
-service. Either way HTTPS is required, not optional: see below.
+service:
+
+```yaml
+caddy:
+  volumes:
+    - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+```
+
+Either way HTTPS is required, not optional — see [Signing in](#signing-in).
 
 ## Process roles
 
@@ -180,6 +328,7 @@ a throwaway instance — never at the one you use.
 
 `docker compose restart app`, a deploy, or any `SIGTERM` shuts down in order: stop accepting HTTP
 requests, let in-flight jobs finish (up to pg-boss's 30-second grace period), then close the
-database pool. The process exits 0 when that completes, or 1 after 45 seconds if something is stuck,
-so give containers a `stop_grace_period` of at least 60 seconds. Jobs still running when the grace
-period expires are marked failed and retried, so a hard kill costs a retry, not a job.
+database pool. The process exits 0 when that completes, or 1 after 45 seconds if something is
+stuck. `docker-compose.yml` gives the app a `stop_grace_period` of 60 seconds to allow for that.
+Jobs still running when the grace period expires are marked failed and retried, so even a hard
+kill costs a retry rather than a job.

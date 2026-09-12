@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.18 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.19 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -365,7 +365,7 @@ Backups: nightly `pg_dump` to the media volume; the compose file includes the jo
 - **Seller content.** Descriptions are sanitised (DOMPurify server-side) before storage and rendered as text or sanitised HTML; never inline in emails.
 - **Images.** Fetched only by the worker through the adapter's HTTP client with size limits, content-type checks and a private-address block list (SSRF). Re-encoded on ingest.
 - **Transport.** Caddy terminates TLS with automatic certificates, by either route in §11. TLS is required rather than recommended: the session cookie is `Secure`, so a browser discards it over plain HTTP and sign-in fails with nothing to explain why. `localhost` is the single exception, because browsers count it as a secure context — which is why local development and the Playwright run need no certificate.
-- **Surface.** Only Caddy is published; Postgres and the app listen on the compose network. CSRF protection on state-changing routes: a double-submit `gb_csrf` cookie, readable by the page, echoed in `X-CSRF-Token` and compared in constant time. Because only Caddy is published, the last `X-Forwarded-For` entry is the one it wrote and the only one a client cannot forge, so that is what rate limiting counts against. Dependabot/Renovate on the repo.
+- **Surface.** Only Caddy is published; Postgres and the app listen on the compose network, which is the actual control — not a host firewall. Docker inserts its own iptables rules ahead of `ufw`'s, so a *published* port reaches the internet whatever `ufw` has been told; publishing none for Postgres is what closes it, and the provider's cloud firewall is the defence in depth behind that. CSRF protection on state-changing routes: a double-submit `gb_csrf` cookie, readable by the page, echoed in `X-CSRF-Token` and compared in constant time. Because only Caddy is published, the last `X-Forwarded-For` entry is the one it wrote and the only one a client cannot forge, so that is what rate limiting counts against. Dependabot/Renovate on the repo.
 - **Email.** SMTP over TLS; digest links point at your instance URL from settings, never derived from request headers.
 
 ---

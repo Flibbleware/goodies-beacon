@@ -11,6 +11,13 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   "HTTP on the tailnet is acceptable" allowance §12 carried would have left a Tailscale-only
   instance unable to sign in at all, with nothing on screen to say why. `localhost` is the one
   exception, so local development and the Playwright run still need no certificate.
+- P0-12 Droplet bootstrap and RUNNING.md: `docs/RUNNING.md` now starts from a fresh Ubuntu 24.04
+  droplet and ends at a login page — cloud firewall, bootstrap, DNS, the three files, first start,
+  and claiming the instance — followed by upgrade and rollback, backups, and the operational
+  reference that was already there. `scripts/bootstrap-droplet.sh` does the mechanical parts: a
+  `deploy` user that can use Docker without sudo, Docker Engine and Compose from Docker's apt
+  repository, a 2 GB swap file with an fstab entry, and `/opt/goodies-beacon`. It is safe to run
+  again; every step checks for its own result first.
 - P0-11 Docker images and compose files: two images from one Dockerfile — the default with
   Chromium for the browser-driven adapters, and `:slim` without it. `docker-compose.yml` runs `db`,
   `app` and `caddy` with per-container memory limits and only Caddy published;
