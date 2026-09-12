@@ -23,6 +23,10 @@ jobs:
       - name: Biome
         run: pnpm lint
 
+      # Biome does not read shell, and these run as root on someone's server.
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
