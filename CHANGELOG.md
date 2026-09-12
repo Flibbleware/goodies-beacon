@@ -6,6 +6,14 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 - Work merges into the `development/0.2.0` integration branch until Phase 1 is complete; `main` receives a single merge at the end. `v0.1.0` is still tagged from the integration branch at the Phase 0 exit.
 
+- P0-09 Web shell: React 19 with TanStack Router and Query and Tailwind 4. A login page that
+  doubles as first run, an empty dashboard, and a settings page that saves the instance section.
+  Left-hand navigation carries the pages from §14, with the ones that have no route yet disabled and
+  labelled with the task that brings them. Dark and light follow the operating system. An
+  unauthenticated visit lands on login; visiting login while signed in goes to the dashboard.
+- A Playwright smoke test walks first run, sign out, a wrong password, sign in, a deep-link refresh
+  and saving a setting against the built API serving the built web app, and runs in CI against a
+  Postgres service. Point `E2E_BASE_URL` at a running instance to rehearse a deploy the same way.
 - P0-08 API skeleton: `/healthz` reports `{ status, version, sha, db }` and answers 503 when the
   database is unreachable — including when it accepts the connection and never replies, which would
   otherwise hang the caller. The version and commit are baked into the image at build time. pino

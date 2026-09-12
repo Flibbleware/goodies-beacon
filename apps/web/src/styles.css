@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/*
+ * Dark and light follow the system: Tailwind's `dark:` variant is driven by
+ * prefers-color-scheme, so there is no toggle and no stored preference to get out of step.
+ */
+@theme {
+  --color-ink: oklch(0.22 0.01 260);
+  --color-ink-dim: oklch(0.52 0.01 260);
+  --color-paper: oklch(0.99 0.002 260);
+  --color-paper-raised: oklch(1 0 0);
+  --color-edge: oklch(0.91 0.005 260);
+
+  --color-ink-dark: oklch(0.93 0.008 260);
+  --color-ink-dim-dark: oklch(0.65 0.01 260);
+  --color-paper-dark: oklch(0.19 0.012 260);
+  --color-paper-raised-dark: oklch(0.23 0.014 260);
+  --color-edge-dark: oklch(0.31 0.014 260);
+
+  --color-beacon: oklch(0.58 0.16 250);
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-paper text-ink dark:bg-paper-dark dark:text-ink-dark;
+}

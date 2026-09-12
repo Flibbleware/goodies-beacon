@@ -8,5 +8,8 @@ dist-types/
 media/
 backups/
 coverage/
+test-results/
+playwright-report/
+blob-report/
 .DS_Store
 spikes/**/out/

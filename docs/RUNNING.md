@@ -87,6 +87,12 @@ session:
 docker compose exec db psql -U goodies_beacon -c 'delete from auth_user'
 ```
 
+## The web app
+
+The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand
+navigation is there but disabled, labelled with the task that brings it. Dark and light follow the
+operating system — there is no toggle, and so no stored preference to get out of step with it.
+
 ## What serves what
 
 In production the API container serves both the JSON API and the built web app: anything that is
@@ -96,6 +102,19 @@ page, so a typo in a URL is not mistaken for a working endpoint.
 
 `docs/API.md` lists every endpoint with whether it needs a session and whether it needs a CSRF
 token. It is generated from the route table by `pnpm docs:api`, and CI fails if it is out of date.
+
+**Rehearsing against a running instance.** The Playwright smoke test — first run, sign out, sign
+in, a deep-link refresh, saving a setting — can be pointed at any instance, which is a quick way to
+prove a deploy actually works:
+
+```sh
+E2E_BASE_URL=https://beacon.example.co.uk \
+E2E_DATABASE_URL=postgres://... \
+pnpm e2e
+```
+
+It **resets the password and every session** on the database it is given, so only ever point it at
+a throwaway instance — never at the one you use.
 
 ## Restarts and shutdown
 

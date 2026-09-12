@@ -20,6 +20,9 @@
       "suspicious": { "noExplicitAny": "error" }
     }
   },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
   "javascript": {
     "formatter": { "quoteStyle": "single", "semicolons": "always", "trailingCommas": "all" }
   },
