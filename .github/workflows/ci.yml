@@ -39,6 +39,28 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+
+    # The migration and pg-boss tests need a real Postgres: advisory locks, queue
+    # tables and a graceful shutdown mid-job are not things a fake can demonstrate.
+    # Without TEST_DATABASE_URL they skip themselves instead of failing.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: goodies_beacon
+          POSTGRES_PASSWORD: goodies_beacon
+          POSTGRES_DB: goodies_beacon_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goodies_beacon"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgres://goodies_beacon:goodies_beacon@localhost:5432/goodies_beacon_test
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -47,9 +69,10 @@ jobs:
         uses: ./.github/actions/setup
 
       # Tests import workspace packages through their published `exports`, which
-      # point at dist, so the packages must be compiled before vitest runs.
+      # point at dist, so they must be compiled before vitest runs. apps/worker is
+      # a library too: apps/api imports its queue registrations.
       - name: Build workspace packages
-        run: pnpm -r --filter './packages/**' build
+        run: pnpm -r --filter './packages/**' --filter @goodies-beacon/worker build
 
       - name: Vitest
         run: pnpm test

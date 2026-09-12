@@ -1,10 +1,13 @@
+import { readdirSync } from 'node:fs';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createPool } from './client.js';
-import { runMigrations } from './migrate.js';
+import { MIGRATIONS_FOLDER, runMigrations } from './migrate.js';
+
+const MIGRATION_COUNT = readdirSync(MIGRATIONS_FOLDER).filter((f) => f.endsWith('.sql')).length;
 
 /**
- * Opt-in: set TEST_DATABASE_URL to a throwaway database to run these. CI has no Postgres,
- * so without it the suite reports them as skipped rather than failing.
+ * These need a real Postgres: CI's Tests job runs one as a service and sets TEST_DATABASE_URL.
+ * Locally, point it at a throwaway database; without it the suite skips them rather than failing.
  */
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const pool = databaseUrl ? createPool(databaseUrl) : undefined;
@@ -25,13 +28,14 @@ describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
     expect(tables?.rows.map((row) => row.tablename)).toEqual([
       'auth_session',
       'auth_user',
+      'process_heartbeat',
       'settings',
     ]);
 
     const applied = await pool?.query<{ count: string }>(
       'select count(*)::text as count from drizzle.__drizzle_migrations',
     );
-    expect(applied?.rows[0]?.count).toBe('1');
+    expect(applied?.rows[0]?.count).toBe(String(MIGRATION_COUNT));
   });
 
   it('survives concurrent callers, because the advisory lock serialises them', async () => {
@@ -43,6 +47,6 @@ describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
     const applied = await pool?.query<{ count: string }>(
       'select count(*)::text as count from drizzle.__drizzle_migrations',
     );
-    expect(applied?.rows[0]?.count).toBe('1');
+    expect(applied?.rows[0]?.count).toBe(String(MIGRATION_COUNT));
   });
 });

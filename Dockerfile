@@ -42,6 +42,8 @@ COPY --from=build /app/packages/core/dist packages/core/dist
 # SQL migrations are data, not build output, but the API applies them on start.
 COPY --from=build /app/packages/core/drizzle packages/core/drizzle
 COPY --from=build /app/apps/api/dist apps/api/dist
+# apps/api/dist/main.js is the entrypoint for every ROLE and imports the worker subscribers.
+COPY --from=build /app/apps/worker/dist apps/worker/dist
 COPY --from=build /app/apps/web/dist apps/web/dist
 USER node
 EXPOSE 3000

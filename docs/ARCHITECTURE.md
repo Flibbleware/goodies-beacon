@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.12 — 7 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.13 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -233,7 +233,7 @@ Per-source notes for the v1 adapters:
 
 ## 6. Scheduling and polling
 
-`pg-boss` provides cron-style scheduling and job queues in Postgres. Each active WantedItem × SearchPlan gets a recurring poll job at the item's interval (default 3×/day, staggered so all eBay calls don't land in the same second). Queue names include the source (`poll:vinted`) so a remote worker can subscribe only to the sources it should handle (`WORKER_SOURCES=vinted`).
+`pg-boss` provides cron-style scheduling and job queues in Postgres. Each active WantedItem × SearchPlan gets a recurring poll job at the item's interval (default 3×/day, staggered so all eBay calls don't land in the same second). Queue names include the source (`poll.vinted`) so a remote worker can subscribe only to the sources it should handle (`WORKER_SOURCES=vinted`). The separator is a period because pg-boss validates queue names against `/^[\w.\-/]+$/` and rejects a colon.
 
 Each plan keeps its own watermark, advanced only to the newest listing actually processed in that poll, so a missed run — or a poll that hits the candidate cap on a broad query like "macintosh" — carries on from where it stopped rather than skipping. Broad queries are expected and cheap: several hundred new listings a day cost well under £1 a month in pre-filter calls; only survivors reach the vision model. New `(source, externalId)` pairs not in `Seen` become Listings and Candidates. Everything else is ignored, except that `lastSeenAt` is updated for Listings we already hold.
 
@@ -340,7 +340,7 @@ services:
   worker:  image: ghcr.io/<you>/goodies-beacon
            environment:
              ROLE: worker
-             WORKER_SOURCES: vinted        # subscribe only to poll:vinted
+             WORKER_SOURCES: vinted        # subscribe only to poll.vinted
              DATABASE_URL: postgres://…@100.x.y.z:5432/goodies_beacon   # via Tailscale
 ```
 
