@@ -74,6 +74,13 @@ host can claim it.
 Sessions last thirty days, sliding on use, and sign-out ends them. Changing the password ends every
 other session, which is how you evict someone who has one.
 
+The session cookie is always `Secure`, with no development exception. That costs nothing locally,
+because browsers count localhost as a secure context and keep the cookie over plain HTTP — so
+`pnpm dev`, the Playwright run and a local container all work without TLS. Anywhere with a real
+hostname, the cookie is dropped over HTTP and nobody can sign in, so an instance reached by name
+must be served over HTTPS: that is Caddy's job (P0-11), and it is why there is no "insecure mode"
+to fall back on.
+
 **Locked out by failed attempts.** Five wrong passwords from one address triggers a fifteen-minute
 lockout for that address. The counters are held in memory, not the database, so
 `docker compose restart app` clears them if you cannot wait. That also means the limit is per API

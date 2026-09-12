@@ -6,6 +6,11 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 - Work merges into the `development/0.2.0` integration branch until Phase 1 is complete; `main` receives a single merge at the end. `v0.1.0` is still tagged from the integration branch at the Phase 0 exit.
 
+- HTTPS is now stated as required rather than recommended (ARCHITECTURE.md §11 and §12). The
+  session cookie has been `Secure` since P0-07, which a browser discards over plain HTTP, so the
+  "HTTP on the tailnet is acceptable" allowance §12 carried would have left a Tailscale-only
+  instance unable to sign in at all, with nothing on screen to say why. `localhost` is the one
+  exception, so local development and the Playwright run still need no certificate.
 - P0-09 Web shell: React 19 with TanStack Router and Query and Tailwind 4. A login page that
   doubles as first run, an empty dashboard, and a settings page that saves the instance section.
   Left-hand navigation carries the pages from §14, with the ones that have no route yet disabled and

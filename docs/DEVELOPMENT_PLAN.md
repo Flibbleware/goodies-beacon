@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.16; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.17; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -152,7 +152,7 @@ Done when:
 
 ### P0-11 Docker images and compose files — M
 
-Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwright's Chromium) and `goodies-beacon:slim` (without), and runs migrations on start for `ROLE=api|all`. `docker-compose.yml` for production: `db` (postgres:18 with a named volume), `app` (`ROLE=all`, `media` volume), `caddy` (ports 80/443, `Caddyfile` templated from `GOODIES_BEACON_HOST`). `compose.dev.yml`: `db` and `mailpit` only. Images run as a non-root user.
+Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwright's Chromium) and `goodies-beacon:slim` (without), and runs migrations on start for `ROLE=api|all`. `docker-compose.yml` for production: `db` (postgres:18 with a named volume), `app` (`ROLE=all`, `media` volume), `caddy` (ports 80/443, `Caddyfile` templated from `GOODIES_BEACON_HOST`). TLS is not optional (§12), and a `*.ts.net` host cannot use Let's Encrypt, so the Caddyfile needs Caddy's Tailscale certificate source for that route rather than only the ACME default. `compose.dev.yml`: `db` and `mailpit` only. Images run as a non-root user.
 
 Done when:
 
