@@ -34,7 +34,8 @@ try {
   await registerQueues(boss, await processRegistrations({ config, db, logger }), logger);
 
   if (servesApi(config.role)) {
-    const server = serve({ fetch: createApp().fetch, port: config.port }, (info) => {
+    const app = createApp({ db, logger });
+    const server = serve({ fetch: app.fetch, port: config.port }, (info) => {
       logger.info('api listening', { port: info.port });
     });
     // Closed first, so requests stop arriving before the jobs they enqueued are drained.

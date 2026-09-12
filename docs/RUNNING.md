@@ -40,6 +40,29 @@ dashboard surfaces this in P1-16; until then:
 docker compose exec db psql -U goodies_beacon -c 'select * from process_heartbeat'
 ```
 
+## Signing in
+
+The instance has one user (§12). On a fresh database no password is set, and the first person to
+reach the site sets it — so **set your password immediately after the first deploy**, before the
+DNS name is public. Until then `/api/auth/session` reports `firstRun: true` and anyone who finds the
+host can claim it.
+
+Sessions last thirty days, sliding on use, and sign-out ends them. Changing the password ends every
+other session, which is how you evict someone who has one.
+
+**Locked out by failed attempts.** Five wrong passwords from one address triggers a fifteen-minute
+lockout for that address. The counters are held in memory, not the database, so
+`docker compose restart app` clears them if you cannot wait. That also means the limit is per API
+container: a deployment running two would give each its own allowance.
+
+**Forgotten password.** There is no reset link — a single-user instance has nobody to send one. Set
+a new one by deleting the user row and going through first run again, which also invalidates every
+session:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c 'delete from auth_user'
+```
+
 ## Restarts and shutdown
 
 `docker compose restart app`, a deploy, or any `SIGTERM` shuts down in order: stop accepting HTTP

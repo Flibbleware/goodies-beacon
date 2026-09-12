@@ -6,6 +6,17 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 - Work merges into the `development/0.2.0` integration branch until Phase 1 is complete; `main` receives a single merge at the end. `v0.1.0` is still tagged from the integration branch at the Phase 0 exit.
 
+- P0-07 Authentication: single user, password set on first run and hashed with Argon2id at OWASP's
+  floor (19 MiB, two passes, one lane). `POST /api/auth/first-run`, `/login`, `/logout` and
+  `/password`, plus `GET /api/auth/session` for the web app to ask where it stands. Sessions are a
+  256-bit id in an `HttpOnly; Secure; SameSite=Lax` cookie, expiring after thirty days and sliding
+  on use, rotated on login and on a password change — which also ends every other session. Login is
+  limited to five failures per fifteen minutes per client address, then a lockout of the same
+  length, and every attempt is logged. State-changing `/api` requests need a double-submit CSRF
+  token. Every other `/api` path answers 401 without a session, including paths with no route.
+- The API entrypoint needs the database to build the app, so `createApp` now takes `{ db, logger }`.
+- Vitest no longer runs test files in parallel: the integration tests share one `TEST_DATABASE_URL`
+  and each clears the tables it uses, so two files at once pulled rows out from under each other.
 - P0-06 pg-boss and process roles: one entrypoint for every `ROLE`, so `all` runs the API and the
   workers in a single process while `api` and `worker` split across containers. Queues live in the
   `pgboss` schema of the same database; `WORKER_SOURCES` narrows a worker to `poll.<source>` queues

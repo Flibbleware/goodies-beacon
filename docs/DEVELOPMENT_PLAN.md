@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.13; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.14; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -114,10 +114,10 @@ Single user, per §12. First run: no user exists → the UI shows a "create your
 
 Done when:
 
-- [ ] Login, logout and password change work in the UI; a wrong password shows a clear message without revealing timing differences (constant-time compare via Argon2 verify).
-- [ ] A request to any `/api/*` route other than auth and `/healthz` without a valid session returns 401.
-- [ ] Rate limiting and lockout are covered by tests.
-- [ ] Cookie flags are verified in a test using a real HTTP request against the Hono app.
+- [ ] Login, logout and password change work in the UI; a wrong password shows a clear message without revealing timing differences (constant-time compare via Argon2 verify). **API half done in P0-07**, proved end to end over HTTP; the UI half belongs to P0-09 (login page) and P0-10 (password change in Settings), which this task cannot precede. Argon2 verify is flat at ~8.7 ms whether the password is right, wrong or one character long.
+- [x] A request to any `/api/*` route other than auth and `/healthz` without a valid session returns 401 — including paths with no route, so the API is not enumerable before sign-in.
+- [x] Rate limiting and lockout are covered by tests.
+- [x] Cookie flags are verified in a test using a real HTTP request against the Hono app.
 
 ### P0-08 API skeleton — M
 
