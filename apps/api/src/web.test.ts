@@ -26,9 +26,12 @@ beforeAll(() => {
   app = createApp({
     db: { execute: async () => [] } as unknown as Database,
     logger,
-    host: 'beacon.example.co.uk',
-    version: 'dev',
-    sha: 'unknown',
+    config: {
+      host: 'beacon.example.co.uk',
+      secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
+      version: 'dev',
+      sha: 'unknown',
+    },
     webRoot,
   });
 });

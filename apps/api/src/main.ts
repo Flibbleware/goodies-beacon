@@ -42,9 +42,7 @@ try {
     const app = createApp({
       db,
       logger,
-      host: config.host,
-      version: config.version,
-      sha: config.sha,
+      config,
       ...(config.isProduction ? { webRoot: WEB_ROOT } : {}),
     });
     const server = serve({ fetch: app.fetch, port: config.port }, (info) => {

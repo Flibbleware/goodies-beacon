@@ -33,11 +33,13 @@ function routesOf(): Route[] {
   const app = createApp({
     db: {} as Database,
     logger: createSilentLogger(),
-    host: 'beacon.example.co.uk',
-    version: 'dev',
-    sha: 'unknown',
-    // The web app's catch-all would swamp the table, and it is not part of the API.
-    serveWeb: false,
+    config: {
+      host: 'beacon.example.co.uk',
+      secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
+      version: 'dev',
+      sha: 'unknown',
+    },
+    // No webRoot, so the web app's catch-all does not swamp the table; it is not part of the API.
   });
 
   const seen = new Set<string>();

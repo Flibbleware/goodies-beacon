@@ -114,7 +114,7 @@ Single user, per §12. First run: no user exists → the UI shows a "create your
 
 Done when:
 
-- [ ] Login, logout and password change work in the UI; a wrong password shows a clear message without revealing timing differences (constant-time compare via Argon2 verify). API done in P0-07; **login, logout and the wrong-password message done in P0-09** and covered by the Playwright smoke test. Password change is the last piece and belongs to P0-10's account section. Argon2 verify is flat at ~8.7 ms whether the password is right, wrong or one character long.
+- [x] Login, logout and password change work in the UI; a wrong password shows a clear message without revealing timing differences (constant-time compare via Argon2 verify). API in P0-07, login and logout in P0-09, password change in P0-10; the Playwright run covers all three. Argon2 verify is flat at ~8.7 ms whether the password is right, wrong or one character long.
 - [x] A request to any `/api/*` route other than auth and `/healthz` without a valid session returns 401 — including paths with no route, so the API is not enumerable before sign-in.
 - [x] Rate limiting and lockout are covered by tests.
 - [x] Cookie flags are verified in a test using a real HTTP request against the Hono app.
@@ -146,9 +146,9 @@ Settings page backed by `/api/settings`, which P0-08 mounted with the instance s
 
 Done when:
 
-- [ ] SMTP password is stored encrypted and rendered masked; saving without changing it keeps the old value.
-- [ ] "Send test email" delivers to Mailpit in development and to your real inbox on the droplet, and reports success or the SMTP error verbatim.
-- [ ] Settings changes are validated with the same Zod schema on client and server.
+- [x] SMTP password is stored encrypted and rendered masked; saving without changing it keeps the old value. The browser is never sent it at all — only `passwordSet` — so "unchanged" is enforced by the field being absent rather than by comparing against a mask.
+- [x] "Send test email" delivers to Mailpit in development and to your real inbox on the droplet, and reports success or the SMTP error verbatim. Verified against a real Mailpit at three levels: the transport, the endpoint, and the button in the Playwright run. **The droplet half is untested** — it needs real SMTP credentials on the droplet and belongs to the Phase 0 exit test (P0-15).
+- [x] Settings changes are validated with the same Zod schema on client and server, shared through `@goodies-beacon/core/schemas`.
 
 ### P0-11 Docker images and compose files — M
 

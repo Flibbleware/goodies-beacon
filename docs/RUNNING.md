@@ -94,10 +94,30 @@ session:
 docker compose exec db psql -U goodies_beacon -c 'delete from auth_user'
 ```
 
+## Email
+
+SMTP lives in Settings, not in `.env`: host, port, security, username, password, the from address
+and the notification address. The password is encrypted with `GOODIES_BEACON_SECRET_KEY` before it
+is stored, and the API never sends it back — the page is told only whether one is set, which is why
+saving the section without retyping it keeps it.
+
+**Send test email** mails the notification address and nothing else; the endpoint takes no address,
+so a session cannot be used to make the instance mail a stranger. On success it says where it went.
+On failure it shows what the mail server actually said — `550 5.7.1 Relaying denied` rather than
+"sending failed" — which is usually enough to fix it.
+
+Changing `GOODIES_BEACON_SECRET_KEY` makes the stored SMTP password undecryptable. Nothing silently
+sends with the wrong credentials: the test send and every notification fail loudly instead. Enter
+the password again to recover.
+
+In development, mail goes to [Mailpit](https://mailpit.axllent.org) with its inbox at
+`localhost:8025` — P0-11 adds it to `compose.dev.yml`.
+
 ## The web app
 
 The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand
-navigation is there but disabled, labelled with the task that brings it. Dark and light follow the
+navigation is there but disabled, labelled with the task that brings it. Settings holds account
+(change your password), email (SMTP) and instance (time zone, digest time) sections. Dark and light follow the
 operating system — there is no toggle, and so no stored preference to get out of step with it.
 
 ## What serves what

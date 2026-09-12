@@ -1,7 +1,17 @@
 import { z } from 'zod';
-import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './password.js';
 
-/** Shared with the web app (P0-09), so the two agree on what a valid password is. */
+/**
+ * NIST SP 800-63B: eight characters, no composition rules. The maximum only exists because
+ * argon2 hashes whatever it is given, and a megabyte-long password would be a cheap way to tie
+ * up the process.
+ *
+ * These live here rather than beside the hashing so that `@goodies-beacon/core/schemas` — which
+ * the web app imports — never reaches the native argon2 binding through them.
+ */
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 256;
+
+/** Shared with the web app, so the two agree on what a valid password is. */
 export const passwordSchema = z
   .string()
   .min(PASSWORD_MIN_LENGTH, `must be at least ${PASSWORD_MIN_LENGTH} characters`)

@@ -5,13 +5,7 @@
  */
 export const PACKAGE = '@goodies-beacon/core' as const;
 
-export {
-  ARGON2_OPTIONS,
-  hashPassword,
-  PASSWORD_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  verifyPassword,
-} from './auth/password.js';
+export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './auth/password.js';
 export {
   type ChangePasswordInput,
   changePasswordSchema,
@@ -19,6 +13,8 @@ export {
   firstRunSchema,
   type LoginInput,
   loginSchema,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
   passwordSchema,
 } from './auth/schemas.js';
 export {
@@ -100,14 +96,26 @@ export {
 } from './queue/registry.js';
 export {
   DEFAULT_DIGEST_TIME,
+  DEFAULT_SMTP_PORT,
   DEFAULT_TIMEZONE,
+  type EmailSettings,
+  emailSettingsSchema,
   instanceSettingsSchema,
-  readSettings,
+  isEmailConfigured,
+  type PublicSettings,
   type Settings,
   type SettingsPatch,
+  SMTP_SECURITIES,
+  type SmtpSecurity,
   settingsPatchSchema,
   settingsSchema,
+  toPublicSettings,
+} from './settings/schema.js';
+export {
+  readSettings,
+  resolveSmtp,
+  type SmtpCredentials,
   writeSettings,
-} from './settings.js';
+} from './settings/store.js';
 export { createShutdown, SHUTDOWN_TIMEOUT_MS, type Shutdown } from './shutdown.js';
 export { isSourceId, SOURCE_IDS, type SourceId } from './sources.js';

@@ -29,7 +29,16 @@ function recorder(): { lines: Line[]; logger: Logger } {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 function appWith(logger: Logger, db: Database = workingDb()) {
-  return createApp({ db, logger, host: 'beacon.example.co.uk', version: 'dev', sha: 'unknown' });
+  return createApp({
+    db,
+    logger,
+    config: {
+      host: 'beacon.example.co.uk',
+      secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
+      version: 'dev',
+      sha: 'unknown',
+    },
+  });
 }
 
 function workingDb(): Database {

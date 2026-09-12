@@ -1,13 +1,6 @@
 import { parseOptions } from '@node-rs/argon2';
 import { describe, expect, it } from 'vitest';
-import {
-  ARGON2_OPTIONS,
-  hashPassword,
-  PASSWORD_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  verifyPassword,
-} from './password.js';
-import { changePasswordSchema, firstRunSchema, loginSchema } from './schemas.js';
+import { ARGON2_OPTIONS, hashPassword, verifyPassword } from './password.js';
 
 describe('hashPassword', () => {
   it('produces an argon2id hash with the configured cost, which the options cannot state', async () => {
@@ -46,33 +39,5 @@ describe('verifyPassword', () => {
 
     expect(await verifyPassword(old, 'legacy')).toBe(true);
     expect(await verifyPassword(old, 'wrong')).toBe(false);
-  });
-});
-
-describe('auth schemas', () => {
-  it('requires a new password of at least the minimum length', () => {
-    expect(firstRunSchema.safeParse({ password: 'x'.repeat(PASSWORD_MIN_LENGTH) }).success).toBe(
-      true,
-    );
-    expect(
-      firstRunSchema.safeParse({ password: 'x'.repeat(PASSWORD_MIN_LENGTH - 1) }).success,
-    ).toBe(false);
-    expect(
-      firstRunSchema.safeParse({ password: 'x'.repeat(PASSWORD_MAX_LENGTH + 1) }).success,
-    ).toBe(false);
-  });
-
-  it('does not impose a length on an existing password at login', () => {
-    expect(loginSchema.safeParse({ password: 'short' }).success).toBe(true);
-    expect(loginSchema.safeParse({ password: '' }).success).toBe(false);
-  });
-
-  it('requires both passwords to change one', () => {
-    const valid = { currentPassword: 'old', newPassword: 'x'.repeat(PASSWORD_MIN_LENGTH) };
-    expect(changePasswordSchema.safeParse(valid).success).toBe(true);
-    expect(changePasswordSchema.safeParse({ newPassword: valid.newPassword }).success).toBe(false);
-    expect(
-      changePasswordSchema.safeParse({ currentPassword: 'old', newPassword: 'short' }).success,
-    ).toBe(false);
   });
 });

@@ -11,6 +11,18 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   "HTTP on the tailnet is acceptable" allowance §12 carried would have left a Tailscale-only
   instance unable to sign in at all, with nothing on screen to say why. `localhost` is the one
   exception, so local development and the Playwright run still need no certificate.
+- P0-10 Settings and SMTP test send: the Settings page gains an account section that changes your
+  password and an email section for SMTP. The SMTP password is encrypted with
+  `GOODIES_BEACON_SECRET_KEY` before storage and never sent back to the browser, which is answered
+  with `passwordSet` instead — so saving without retyping it keeps it. "Send test email" mails the
+  configured notification address and nothing else, reporting what the mail server said verbatim
+  when it fails.
+- The API and the web app now validate settings against one Zod schema, imported from the new
+  `@goodies-beacon/core/schemas` entry point. The package root reaches Postgres, pg-boss, pino and
+  the native argon2 binding and cannot be bundled for a browser; the new entry point reaches none of
+  them, and a test walks its import graph to keep it that way.
+- Nodemailer 9 rather than 10: major 10 shipped eight days ago, short of the month the dependency
+  policy asks for.
 - P0-09 Web shell: React 19 with TanStack Router and Query and Tailwind 4. A login page that
   doubles as first run, an empty dashboard, and a settings page that saves the instance section.
   Left-hand navigation carries the pages from §14, with the ones that have no route yet disabled and
