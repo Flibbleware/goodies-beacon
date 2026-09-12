@@ -9,6 +9,9 @@
   "references": [
     {
       "path": "../../packages/core"
+    },
+    {
+      "path": "../worker"
     }
   ],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]

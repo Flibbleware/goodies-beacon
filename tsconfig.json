@@ -5,8 +5,8 @@
     { "path": "packages/ai" },
     { "path": "packages/email" },
     { "path": "packages/sources/_template" },
-    { "path": "apps/api" },
     { "path": "apps/worker" },
+    { "path": "apps/api" },
     { "path": "apps/web" }
   ]
 }

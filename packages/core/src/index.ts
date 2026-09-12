@@ -30,7 +30,33 @@ export {
   type AuthUser,
   authSession,
   authUser,
+  type ProcessHeartbeat,
+  processHeartbeat,
   type Settings,
   settings,
 } from './db/schema.js';
+export { createConsoleLogger, type Logger } from './logger.js';
+export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
+export {
+  HEARTBEAT_CRON,
+  HEARTBEAT_STALE_AFTER_MS,
+  heartbeatRegistration,
+  recordHeartbeat,
+} from './queue/heartbeat.js';
+export {
+  HEARTBEAT_ROLES,
+  type HeartbeatRole,
+  heartbeatQueueName,
+  heartbeatRolesFor,
+  pollQueueName,
+  pollSourcesFor,
+} from './queue/names.js';
+export {
+  assertUniqueQueues,
+  DuplicateQueueError,
+  type JobHandler,
+  type QueueRegistration,
+  registerQueues,
+} from './queue/registry.js';
+export { createShutdown, SHUTDOWN_TIMEOUT_MS, type Shutdown } from './shutdown.js';
 export { isSourceId, SOURCE_IDS, type SourceId } from './sources.js';

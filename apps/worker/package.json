@@ -2,19 +2,28 @@
   "name": "@goodies-beacon/worker",
   "version": "0.0.0",
   "private": true,
-  "description": "pg-boss job subscribers: polling source adapters, running the review pipeline, sending notifications, pruning old candidates.",
+  "description": "pg-boss job subscribers: polling source adapters, running the review pipeline, sending notifications, pruning old candidates. Started by the shared entrypoint in apps/api.",
   "license": "MIT",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
     "build": "tsc -b",
-    "start": "node dist/main.js",
     "test": "vitest run --root ../.. --project @goodies-beacon/worker"
   },
   "dependencies": {
     "@goodies-beacon/core": "workspace:*"
   },
   "devDependencies": {
-    "tsx": "4.23.13"
+    "@types/node": "24.13.3"
   }
 }

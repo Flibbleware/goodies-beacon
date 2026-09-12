@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.12; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.13; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -103,10 +103,10 @@ Wire pg-boss to the same database. A single entrypoint reads `ROLE` and starts t
 
 Done when:
 
-- [ ] `ROLE=all` starts API and workers in one process; `ROLE=api` and `ROLE=worker` start them separately and both connect.
-- [ ] `WORKER_SOURCES=ebay` makes the worker subscribe only to `poll:ebay` (the queue exists even though no adapter does yet).
-- [ ] Sending SIGTERM during a running job lets the job finish and exits 0 within the pg-boss grace period.
-- [ ] A unit test proves job handlers are registered once per queue name.
+- [x] `ROLE=all` starts API and workers in one process; `ROLE=api` and `ROLE=worker` start them separately and both connect.
+- [x] `WORKER_SOURCES=ebay` makes the worker subscribe only to `poll.ebay` (the queue exists even though no adapter does yet). The separator is a period, not the colon §6 wrote: pg-boss rejects a colon in a queue name.
+- [x] Sending SIGTERM during a running job lets the job finish and exits 0 within the pg-boss grace period.
+- [x] A unit test proves job handlers are registered once per queue name.
 
 ### P0-07 Authentication — M
 

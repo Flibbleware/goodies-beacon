@@ -2,7 +2,7 @@
   "name": "@goodies-beacon/api",
   "version": "0.0.0",
   "private": true,
-  "description": "Hono HTTP server: authentication, JSON API, interview chat streaming, and static serving of the built web app.",
+  "description": "Hono HTTP server and the shared ROLE-aware entrypoint: authentication, JSON API, interview chat streaming, static serving of the built web app, and the worker subscribers when ROLE includes them.",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@goodies-beacon/core": "workspace:*",
+    "@goodies-beacon/worker": "workspace:*",
     "@hono/node-server": "2.1.1",
     "hono": "4.13.7"
   },
