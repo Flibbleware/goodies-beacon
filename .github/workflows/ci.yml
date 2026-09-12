@@ -171,6 +171,22 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: goodies_beacon
+          POSTGRES_PASSWORD: goodies_beacon
+          POSTGRES_DB: goodies_beacon_smoke
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goodies_beacon"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -195,11 +211,23 @@ jobs:
             type=raw,value=edge,enable=${{ github.event_name == 'push' }}
             type=sha,prefix=sha-,format=short
 
-      - name: Build image (push on main)
+      - name: Derive slim image tags
+        id: meta-slim
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}/slim
+          tags: |
+            type=raw,value=edge,enable=${{ github.event_name == 'push' }}
+            type=sha,prefix=sha-,format=short
+
+      # Loaded as well as pushed, so the size gate and the start-up check have something local
+      # to look at on a pull request, where nothing is published.
+      - name: Build the full image (push on main)
         uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64
+          load: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -208,3 +236,69 @@ jobs:
             GOODIES_BEACON_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Build the slim image (push on main)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: runtime-slim
+          platforms: linux/amd64
+          load: true
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta-slim.outputs.tags }}
+          labels: ${{ steps.meta-slim.outputs.labels }}
+          build-args: |
+            GOODIES_BEACON_VERSION=${{ steps.meta.outputs.version }}
+            GOODIES_BEACON_SHA=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The droplet has 2 GB and pulls over a domestic connection, so size is a budget rather
+      # than a curiosity. Both numbers go in the job summary either way.
+      - name: Check image sizes
+        env:
+          FULL_TAG: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          SLIM_TAG: ${{ fromJSON(steps.meta-slim.outputs.json).tags[0] }}
+        run: |
+          full=$(docker image inspect "$FULL_TAG" --format '{{.Size}}')
+          slim=$(docker image inspect "$SLIM_TAG" --format '{{.Size}}')
+          full_mb=$((full / 1024 / 1024))
+          slim_mb=$((slim / 1024 / 1024))
+
+          {
+            echo "| Image | Size | Budget |"
+            echo "|---|--:|--:|"
+            echo "| full | ${full_mb} MB | 1000 MB |"
+            echo "| slim | ${slim_mb} MB | 400 MB |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          failed=0
+          [ "$full_mb" -le 1000 ] || { echo "::error::full image is ${full_mb} MB, over the 1000 MB budget"; failed=1; }
+          [ "$slim_mb" -le 400 ] || { echo "::error::slim image is ${slim_mb} MB, over the 400 MB budget"; failed=1; }
+          exit $failed
+
+      # Nothing above would notice a workspace package whose build output was never copied in:
+      # the image builds perfectly and then dies at import on first start.
+      - name: The image starts and answers /healthz
+        env:
+          FULL_TAG: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+        run: |
+          docker run -d --name beacon-smoke --network host \
+            -e ROLE=api -e PORT=3000 \
+            -e GOODIES_BEACON_HOST=localhost:3000 \
+            -e GOODIES_BEACON_SECRET_KEY=IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo= \
+            -e DATABASE_URL=postgres://goodies_beacon:goodies_beacon@localhost:5432/goodies_beacon_smoke \
+            "$FULL_TAG"
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/healthz; then
+              echo
+              docker rm -f beacon-smoke >/dev/null
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo '::error::the image did not answer /healthz within 60 seconds'
+          docker logs beacon-smoke
+          exit 1

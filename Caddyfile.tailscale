@@ -1,0 +1,29 @@
+# Tailscale-only instance, reached at its *.ts.net name.
+#
+# Let's Encrypt cannot certify a tailnet name, so the certificate comes from tailscaled over its
+# local socket instead. Point GOODIES_BEACON_CADDYFILE at this file in .env, and give the caddy
+# service access to the socket:
+#
+#   caddy:
+#     volumes:
+#       - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+#
+# HTTPS is still required: the session cookie is Secure, so plain HTTP on the tailnet cannot sign
+# anyone in (§12).
+
+{$GOODIES_BEACON_HOST} {
+	tls {
+		get_certificate tailscale
+	}
+
+	encode zstd gzip
+
+	reverse_proxy app:3000 {
+		header_up X-Forwarded-For {http.request.remote.host}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

@@ -3,6 +3,39 @@
 Operational notes for whoever is looking after an instance. Installing on a fresh droplet is
 covered in P0-12; until then this file collects what each task adds.
 
+## The two images
+
+| Image | Contains | For |
+|---|---|---|
+| `ghcr.io/flibbleware/goodies-beacon` | Everything, including Chromium | The default. Needed by the browser-driven adapters (Vinted) |
+| `ghcr.io/flibbleware/goodies-beacon/slim` | Everything but Chromium | An API-only container, or a worker that polls no scraped source |
+
+Pick with `GOODIES_BEACON_IMAGE` in `.env`. Both run as an unprivileged user and take the same
+configuration; the slim one simply cannot drive a browser, so a Vinted poll on it will fail rather
+than silently return nothing.
+
+## Running it
+
+**Production** — `docker compose up -d`. Three services: `db`, `app` (`ROLE=all`) and `caddy`.
+Only Caddy publishes ports; Postgres and the app are reachable only on the compose network (§12).
+Memory is capped per container — `app` 1.2 GB, `db` 512 MB, `caddy` 128 MB — so nothing can take
+the droplet down by itself.
+
+**Development** — `docker compose -f compose.dev.yml up -d` for Postgres and Mailpit, then
+`pnpm dev` for the API, workers and web app with hot reload. The app is at `localhost:5173` and
+Mailpit's inbox at `localhost:8025`; nothing Mailpit is given ever leaves the machine.
+
+Copy `.env.example` to `.env` first and set at least `GOODIES_BEACON_HOST`, `POSTGRES_PASSWORD`
+and `GOODIES_BEACON_SECRET_KEY` (`openssl rand -base64 32`).
+
+## TLS
+
+Caddy gets the certificate, renews it, and redirects HTTP to HTTPS without being asked. For a
+public hostname the stock `Caddyfile` is all you need. For a tailnet-only instance set
+`GOODIES_BEACON_CADDYFILE=./Caddyfile.tailscale`, which takes the certificate from tailscaled
+instead — Let's Encrypt cannot certify a `*.ts.net` name — and mount its socket into the caddy
+service. Either way HTTPS is required, not optional: see below.
+
 ## Process roles
 
 One image runs every role, selected by `ROLE` in `.env`. `apps/api/dist/main.js` is the entrypoint

@@ -21,7 +21,8 @@
     "test": "vitest run --root ../.. --project @goodies-beacon/worker"
   },
   "dependencies": {
-    "@goodies-beacon/core": "workspace:*"
+    "@goodies-beacon/core": "workspace:*",
+    "playwright": "1.63.0"
   },
   "devDependencies": {
     "@types/node": "24.13.3"

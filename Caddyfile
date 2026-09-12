@@ -1,0 +1,20 @@
+# Public hostname. Caddy gets a Let's Encrypt certificate for GOODIES_BEACON_HOST, renews it, and
+# redirects HTTP to HTTPS by itself — none of which needs configuring here.
+#
+# TLS is required, not a nicety: the session cookie is Secure, so over plain HTTP the browser
+# discards it and nobody can sign in (§12).
+
+{$GOODIES_BEACON_HOST} {
+	encode zstd gzip
+
+	reverse_proxy app:3000 {
+		# The app counts failed sign-ins against the last X-Forwarded-For entry, which is the one
+		# written here; anything a client sent is kept ahead of it and ignored.
+		header_up X-Forwarded-For {http.request.remote.host}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

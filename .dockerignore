@@ -10,5 +10,8 @@ coverage
 media
 backups
 spikes
+compose.dev.yml
+docker-compose.yml
+Caddyfile*
 docs
 *.md

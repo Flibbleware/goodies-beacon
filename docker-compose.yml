@@ -1,0 +1,84 @@
+# Production. One `docker compose up -d` on a machine whose DNS name points at it.
+#
+# Everything is configured from .env — copy .env.example and fill it in. Only Caddy publishes
+# ports; Postgres and the app are reachable only on this network (§12).
+
+name: goodies-beacon
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-goodies_beacon}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-goodies_beacon}
+    volumes:
+      # postgres:18 wants the parent directory, not .../data: it puts the cluster in a versioned
+      # subdirectory so a future pg_upgrade has both versions side by side.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-goodies_beacon}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Enough for this workload; a runaway query is capped rather than taking the droplet with it.
+    mem_limit: 512m
+
+  app:
+    image: ghcr.io/${GOODIES_BEACON_IMAGE:-flibbleware/goodies-beacon}:${GOODIES_BEACON_VERSION:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ROLE: all
+      # Both are set in the image too, but env_file would override them: a .env carrying
+      # NODE_ENV=development would leave the API refusing to serve the web app, with no clue why.
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-goodies_beacon}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-goodies_beacon}
+    volumes:
+      - media:/data/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # No curl in the image, and none is worth adding for this.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    mem_limit: 1200m
+    # Longer than pg-boss's 30-second graceful stop, so an in-flight job finishes rather than
+    # being killed and retried on the next start.
+    stop_grace_period: 60s
+
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      GOODIES_BEACON_HOST: ${GOODIES_BEACON_HOST:?set GOODIES_BEACON_HOST in .env}
+    volumes:
+      # Swap in ./Caddyfile.tailscale by setting GOODIES_BEACON_CADDYFILE when the host is a
+      # *.ts.net name, which cannot be certified by Let's Encrypt.
+      - ${GOODIES_BEACON_CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    mem_limit: 128m
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:
