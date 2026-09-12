@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.15; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.17; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -114,7 +114,7 @@ Single user, per §12. First run: no user exists → the UI shows a "create your
 
 Done when:
 
-- [ ] Login, logout and password change work in the UI; a wrong password shows a clear message without revealing timing differences (constant-time compare via Argon2 verify). **API half done in P0-07**, proved end to end over HTTP; the UI half belongs to P0-09 (login page) and P0-10 (password change in Settings), which this task cannot precede. Argon2 verify is flat at ~8.7 ms whether the password is right, wrong or one character long.
+- [ ] Login, logout and password change work in the UI; a wrong password shows a clear message without revealing timing differences (constant-time compare via Argon2 verify). API done in P0-07; **login, logout and the wrong-password message done in P0-09** and covered by the Playwright smoke test. Password change is the last piece and belongs to P0-10's account section. Argon2 verify is flat at ~8.7 ms whether the password is right, wrong or one character long.
 - [x] A request to any `/api/*` route other than auth and `/healthz` without a valid session returns 401 — including paths with no route, so the API is not enumerable before sign-in.
 - [x] Rate limiting and lockout are covered by tests.
 - [x] Cookie flags are verified in a test using a real HTTP request against the Hono app.
@@ -135,10 +135,10 @@ Vite + React 19, TanStack Router and Query, Tailwind. Pages: login / first-run, 
 
 Done when:
 
-- [ ] `pnpm dev` runs the web app with hot reload against the local API.
-- [ ] The production build is served by the API container at `/` and deep links (`/settings`) work on refresh.
-- [ ] Unauthenticated visits redirect to login; authenticated visits to `/login` redirect to the dashboard.
-- [ ] A Playwright smoke test logs in and reaches the dashboard, and runs in CI against the built app.
+- [x] `pnpm dev` runs the web app with hot reload against the local API, which it reaches through Vite's proxy so cookies and CSRF behave as they will in production.
+- [x] The production build is served by the API container at `/` and deep links (`/settings`) work on refresh.
+- [x] Unauthenticated visits redirect to login; authenticated visits to `/login` redirect to the dashboard.
+- [x] A Playwright smoke test logs in and reaches the dashboard, and runs in CI against the built app. It also covers sign-out, a wrong password, a deep-link refresh and saving a setting, and can be pointed at a running instance with `E2E_BASE_URL`.
 
 ### P0-10 Settings and SMTP test send — M
 
@@ -152,7 +152,7 @@ Done when:
 
 ### P0-11 Docker images and compose files — M
 
-Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwright's Chromium) and `goodies-beacon:slim` (without), and runs migrations on start for `ROLE=api|all`. `docker-compose.yml` for production: `db` (postgres:18 with a named volume), `app` (`ROLE=all`, `media` volume), `caddy` (ports 80/443, `Caddyfile` templated from `GOODIES_BEACON_HOST`). `compose.dev.yml`: `db` and `mailpit` only. Images run as a non-root user.
+Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwright's Chromium) and `goodies-beacon:slim` (without), and runs migrations on start for `ROLE=api|all`. `docker-compose.yml` for production: `db` (postgres:18 with a named volume), `app` (`ROLE=all`, `media` volume), `caddy` (ports 80/443, `Caddyfile` templated from `GOODIES_BEACON_HOST`). TLS is not optional (§12), and a `*.ts.net` host cannot use Let's Encrypt, so the Caddyfile needs Caddy's Tailscale certificate source for that route rather than only the ACME default. `compose.dev.yml`: `db` and `mailpit` only. Images run as a non-root user.
 
 Done when:
 

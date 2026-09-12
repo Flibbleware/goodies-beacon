@@ -95,9 +95,57 @@ jobs:
       - name: API docs are current
         run: pnpm docs:api --check
 
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: goodies_beacon
+          POSTGRES_PASSWORD: goodies_beacon
+          POSTGRES_DB: goodies_beacon_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goodies_beacon"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      E2E_DATABASE_URL: postgres://goodies_beacon:goodies_beacon@localhost:5432/goodies_beacon_e2e
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up workspace
+        uses: ./.github/actions/setup
+
+      # Playwright drives the built API serving the built web app, exactly as the container
+      # does, so both have to exist before it runs.
+      - name: Build
+        run: pnpm build
+
+      - name: Install Chromium
+        run: pnpm --filter @goodies-beacon/web exec playwright install --with-deps chromium
+
+      - name: Playwright
+        run: pnpm e2e
+
+      - name: Upload the report when it fails
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
   docker:
     name: Docker image
-    needs: [lint, typecheck, tests, build]
+    needs: [lint, typecheck, tests, build, e2e]
     runs-on: ubuntu-latest
     permissions:
       contents: read

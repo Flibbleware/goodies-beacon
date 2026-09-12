@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.15 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.17 — 12 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -108,7 +108,7 @@ Components:
 
 **PostgreSQL** — All state, plus job queues via `pg-boss` (so no Redis). Photos are stored on a Docker volume, downscaled, referenced by path.
 
-**Caddy** — Reverse proxy with automatic HTTPS. Optional for home use behind Tailscale.
+**Caddy** — Reverse proxy with automatic HTTPS, for a public hostname or a Tailscale name alike. Not optional: the session cookie is `Secure` (§12), so a browser reached over plain HTTP discards it and nobody can sign in.
 
 ---
 
@@ -364,7 +364,7 @@ Backups: nightly `pg_dump` to the media volume; the compose file includes the jo
 - **Secrets.** Marketplace and AI keys, SMTP password: provided through `.env` or entered in Settings; settings-entered secrets are encrypted at rest with a key from `.env` (`GOODIES_BEACON_SECRET_KEY`), masked in the UI and never logged.
 - **Seller content.** Descriptions are sanitised (DOMPurify server-side) before storage and rendered as text or sanitised HTML; never inline in emails.
 - **Images.** Fetched only by the worker through the adapter's HTTP client with size limits, content-type checks and a private-address block list (SSRF). Re-encoded on ingest.
-- **Transport.** Caddy terminates TLS with automatic certificates; behind Tailscale, HTTP on the tailnet is acceptable.
+- **Transport.** Caddy terminates TLS with automatic certificates, by either route in §11. TLS is required rather than recommended: the session cookie is `Secure`, so a browser discards it over plain HTTP and sign-in fails with nothing to explain why. `localhost` is the single exception, because browsers count it as a secure context — which is why local development and the Playwright run need no certificate.
 - **Surface.** Only Caddy is published; Postgres and the app listen on the compose network. CSRF protection on state-changing routes: a double-submit `gb_csrf` cookie, readable by the page, echoed in `X-CSRF-Token` and compared in constant time. Because only Caddy is published, the last `X-Forwarded-For` entry is the one it wrote and the only one a client cannot forge, so that is what rate limiting counts against. Dependabot/Renovate on the repo.
 - **Email.** SMTP over TLS; digest links point at your instance URL from settings, never derived from request headers.
 
@@ -441,7 +441,7 @@ goodies-beacon/
 
 **Dependency policy.** Exact versions, pinned. New or upgraded dependencies use the newest major line that has been generally available for at least a month; never pre-releases, and never a `.0` release younger than a month while the previous line is still maintained. Renovate proposes upgrades weekly; they merge only with green CI.
 
-**Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages → `vitest` (unit tests, integration tests against a Postgres service, adapter tests against recorded HTTP fixtures, prompt evals against a fixture set of listings with expected verdicts, run against two providers so a prompt regression is caught) → Vite build of the web app, and a check that `docs/API.md` still matches the route table → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA; pushes to the integration branch push `dev` and the commit SHA, so a manual deploy always has a built image to pull. Renovate keeps dependencies current.
+**Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages → `vitest` (unit tests, integration tests against a Postgres service, adapter tests against recorded HTTP fixtures, prompt evals against a fixture set of listings with expected verdicts, run against two providers so a prompt regression is caught) → Vite build of the web app, and a check that `docs/API.md` still matches the route table → a Playwright smoke test against the built API serving the built web app, on a Postgres service → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA; pushes to the integration branch push `dev` and the commit SHA, so a manual deploy always has a built image to pull. Renovate keeps dependencies current.
 
 **Release and deploy** (`.github/workflows/release.yml`, on a published GitHub Release tagged `vX.Y.Z`): build the image for amd64 and arm64, push to GHCR tagged with the version and `latest`, then — only if the deploy secrets exist, so forks skip this step — connect to the droplet over SSH as a restricted `deploy` user with a deploy key from the repository secrets and run `deploy.sh`: `pg_dump` to the backup volume, `docker compose pull`, `docker compose up -d` (migrations run on container start), then poll `/healthz` and fail the job if the app is not healthy within two minutes. The compose file on the droplet pins `image: ghcr.io/<you>/goodies-beacon:${GOODIES_BEACON_VERSION}` so what is running is always a known build.
 

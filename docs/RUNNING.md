@@ -74,6 +74,13 @@ host can claim it.
 Sessions last thirty days, sliding on use, and sign-out ends them. Changing the password ends every
 other session, which is how you evict someone who has one.
 
+The session cookie is always `Secure`, with no development exception. That costs nothing locally,
+because browsers count localhost as a secure context and keep the cookie over plain HTTP — so
+`pnpm dev`, the Playwright run and a local container all work without TLS. Anywhere with a real
+hostname, the cookie is dropped over HTTP and nobody can sign in, so an instance reached by name
+must be served over HTTPS: that is Caddy's job (P0-11), and it is why there is no "insecure mode"
+to fall back on.
+
 **Locked out by failed attempts.** Five wrong passwords from one address triggers a fifteen-minute
 lockout for that address. The counters are held in memory, not the database, so
 `docker compose restart app` clears them if you cannot wait. That also means the limit is per API
@@ -87,6 +94,12 @@ session:
 docker compose exec db psql -U goodies_beacon -c 'delete from auth_user'
 ```
 
+## The web app
+
+The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand
+navigation is there but disabled, labelled with the task that brings it. Dark and light follow the
+operating system — there is no toggle, and so no stored preference to get out of step with it.
+
 ## What serves what
 
 In production the API container serves both the JSON API and the built web app: anything that is
@@ -96,6 +109,19 @@ page, so a typo in a URL is not mistaken for a working endpoint.
 
 `docs/API.md` lists every endpoint with whether it needs a session and whether it needs a CSRF
 token. It is generated from the route table by `pnpm docs:api`, and CI fails if it is out of date.
+
+**Rehearsing against a running instance.** The Playwright smoke test — first run, sign out, sign
+in, a deep-link refresh, saving a setting — can be pointed at any instance, which is a quick way to
+prove a deploy actually works:
+
+```sh
+E2E_BASE_URL=https://beacon.example.co.uk \
+E2E_DATABASE_URL=postgres://... \
+pnpm e2e
+```
+
+It **resets the password and every session** on the database it is given, so only ever point it at
+a throwaway instance — never at the one you use.
 
 ## Restarts and shutdown
 

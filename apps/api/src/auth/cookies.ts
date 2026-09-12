@@ -9,8 +9,10 @@ export const CSRF_COOKIE = 'gb_csrf';
 export const CSRF_HEADER = 'x-csrf-token';
 
 /**
- * `Secure` is unconditional: browsers treat localhost as a secure context, so a development
- * instance over plain HTTP still gets the cookie, and nothing else should be served over HTTP.
+ * `Secure` is unconditional. Browsers treat localhost as a secure context and keep a `Secure`
+ * cookie set over plain HTTP there, so development and the Playwright run need no TLS — that run
+ * is what proves it, since it signs in and stays signed in over `http://localhost`. Anywhere
+ * else, HTTP would drop the cookie, which is the intended outcome.
  */
 const BASE = { path: '/', secure: true, sameSite: 'Lax' } as const;
 
