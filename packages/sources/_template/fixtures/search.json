@@ -1,0 +1,55 @@
+{
+  "results": [
+    {
+      "id": "tmpl-1002",
+      "name": "Carmageddon \u2014 jewel case re-release",
+      "price": null,
+      "currentBid": {
+        "amount": "3.20",
+        "currency": "GBP"
+      },
+      "kind": "auction",
+      "endsAt": "2026-09-19T19:00:00.000Z",
+      "seller": {
+        "handle": "example_seller_b"
+      },
+      "country": "US",
+      "thumbnail": "https://fixtures.example.invalid/img/1002-thumb.jpg",
+      "listedAt": "2026-09-12T11:40:00.000Z",
+      "link": "https://fixtures.example.invalid/listing/1002"
+    },
+    {
+      "id": "tmpl-1001",
+      "name": "Carmageddon big box PC CD-ROM, complete",
+      "price": {
+        "amount": "24.99",
+        "currency": "GBP"
+      },
+      "kind": "fixed",
+      "seller": {
+        "handle": "example_seller_a"
+      },
+      "country": "GB",
+      "thumbnail": "https://fixtures.example.invalid/img/1001-thumb.jpg",
+      "listedAt": "2026-09-12T09:15:00.000Z",
+      "link": "https://fixtures.example.invalid/listing/1001"
+    },
+    {
+      "id": "tmpl-1003",
+      "name": "Carmageddon poster, rolled",
+      "price": {
+        "amount": "8.00",
+        "currency": "GBP"
+      },
+      "kind": "fixed",
+      "seller": {
+        "handle": "example_seller_a"
+      },
+      "country": "GB",
+      "thumbnail": "https://fixtures.example.invalid/img/1003-thumb.jpg",
+      "listedAt": "2026-09-11T08:00:00.000Z",
+      "link": "https://fixtures.example.invalid/listing/1003"
+    }
+  ],
+  "nextOffset": null
+}

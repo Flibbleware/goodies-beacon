@@ -5,6 +5,42 @@
  */
 export const PACKAGE = '@goodies-beacon/core' as const;
 
+export {
+  createCookieJar,
+  createMemoryCookieJar,
+  parseSetCookie,
+} from './adapter/cookies.js';
+export {
+  createHarness,
+  type FixtureRoute,
+  type Harness,
+  type HarnessOptions,
+  UnmatchedRequestError,
+} from './adapter/harness.js';
+export {
+  createHttpClient,
+  DEFAULT_MAX_DELAY_MS,
+  DEFAULT_MIN_DELAY_MS,
+  DEFAULT_TIMEOUT_MS,
+  type HttpClientOptions,
+  type RateLimitedClient,
+} from './adapter/http.js';
+export type {
+  AdapterContext,
+  BrowserFactory,
+  BrowserPage,
+  CookieJar,
+  EnrichedListing,
+  HealthResult,
+  HealthStatus,
+  HttpClient,
+  PollMode,
+  RawListing,
+  SearchOptionDescriptor,
+  SearchOptionSchema,
+  SearchRequest,
+  SourceAdapter,
+} from './adapter/types.js';
 export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './auth/password.js';
 export {
   type ChangePasswordInput,
@@ -162,6 +198,8 @@ export {
   listingImageSchema,
   type NormalisedListing,
   normalisedListingSchema,
+  type RawListingShape,
+  rawListingSchema,
 } from './domain/listing.js';
 export {
   loadSellerSalt,
@@ -242,4 +280,12 @@ export {
   writeSettings,
 } from './settings/store.js';
 export { createShutdown, SHUTDOWN_TIMEOUT_MS, type Shutdown } from './shutdown.js';
-export { isSourceId, SOURCE_IDS, type SourceId } from './sources.js';
+export {
+  isMarketplaceSourceId,
+  isSourceId,
+  MARKETPLACE_SOURCE_IDS,
+  type MarketplaceSourceId,
+  SOURCE_IDS,
+  type SourceId,
+  TEMPLATE_SOURCE_ID,
+} from './sources.js';

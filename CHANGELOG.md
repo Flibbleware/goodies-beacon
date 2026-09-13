@@ -4,6 +4,18 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-03 Adapter contract, context, template and test harness. `SourceAdapter` and
+  `AdapterContext` from ARCHITECTURE.md §5, a rate-limited HTTP client with jittered spacing and
+  proxy support, a cookie jar persisted in a new `source_cookies` table so a session survives a
+  restart, a Playwright browser factory in the worker that runs one browser at a time and blocks
+  images and fonts, a working example adapter in `packages/sources/_template`, and a fixture
+  harness that replays recorded responses and validates what an adapter returns. `docs/ADAPTERS.md`
+  is the first draft of the contributor guide.
+- Fixed before it shipped: the proxy setting would silently never have applied. A `ProxyAgent`
+  built from the installed undici is rejected by Node's global `fetch`, which is a different copy
+  of the same library; the client now uses undici's own `fetch` for both. Found by running a real
+  proxy in the test rather than asserting that the option was passed.
+
 - **Test files are typechecked.** Every package's `tsconfig.json` excludes `*.test.ts` so tests
   never reach `dist/`, with the side effect that `tsc -b` checked none of them — 30 files, a third
   of the TypeScript in the repo, and Vitest does not typecheck either since esbuild strips types

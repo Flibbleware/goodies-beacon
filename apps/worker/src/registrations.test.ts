@@ -1,5 +1,9 @@
 import type { Config, Database, SourceId } from '@goodies-beacon/core';
-import { assertUniqueQueues, createSilentLogger, SOURCE_IDS } from '@goodies-beacon/core';
+import {
+  assertUniqueQueues,
+  createSilentLogger,
+  MARKETPLACE_SOURCE_IDS,
+} from '@goodies-beacon/core';
 import { describe, expect, it } from 'vitest';
 import { workerRegistrations } from './registrations.js';
 
@@ -16,7 +20,10 @@ function names(workerSources: readonly SourceId[]): string[] {
 
 describe('workerRegistrations', () => {
   it('subscribes to every source plus its own heartbeat when WORKER_SOURCES is empty', () => {
-    expect(names([])).toEqual([...SOURCE_IDS.map((id) => `poll.${id}`), 'heartbeat.worker']);
+    expect(names([])).toEqual([
+      ...MARKETPLACE_SOURCE_IDS.map((id) => `poll.${id}`),
+      'heartbeat.worker',
+    ]);
   });
 
   it('subscribes only to the named poll queues when WORKER_SOURCES narrows it', () => {
@@ -25,7 +32,7 @@ describe('workerRegistrations', () => {
   });
 
   it('registers each queue name exactly once', () => {
-    for (const sources of [[], ['ebay'], SOURCE_IDS] as const) {
+    for (const sources of [[], ['ebay'], MARKETPLACE_SOURCE_IDS] as const) {
       const registrations = workerRegistrations(deps(sources));
       expect(() => assertUniqueQueues(registrations)).not.toThrow();
       expect(new Set(registrations.map(({ name }) => name)).size).toBe(registrations.length);

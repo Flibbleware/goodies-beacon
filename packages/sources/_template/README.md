@@ -1,3 +1,3 @@
 # @goodies-beacon/source-template
 
-A compilable example source adapter that returns fixture data. Copy this directory to `packages/sources/<id>` to start a new marketplace adapter; the full contract (`SourceAdapter`, `AdapterContext`) and the fixture test harness arrive in P1-03 and are documented in `docs/ADAPTERS.md`.
+A working source adapter for a marketplace that does not exist, and the starting point for a real one. Copy this directory to `packages/sources/<id>`, rename the package and replace the parsing; `docs/ADAPTERS.md` walks through the contract, the fixture harness and the three things that are easy to get wrong.

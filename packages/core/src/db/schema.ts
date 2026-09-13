@@ -483,7 +483,33 @@ export const media = pgTable(
   ],
 );
 
+/**
+ * Cookies that outlive the process, keyed by source and domain (§5).
+ *
+ * In the database rather than in memory because Vinted's DataDome cookie is the whole point:
+ * losing it on every restart means re-solving the challenge, and re-solving it repeatedly is what
+ * gets a worker blocked. One row per cookie so a single expiry does not discard the rest.
+ */
+export const sourceCookies = pgTable(
+  'source_cookies',
+  {
+    source: text('source').$type<(typeof SOURCE_IDS)[number]>().notNull(),
+    domain: text('domain').notNull(),
+    name: text('name').notNull(),
+    value: text('value').notNull(),
+    path: text('path').notNull().default('/'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [
+    primaryKey({ columns: [table.source, table.domain, table.name] }),
+    check('source_cookies_source', oneOf(table.source, SOURCE_IDS)),
+  ],
+);
+
 export type InstanceSecret = typeof instanceSecret.$inferSelect;
+export type SourceCookie = typeof sourceCookies.$inferSelect;
 export type WantedItem = typeof wantedItems.$inferSelect;
 export type NewWantedItem = typeof wantedItems.$inferInsert;
 export type SpecVersion = typeof specVersions.$inferSelect;

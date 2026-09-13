@@ -128,6 +128,9 @@ importers:
       pino:
         specifier: 10.3.1
         version: 10.3.1
+      undici:
+        specifier: 8.10.2
+        version: 8.10.2
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -163,6 +166,9 @@ importers:
       '@goodies-beacon/core':
         specifier: workspace:*
         version: link:../../core
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
 packages:
 
@@ -1735,6 +1741,10 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
+  undici@8.10.2:
+    resolution: {integrity: sha512-/y4/bH9YNU5hi9NIrpOuvGXFcxrj3CMrV+/AYpowAYTpHn8gX/XPFjNy766FPoYY0miQhdW977JFWKGNhBdwyQ==}
+    engines: {node: '>=22.19.0'}
+
   use-sync-external-store@1.7.0:
     resolution: {integrity: sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==}
     peerDependencies:
@@ -2931,6 +2941,8 @@ snapshots:
   typescript@6.0.3: {}
 
   undici-types@7.18.2: {}
+
+  undici@8.10.2: {}
 
   use-sync-external-store@1.7.0(react@19.2.8):
     dependencies:

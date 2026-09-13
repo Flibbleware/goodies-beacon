@@ -1,5 +1,5 @@
 import type { Role } from '../config.js';
-import { SOURCE_IDS, type SourceId } from '../sources.js';
+import { MARKETPLACE_SOURCE_IDS, type SourceId } from '../sources.js';
 
 /**
  * Queue names are stored in Postgres alongside their jobs, so renaming one orphans whatever is
@@ -25,5 +25,5 @@ export function heartbeatRolesFor(role: Role): readonly HeartbeatRole[] {
 
 /** The sources a worker polls: every one, unless WORKER_SOURCES narrows it (§6). */
 export function pollSourcesFor(workerSources: readonly SourceId[]): readonly SourceId[] {
-  return workerSources.length > 0 ? workerSources : SOURCE_IDS;
+  return workerSources.length > 0 ? workerSources : MARKETPLACE_SOURCE_IDS;
 }
