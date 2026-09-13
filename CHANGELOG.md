@@ -4,6 +4,37 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+## v0.1.0 — 13 September 2026
+
+Phase 0 exit. Published as a GitHub pre-release, since nothing works yet: the release exists to
+prove the pipeline, not the product. Everything below the exit record was merged during Phase 0.
+
+**Exit test, as run.** `v0.1.0` was created on GitHub from `development/0.2.0`. The release
+workflow built both images for amd64 and arm64, rewrote the release notes from the commits, and
+deployed through the shared deploy job over SSH, with the forced-command key, in 28 seconds.
+`/healthz` on `https://beacon.flibbleware.app` reports `v0.1.0` and the tag's commit, over a
+Let's Encrypt certificate with HTTP redirected. The instance was claimed, the empty dashboard
+shown, and a test email sent from Settings through Resend was delivered and authenticated at the
+notification address.
+
+**Deviations.**
+
+- The droplet was an existing one rather than fresh, and the stack was first started on the
+  `dev` image before the release, so the release deployed as an upgrade over `deploy.sh` rather
+  than a first install. The password was set on the `dev` build; the sign-in, dashboard and test
+  email were then repeated on the released image.
+- P0-12's timed walk-through is left unticked: about fifty minutes on the existing droplet, with
+  help beyond the guide, roughly half of it on gaps the guide now closes. A timed re-run on a
+  throwaway droplet is what ticks it.
+- The exit test found nine defects or gaps, all fixed before the tag and each listed below: the
+  release tag mismatch, the unrestorable pre-deploy dump, `.env` overriding the baked version and
+  commit, the Postgres password character set, the branch download URLs, DigitalOcean's outbound
+  SMTP block, amd64-only branch images, the backup container ignoring SIGTERM, and a race in the
+  smoke test.
+- The Playwright run was not pointed at the droplet, by design: it resets the instance's password.
+- Two follow-ups are written into the plan as carried-forward tasks: a first-run setup token, and
+  a bootstrap script that writes the instance's files and secrets itself.
+
 - Fixed: the Playwright smoke test could fail on a slow CI runner by reloading the page while a
   settings save was still in flight; it now waits for the section's "Saved." status. Retries are
   off, because the database is reset once per run and a retry would start at first run against an

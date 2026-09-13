@@ -199,6 +199,8 @@ Done when:
 
 Run the exit test at the top of this phase. Record the date and any deviations in `CHANGELOG.md` under `v0.1.0`.
 
+Run on 13 September 2026; the record and deviations are in `CHANGELOG.md` under `v0.1.0`.
+
 ---
 
 ## Phase 1 — eBay end to end, and the source spikes
