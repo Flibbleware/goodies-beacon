@@ -122,6 +122,9 @@ describe.skipIf(!databaseUrl)('the settings routes', () => {
             fromAddress: '',
             notificationAddress: '',
           },
+          sources: {
+            ebay: { clientId: '', clientSecretSet: false, proxySet: false },
+          },
         },
         instanceHost: HOST,
       });

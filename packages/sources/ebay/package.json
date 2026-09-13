@@ -1,0 +1,32 @@
+{
+  "name": "@goodies-beacon/source-ebay",
+  "version": "0.0.0",
+  "private": true,
+  "description": "eBay Browse API adapter: search, enrich and health check across any eBay marketplace.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "fixtures"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --root ../../.. --project @goodies-beacon/source-ebay",
+    "live-check": "tsx scripts/live-check.ts"
+  },
+  "dependencies": {
+    "@goodies-beacon/core": "workspace:*",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "tsx": "4.23.13"
+  }
+}

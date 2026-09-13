@@ -1,14 +1,19 @@
 import {
   type Config,
+  createHttpClient,
+  createMemoryCookieJar,
   type Database,
   isEmailConfigured,
+  type Logger,
   readSettings,
+  resolveEbay,
   resolveSmtp,
   settingsPatchSchema,
   toPublicSettings,
   writeSettings,
 } from '@goodies-beacon/core';
 import { SmtpError, sendMail, testMessage } from '@goodies-beacon/email';
+import { ebayAdapter } from '@goodies-beacon/source-ebay';
 import { Hono } from 'hono';
 import { errorResponse } from '../errors.js';
 import { parseBody } from '../parse.js';
@@ -16,13 +21,14 @@ import { parseBody } from '../parse.js';
 export interface SettingsRouteDeps {
   readonly db: Database;
   readonly config: Pick<Config, 'host' | 'secretKey'>;
+  readonly logger: Logger;
 }
 
 /**
  * `/api/settings`, behind the session guard. The SMTP password only ever travels inwards: it is
  * stored encrypted and answered for with `passwordSet`, so a save that leaves it out keeps it.
  */
-export function createSettingsRoutes({ db, config }: SettingsRouteDeps) {
+export function createSettingsRoutes({ db, config, logger }: SettingsRouteDeps) {
   const routes = new Hono();
 
   routes.get('/', async (c) =>
@@ -61,6 +67,48 @@ export function createSettingsRoutes({ db, config }: SettingsRouteDeps) {
         return errorResponse(c, 502, 'smtp_failed', error.detail);
       }
       throw error;
+    }
+  });
+
+  /**
+   * The eBay Test button (§5). Runs the adapter's own `healthCheck`, so what Settings reports is
+   * exactly what a poll would hit — including the daily quota, which is the number worth seeing.
+   */
+  routes.post('/sources/ebay/test', async (c) => {
+    const stored = await readSettings(db);
+    const credentials = resolveEbay(stored, config.secretKey);
+    if (!credentials) {
+      const message = 'Set the eBay App ID and Cert ID first.';
+      return errorResponse(c, 409, 'ebay_not_configured', message);
+    }
+
+    const http = createHttpClient({
+      concurrency: 1,
+      userAgent: 'goodies-beacon (settings test)',
+      ...(credentials.proxyUrl ? { proxyUrl: credentials.proxyUrl } : {}),
+    });
+
+    try {
+      const health = await ebayAdapter.healthCheck({
+        source: 'ebay',
+        http,
+        cookies: createMemoryCookieJar(),
+        browser: null,
+        logger,
+        credentials: {
+          clientId: credentials.clientId,
+          clientSecret: credentials.clientSecret,
+          sellerSalt: 'settings-test',
+        },
+      });
+
+      const exit = credentials.proxyUrl
+        ? await http.exitAddress().catch(() => undefined)
+        : undefined;
+
+      return c.json({ health, ...(exit ? { exit } : {}) });
+    } finally {
+      await http.close();
     }
   });
 

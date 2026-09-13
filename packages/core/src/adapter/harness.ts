@@ -86,9 +86,12 @@ export function createHarness(options: HarnessOptions): Harness {
         );
       }
 
+      // Read once into a local: a route may expose `fixture` as a getter to serve a sequence of
+      // pages, and testing it for undefined and then reading it again would consume two.
+      const fixture = route.fixture;
       const payload =
-        route.fixture !== undefined
-          ? readFileSync(join(options.fixturesDir, route.fixture), 'utf8')
+        fixture !== undefined
+          ? readFileSync(join(options.fixturesDir, fixture), 'utf8')
           : JSON.stringify(route.body ?? null);
 
       return new Response(payload, {

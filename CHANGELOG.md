@@ -4,6 +4,17 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-04 eBay adapter. Search across any eBay marketplace with the plan's region, `newlyListed`
+  ordering and the watermark as an `itemStartDate` filter, paging until the watermark or the cap;
+  `getItem` for the description, full images and ships-to-UK; a health check reporting the daily
+  Browse quota; and an application token cached and refreshed a minute before it expires. Settings
+  gains a Sources section for the eBay keyset and an optional per-source proxy, both stored
+  encrypted and never sent to the browser, with a Test button that runs the adapter's own health
+  check — so what Settings reports is what a poll would hit.
+- All three things S1-01 found are handled and pinned by tests: an auction reports `price: null`
+  with the figure in `currentBidPrice`, `itemLocationCountry` takes one value and silently ignores
+  the `{A|B}` set form, and ships-to-UK is only knowable after enrichment.
+
 - P1-03 Adapter contract, context, template and test harness. `SourceAdapter` and
   `AdapterContext` from ARCHITECTURE.md §5, a rate-limited HTTP client with jittered spacing and
   proxy support, a cookie jar persisted in a new `source_cookies` table so a session survives a

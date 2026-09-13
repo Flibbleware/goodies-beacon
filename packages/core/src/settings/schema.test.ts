@@ -22,6 +22,9 @@ describe('settingsSchema', () => {
         fromAddress: '',
         notificationAddress: '',
       },
+      sources: {
+        ebay: { clientId: '', clientSecret: '', proxyUrl: '' },
+      },
     });
   });
 

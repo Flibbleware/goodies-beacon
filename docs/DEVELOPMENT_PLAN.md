@@ -374,12 +374,12 @@ Per §5, informed by S1-01. Token caching with refresh before expiry. `search` r
 
 Done when:
 
-- [ ] Harness tests cover: new listings since watermark, empty result, pagination stop, `shipsToUk` derived as yes/no/unknown, price and currency captured, auction versus fixed detected.
-- [ ] No seller identity survives ingest: a test asserts the stored `raw` has no `seller` block at all and that `seller_hash` is the HMAC, so the account-deletion exemption stays truthful. S1-01 found `getItem` returns `seller.sellerLegalInfo` for business sellers — a trader's legal name, street address and email — so dropping the whole object is the requirement, not just the username.
-- [ ] An auction's `price` is `null` and its value is in `currentBidPrice` (S1-01); the adapter normalises the two, and a fixture test covers an auction so the price-ceiling filter cannot be handed a null.
-- [ ] `itemLocationCountry` is sent as a single value only; the `{A|B}` set form is never generated, because S1-01 found eBay accepts it and silently ignores it.
-- [ ] A live run against your keyset from the dev environment returns real Carmageddon listings.
-- [ ] Rate: never more than one request in flight per marketplace; quota usage is recorded in the health status.
+- [x] Harness tests cover: new listings since watermark, empty result, pagination stop, `shipsToUk` derived as yes/no/unknown, price and currency captured, auction versus fixed detected. Forty-nine tests over the eighteen recorded fixtures, plus eleven on the ships-to-UK derivation alone — including the `WORLDWIDE` and `WORLD_REGION` shapes S1-01's three sampled items did not contain, which are therefore handled from eBay's schema rather than from evidence and fall back to `unknown` rather than guessing.
+- [x] No seller identity survives ingest: a test asserts the stored `raw` has no `seller` block at all and that `seller_hash` is the HMAC, so the account-deletion exemption stays truthful. Asserted on search results and on enriched ones, and confirmed against live data by the check below: `raw has seller block: false`.
+- [x] An auction's `price` is `null` and its value is in `currentBidPrice` (S1-01); the adapter normalises the two, and a fixture test covers an auction so the price-ceiling filter cannot be handed a null. The `gb-auction-only` fixture is the one recorded for it.
+- [x] `itemLocationCountry` is sent as a single value only; the `{A|B}` set form is never generated, because S1-01 found eBay accepts it and silently ignores it. `buildFilter` has a test for the single value and one proving an array handed to it is dropped rather than turned into a set; `describeSearchOptions` says so in the field's own description, so the UI explains it too.
+- [x] A live run against your keyset from the dev environment returns real Carmageddon listings. `pnpm --filter @goodies-beacon/source-ebay live-check`, run 13 September 2026: health `ok` with 4,920 of 5,000 Browse calls left, five real listings on `EBAY_GB`, and an enrich returning a 2,135-character description, ships-to-UK `yes`, and no seller block in `raw`. It is a script rather than a test because it spends quota and needs credentials.
+- [x] Rate: never more than one request in flight per marketplace; quota usage is recorded in the health status. The health check reports remaining calls and turns `degraded` past 90% spent; it still reports `ok` when the quota endpoint says nothing, as sandbox does. Concurrency holds by construction — each page is awaited before the next — which is exactly the kind of property a later refactor breaks silently, so a test wraps the client and asserts the peak is one.
 
 #### P1-05 Media ingest — M
 

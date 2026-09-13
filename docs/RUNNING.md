@@ -534,6 +534,28 @@ key* below, which is the one thing a rotation cannot simply re-enter.
 In development, mail goes to [Mailpit](https://mailpit.axllent.org) with its inbox at
 `localhost:8025`, started by `compose.dev.yml`.
 
+## eBay
+
+Settings → Sources takes a **production** keyset from
+[developer.ebay.com](https://developer.ebay.com) → Application Keys: the App ID (Client ID) and
+the Cert ID beside it. A production Cert ID starts `PRD-`; one starting `SBX-` is the sandbox
+keyset, whose catalogue is empty for anything you would actually want.
+
+A new production keyset arrives **disabled**. eBay requires every application either to subscribe
+to Marketplace Account Deletion notifications or to claim the exemption for not persisting eBay
+user data. Goodies Beacon stores none — seller identity is reduced to a keyed hash at ingest and
+the seller block is dropped before anything is written — so the exemption applies: on the Event
+Notification Delivery Method page, turn on *Not persisting eBay data*. The keyset activates
+immediately.
+
+**Test** runs the adapter's own health check and reports the remaining daily quota, which is
+5,000 Browse calls. Polling uses a tiny fraction of that: a plan polled three times a day costs
+three search calls plus one per listing that reaches enrichment.
+
+The **proxy URL** is optional and eBay does not need one. It is there for the scraped sources,
+which are judged on where the request comes from; when set it applies to both the HTTP client and
+the browser, and the Test button reports the address requests leave from.
+
 ## The web app
 
 The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand

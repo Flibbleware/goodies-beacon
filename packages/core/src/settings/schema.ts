@@ -53,9 +53,27 @@ export const emailSettingsSchema = z.object({
  *
  * Later tasks add sources, AI roles, polling defaults, retention and the budget cap (§14).
  */
+/**
+ * Per-source credentials and proxy (§5). Both secrets are stored as `enc:v1:` like the SMTP
+ * password and never sent to the browser — a proxy URL carries `user:pass@host` and is as much a
+ * credential as the keyset is.
+ */
+export const ebaySourceSchema = z.object({
+  /** The App ID (Client ID) from a production keyset. */
+  clientId: z.string().default(''),
+  clientSecret: z.string().default(''),
+  /** `http://user:pass@host:port` or a SOCKS5 URL. Empty means go direct. */
+  proxyUrl: z.string().default(''),
+});
+
+export const sourcesSettingsSchema = z.object({
+  ebay: ebaySourceSchema.prefault({}),
+});
+
 export const settingsSchema = z.object({
   instance: instanceSettingsSchema.prefault({}),
   email: emailSettingsSchema.prefault({}),
+  sources: sourcesSettingsSchema.prefault({}),
 });
 
 /**
@@ -79,25 +97,53 @@ const emailPatchSchema = z.object({
   notificationAddress: optionalEmailAddress.optional(),
 });
 
+const ebaySourcePatchSchema = z.object({
+  clientId: z.string().optional(),
+  /** Absent keeps what is stored; an empty string clears it. Same rule as the SMTP password. */
+  clientSecret: z.string().optional(),
+  proxyUrl: z.string().optional(),
+});
+
 /** What a PUT may carry: any subset, so the UI can save one section without sending the rest. */
 export const settingsPatchSchema = z.object({
   instance: instancePatchSchema.optional(),
   email: emailPatchSchema.optional(),
+  sources: z.object({ ebay: ebaySourcePatchSchema.optional() }).optional(),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
 export type SettingsPatch = z.infer<typeof settingsPatchSchema>;
 export type EmailSettings = z.infer<typeof emailSettingsSchema>;
+export type SourcesSettings = z.infer<typeof sourcesSettingsSchema>;
+export type EbaySourceSettings = z.infer<typeof ebaySourceSchema>;
 
-/** Settings as the browser may see them: the SMTP password is replaced by whether there is one. */
+/** Settings as the browser may see them: every secret is replaced by whether there is one. */
 export interface PublicSettings {
   instance: Settings['instance'];
   email: Omit<EmailSettings, 'password'> & { passwordSet: boolean };
+  sources: {
+    ebay: Omit<EbaySourceSettings, 'clientSecret' | 'proxyUrl'> & {
+      clientSecretSet: boolean;
+      proxySet: boolean;
+    };
+  };
 }
 
 export function toPublicSettings(settings: Settings): PublicSettings {
   const { password, ...email } = settings.email;
-  return { instance: settings.instance, email: { ...email, passwordSet: password !== '' } };
+  const { clientSecret, proxyUrl, ...ebay } = settings.sources.ebay;
+  return {
+    instance: settings.instance,
+    email: { ...email, passwordSet: password !== '' },
+    sources: {
+      ebay: { ...ebay, clientSecretSet: clientSecret !== '', proxySet: proxyUrl !== '' },
+    },
+  };
+}
+
+/** Both halves of the keyset are present, so a Test is worth attempting. */
+export function isEbayConfigured(ebay: EbaySourceSettings): boolean {
+  return ebay.clientId !== '' && ebay.clientSecret !== '';
 }
 
 /** Everything the mailer needs is present, so a test send is worth attempting. */

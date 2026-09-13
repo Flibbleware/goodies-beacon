@@ -19,6 +19,7 @@ Errors always take the shape `{ error: { code, message } }`. Every response carr
 | `GET` | `/api/settings` | session | — |
 | `PUT` | `/api/settings` | session | required |
 | `POST` | `/api/settings/email/test` | session | required |
+| `POST` | `/api/settings/sources/ebay/test` | session | required |
 | `GET` | `/healthz` | public | — |
 
 Anything outside `/api` and `/healthz` is served by the web app in production, with a fallback to
