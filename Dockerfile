@@ -24,6 +24,7 @@ COPY packages/ai/package.json packages/ai/
 COPY packages/core/package.json packages/core/
 COPY packages/email/package.json packages/email/
 COPY packages/sources/_template/package.json packages/sources/_template/
+COPY packages/sources/ebay/package.json packages/sources/ebay/
 
 FROM manifests AS deps
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
@@ -56,6 +57,9 @@ COPY --from=prod-deps /app ./
 # node_modules link. A missing one fails at import, on start, with ERR_MODULE_NOT_FOUND.
 COPY --from=build /app/packages/core/dist packages/core/dist
 COPY --from=build /app/packages/email/dist packages/email/dist
+# apps/api imports the eBay adapter for the Settings "Test" button, so it is reachable from the
+# entrypoint even in a deployment that never polls.
+COPY --from=build /app/packages/sources/ebay/dist packages/sources/ebay/dist
 # SQL migrations are data, not build output, but the API applies them on start.
 COPY --from=build /app/packages/core/drizzle packages/core/drizzle
 COPY --from=build /app/apps/api/dist apps/api/dist
