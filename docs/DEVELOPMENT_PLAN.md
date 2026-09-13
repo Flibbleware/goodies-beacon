@@ -179,12 +179,12 @@ Also `.github/workflows/deploy.yml`: a `workflow_dispatch` trigger taking an ima
 
 Done when:
 
-- [ ] The SSH step is skipped, with a visible notice, when `DEPLOY_HOST` / `DEPLOY_KEY` secrets are absent (so forks work).
-- [ ] A failed health check fails the workflow and leaves the previous image running (the script only switches `GOODIES_BEACON_VERSION` after a successful pull, and restores it on failure).
-- [ ] The deploy user's key is restricted in `authorized_keys` to running `deploy.sh` (forced command).
-- [ ] Release notes are generated from conventional commits since the previous tag.
-- [ ] `deploy.yml` deploys a chosen image tag on demand and shares its deploy job with `release.yml`, so `deploy.sh` has exactly one caller path in CI.
-- [ ] Pushes to `development/**` publish `dev` and `sha-<short sha>` images, so there is always something for a manual deploy to pull.
+- [x] The SSH step is skipped, with a visible notice, when `DEPLOY_HOST` / `DEPLOY_KEY` secrets are absent (so forks work). The guard reads them from `env` rather than interpolating them into the script, and its logic was run locally for all three cases: neither set, one set, both set.
+- [x] A failed health check fails the workflow and leaves the previous image running (the script only switches `GOODIES_BEACON_VERSION` after a successful pull, and restores it on failure). Proven against a local registry: a tag that does not exist fails at the pull with `.env` untouched, and an image that starts but never answers `/healthz` is rolled back — after which the previous version was serving again and healthy.
+- [x] The deploy user's key is restricted in `authorized_keys` to running `deploy.sh` (forced command). Proven against a real sshd: `ssh … whoami` runs `deploy.sh` rather than `whoami`, `ssh … 'v1.0.0; id'` is refused as not a tag, there is no shell to drop into, and data will not flow through a `-L` forward.
+- [x] Release notes are generated from conventional commits since the previous tag, by `scripts/release-notes.sh`, grouped into breaking, added and changed, fixed, and documentation, with `chore` and `test` left out. Run against this repository's own history.
+- [x] `deploy.yml` deploys a chosen image tag on demand and shares its deploy job with `release.yml`, so `deploy.sh` has exactly one caller path in CI — `workflow_dispatch` and `workflow_call` on the same job. **Unrun**: neither workflow can be exercised without pushing to GitHub, so the YAML is checked by `actionlint` (clean) and every script it calls was run locally.
+- [x] Pushes to `development/**` publish `dev` and `sha-<short sha>` images, so there is always something for a manual deploy to pull. **Unrun** for the same reason: the trigger and tag rules are in `ci.yml` and pass `actionlint`, but the first push to the integration branch is what proves it.
 
 ### P0-14 Nightly backup job — S
 

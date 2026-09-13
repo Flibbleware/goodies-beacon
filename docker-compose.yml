@@ -26,7 +26,7 @@ services:
     mem_limit: 512m
 
   app:
-    image: ghcr.io/${GOODIES_BEACON_IMAGE:-flibbleware/goodies-beacon}:${GOODIES_BEACON_VERSION:-latest}
+    image: ${GOODIES_BEACON_IMAGE:-ghcr.io/flibbleware/goodies-beacon}:${GOODIES_BEACON_VERSION:-latest}
     restart: unless-stopped
     env_file: .env
     environment:

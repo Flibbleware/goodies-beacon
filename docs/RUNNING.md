@@ -116,36 +116,92 @@ configure email, and send yourself a test message.
 
 ## Upgrading and rolling back
 
-What runs is whatever `GOODIES_BEACON_VERSION` in `.env` names, so both directions are the same
-two commands:
+What runs is whatever `GOODIES_BEACON_VERSION` in `.env` names, and `scripts/deploy.sh` is what
+changes it. Both directions are the same command:
 
 ```sh
 cd /opt/goodies-beacon
-# take a dump first; upgrades are roll-forward and this is the way back
-docker compose exec -T db pg_dump -U goodies_beacon goodies_beacon | gzip > backups/before-upgrade.sql.gz
-
-sed -i 's/^GOODIES_BEACON_VERSION=.*/GOODIES_BEACON_VERSION=v0.2.0/' .env
-docker compose pull app
-docker compose up -d app
+./deploy.sh v0.2.0      # or any published tag: dev, latest, sha-9f2c1ab
 ```
 
-Migrations run on start, so there is no separate step. To roll back, put the previous tag in
-`GOODIES_BEACON_VERSION` and repeat — but note that a release which migrated the database may not
-be reversible by pointing at the old image alone, which is why the dump comes first.
+It dumps the database to `backups/` first, pulls the new image, switches `GOODIES_BEACON_VERSION`,
+restarts, and polls `/healthz` for up to two minutes. Nothing is switched until the pull succeeds,
+and if the new image does not come up healthy it puts the old version back and restarts it — so a
+failed deploy leaves the previous image running rather than a broken one.
 
-`docker compose ps` and `/healthz` tell you whether it worked. `docker image prune -a` reclaims the
-old images when you are satisfied.
+Rolling back is deploying the previous tag. Note that a release which migrated the database may
+not be reversible by changing the image alone, which is why the dump comes first.
 
-**From the Actions tab.** The release workflow deploys a published GitHub Release automatically,
-and the manual *Deploy* workflow puts any built image tag on the droplet without creating a
-release — pick the tag, run the workflow, watch it poll `/healthz`. Both are delivered by P0-13;
-until then, upgrade with the commands above.
+`docker image prune -a` reclaims the old images once you are satisfied.
+
+### Deploying from the Actions tab
+
+Two triggers, one path — both end at the same `deploy.sh` on the droplet.
+
+- **Publish a GitHub Release** tagged `vX.Y.Z`. It builds and pushes the images for both
+  architectures, writes the release notes from the commits since the last tag, and deploys.
+- **Run the *Deploy* workflow by hand**, giving it an image tag. It defaults to `dev`, which is
+  what every push to the integration branch publishes, so there is always something to deploy
+  without cutting a release.
+
+Both need three repository secrets. Without them the deploy is skipped with a notice rather than
+failing, so a fork stays green:
+
+| Secret | What |
+|---|---|
+| `DEPLOY_HOST` | The droplet's hostname or IP |
+| `DEPLOY_KEY` | The **private** half of a key whose public half is in `deploy`'s `authorized_keys` |
+| `DEPLOY_HOST_KEY` | The droplet's host key, from `ssh-keyscan -H <host>`. Optional, but without it the workflow trusts whatever answers |
+
+`DEPLOY_USER` is optional and defaults to `deploy`.
+
+### Restricting the deploy key
+
+The deploy key can run one thing. On the droplet, put `deploy.sh` where the workflow expects it
+and pin the key to it:
+
+```sh
+sudo -iu deploy
+curl -fsSLO https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/scripts/deploy.sh
+chmod +x deploy.sh
+
+# The forced command: whatever the client asks to run is ignored, and this runs instead.
+cat >> ~/.ssh/authorized_keys <<'KEY'
+command="/opt/goodies-beacon/deploy.sh",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding ssh-ed25519 AAAA... deploy@goodies-beacon
+KEY
+chmod 600 ~/.ssh/authorized_keys
+```
+
+With that in place the key cannot open a shell, forward a port or run anything else — a stolen
+`DEPLOY_KEY` can deploy a published image and nothing more. The tag the workflow sends arrives in
+`SSH_ORIGINAL_COMMAND`, which `deploy.sh` treats as a tag name and refuses unless it looks like
+one, so `v1.0.0; rm -rf /` is rejected before anything runs.
+
+Check it from your own machine:
+
+```sh
+ssh -i deploy_key deploy@beacon.example.co.uk whoami
+# "Deploy failed: could not pull whoami" — deploy.sh ran and took the word as a tag name.
+# What you must not see is the output of whoami.
+
+ssh -i deploy_key deploy@beacon.example.co.uk 'v1.0.0; id'
+# "Deploy failed: expected an image tag on its own" — refused before anything ran.
+
+ssh -i deploy_key deploy@beacon.example.co.uk
+# the same, with no tag: there is no shell to drop into.
+```
 
 ## Backups
 
-Dumps live in `/opt/goodies-beacon/backups`, which the bootstrap script creates. The nightly job
-that fills it, its fourteen-day retention and the rehearsed restore procedure are P0-14; until then
-take them by hand with the `pg_dump` line above.
+Dumps live in `/opt/goodies-beacon/backups`. `deploy.sh` writes one before every deploy, named
+`pre-deploy-<timestamp>.sql.gz`; the bootstrap script creates the directory. The nightly job, its
+fourteen-day retention and the rehearsed restore procedure are P0-14. Until then, take one by hand
+whenever you want:
+
+```sh
+cd /opt/goodies-beacon
+docker compose exec -T db pg_dump -U goodies_beacon goodies_beacon | gzip > backups/manual.sql.gz
+```
 
 The database is the only thing that must be backed up. Downscaled listing images in the `media`
 volume are re-fetchable, and `.env` you should already have a copy of somewhere safe — without
@@ -158,7 +214,7 @@ volume are re-fetchable, and `.env` you should already have a copy of somewhere 
 | `ghcr.io/flibbleware/goodies-beacon` | Everything, including Chromium | The default. Needed by the browser-driven adapters (Vinted) |
 | `ghcr.io/flibbleware/goodies-beacon/slim` | Everything but Chromium | An API-only container, or a worker that polls no scraped source |
 
-Pick with `GOODIES_BEACON_IMAGE` in `.env`. Both run as an unprivileged user and take the same
+Pick with `GOODIES_BEACON_IMAGE` in `.env`, which holds the whole reference so a fork can point it at another registry. Both run as an unprivileged user and take the same
 configuration; the slim one simply cannot drive a browser, so a Vinted poll on it will fail rather
 than silently return nothing.
 
