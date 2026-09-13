@@ -1,0 +1,755 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&sort=newlyListed&offset=0",
+  "total": 451,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&sort=newlyListed&offset=10",
+  "limit": 10,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|900000000012|0",
+      "title": "Carmageddon 64 (Nintendo 64 N64) Authentic - Game Only ",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture050xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "134.99",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000012%7C0",
+      "seller": {
+        "username": "seller_011"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture050xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000012",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture051xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture052xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture053xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture054xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture055xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture056xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000012",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T02:48:15.000Z",
+      "itemCreationDate": "2026-09-13T02:48:15.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000001|900000000002",
+      "title": "Games - C - List 1 - A3 Premium Poster Prints",
+      "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group",
+      "leafCategoryIds": [
+        "360"
+      ],
+      "categories": [
+        {
+          "categoryId": "360",
+          "categoryName": "Art Prints"
+        },
+        {
+          "categoryId": "550",
+          "categoryName": "Art"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture001xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "13.52",
+        "currency": "USD",
+        "convertedFromValue": "10.00",
+        "convertedFromCurrency": "GBP"
+      },
+      "itemGroupType": "SELLER_DEFINED_VARIATIONS",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000001%7C900000000002",
+      "seller": {
+        "username": "seller_001"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture001xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000001",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000001",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T21:36:58.000Z",
+      "itemCreationDate": "2026-09-12T21:36:58.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000013|0",
+      "title": "CARMAGEDDON 64 Authentic 2000 Nintendo N64 Clean Pins Tested",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture057xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "144.95",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000013%7C0",
+      "seller": {
+        "username": "seller_012"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture057xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000013",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture058xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture059xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture060xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture061xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture062xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture063xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture064xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000013",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T08:21:46.000Z",
+      "itemCreationDate": "2026-09-12T08:21:46.000Z",
+      "topRatedBuyingExperience": true,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000014|0",
+      "title": "PC BIG BOX CARMAGEDDON 2 CARPOCALYPSE NOW NEW ORIGINAL EU RARE ",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Giochi"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Videogiochi e console"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture065xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "81.08",
+        "currency": "USD",
+        "convertedFromValue": "69.90",
+        "convertedFromCurrency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000014%7C0",
+      "seller": {
+        "username": "seller_013"
+      },
+      "condition": "Ottime condizioni",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture065xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "57.88",
+            "currency": "USD",
+            "convertedFromValue": "49.90",
+            "convertedFromCurrency": "EUR"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000014",
+      "itemLocation": {
+        "country": "IT"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture066xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture067xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture068xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture069xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture070xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture071xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000014",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T07:11:04.000Z",
+      "itemCreationDate": "2026-09-12T07:11:04.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_IT"
+    },
+    {
+      "itemId": "v1|900000000015|0",
+      "title": "2 Games,  Carmageddon 2 Carpocalypse Now,  Carmageddon 3 TDR 2000.  READ DESC!!",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture072xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "120.00",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000015%7C0",
+      "seller": {
+        "username": "seller_014"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture072xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "7152",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000015",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture073xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture074xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture075xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture076xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture077xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture078xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture079xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture080xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture081xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture082xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture083xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture084xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture085xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture086xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture087xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture088xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture089xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture090xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture091xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000015",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T05:44:31.000Z",
+      "itemCreationDate": "2026-09-12T05:44:31.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000016|0",
+      "title": "Carmageddon 2: Carpocalypse Now (PC, 1998) Big Box with Official Graphics Pack!",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture092xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "59.99",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000016%7C0",
+      "seller": {
+        "username": "seller_015"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture092xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "7152",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000016",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture093xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture094xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture095xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture096xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture097xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000016",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T01:58:25.000Z",
+      "itemCreationDate": "2026-09-12T01:58:25.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000005|0",
+      "title": "Carmageddon 2: Carpocalypse Now ( PC, 1998 )",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture017xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "18.02",
+        "currency": "USD",
+        "convertedFromValue": "25.00",
+        "convertedFromCurrency": "CAD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000005%7C0",
+      "seller": {
+        "username": "seller_004"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture017xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000005",
+      "itemLocation": {
+        "country": "CA"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture018xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture019xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000005",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T19:05:49.000Z",
+      "itemCreationDate": "2026-09-11T19:05:49.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_CA"
+    },
+    {
+      "itemId": "v1|900000000017|0",
+      "title": "Carmageddon (PC, 1997) Complete in box with Splat Pack Italian Language Ver.",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture098xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "99.99",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000017%7C0",
+      "seller": {
+        "username": "seller_015"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture098xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000017",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture099xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture100xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000017",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:13:51.000Z",
+      "itemCreationDate": "2026-09-11T05:44:47.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000018|0",
+      "title": "Carmageddon 2: Carpocalypse Now & Crime Killer - Dual Jewel (PC, 1999) Brand new",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture101xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.99",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000018%7C0",
+      "seller": {
+        "username": "seller_015"
+      },
+      "condition": "Brand New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture101xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6.00",
+            "currency": "USD"
+          },
+          "minEstimatedDeliveryDate": "2026-09-17T07:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-21T07:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "6232",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000018",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture102xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture103xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000018",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:11:43.000Z",
+      "itemCreationDate": "2026-09-11T05:44:43.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000019|0",
+      "title": "Carmageddon Max Pack PC Multi-player 3D Racing Interplay Discs in Case",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture104xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "9.99",
+        "currency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000019%7C0",
+      "seller": {
+        "username": "seller_015"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture104xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "5.58",
+            "currency": "USD"
+          },
+          "minEstimatedDeliveryDate": "2026-09-17T07:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-21T07:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.com/itm/900000000019",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture105xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture106xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000019",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:08:13.000Z",
+      "itemCreationDate": "2026-09-11T05:44:44.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=2",
+  "total": 42825,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=4",
+  "prev": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=0",
+  "limit": 2,
+  "offset": 2,
+  "itemSummaries": [
+    {
+      "itemId": "v1|900000000040|0",
+      "title": "MACKINTOSH PHILOSOPHY Trench Coats Brown (Approx. XL) 2200720494075",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture186xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "120.67",
+        "currency": "GBP",
+        "convertedFromValue": "163.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000040%7C0",
+      "seller": {
+        "username": "seller_034"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture186xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP",
+            "convertedFromValue": "0.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000040",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture187xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture188xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture189xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture190xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture191xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture192xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture193xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000040",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:37:22.000Z",
+      "itemCreationDate": "2026-09-13T20:37:22.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000041|0",
+      "title": "MACKINTOSH NEW ENGLAND Women's Red Removable Hooded Rain Jacket Size Med",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture194xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "14.20",
+        "currency": "GBP",
+        "convertedFromValue": "19.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000041%7C0",
+      "seller": {
+        "username": "seller_035"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture194xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000041",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture195xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture196xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture197xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture198xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture199xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture200xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture201xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture202xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture203xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture204xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture205xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture206xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture207xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture208xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture209xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture210xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000041",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:36:29.000Z",
+      "itemCreationDate": "2026-09-13T20:36:29.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    }
+  ]
+}

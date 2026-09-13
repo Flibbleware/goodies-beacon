@@ -4,6 +4,26 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- **Goodies Beacon stores no marketplace user data.** `Listing` keeps a `sellerHash` —
+  `HMAC-SHA256(seller id, instance salt)` — instead of the seller's id and username, and the
+  entire `seller` object is dropped before the raw response is stored, so nothing about a seller
+  reaches the database, a backup or a log — not just the username: eBay returns a business
+  seller's legal name, street address and email in `seller.sellerLegalInfo`, and one in three
+  listings sampled during the spike was a named individual with their home address. Relist detection only ever asks whether two candidates share a seller, which a
+  hash answers as well as a name, and no screen or email ever displayed one. Found while running
+  the eBay spike: a production keyset is issued **disabled** until the application either hosts an
+  account-deletion notification endpoint or claims eBay's exemption for not persisting eBay user
+  data, and this makes the exemption true rather than merely asserted. ARCHITECTURE.md §18 had
+  predicted no such gate; §2, §4, §7, §12 and §18 are corrected in v1.23 and the evidence is in
+  the new `docs/SPIKES.md`.
+- `docs/SPIKES.md` records the Track A findings as they are made, one section per source. S1-01
+  (eBay) is run and written up: Browse works on a production keyset once the account-deletion gate
+  is passed, with a 5,000-call daily quota; `EBAY_GB` returns worldwide sellers by default;
+  `itemLocationCountry` takes one value and silently ignores the `{A|B}` set form; an auction's
+  `price` is `null` with the value in `currentBidPrice`; and ships-to-UK is only knowable after
+  enrichment, since `shipToLocations` comes from `getItem`. Eighteen anonymised fixtures are
+  recorded for the adapter tests in P1-04.
+
 - The plan for Phase 1 was revised at the Phase 0 exit (`docs/DEVELOPMENT_PLAN.md`,
   ARCHITECTURE.md §17 v1.22): the eBay spike goes first; P1-13 shrinks to the JSON spec editor
   §17 always described, with the typed form and version diff moved to the interviewer phase;

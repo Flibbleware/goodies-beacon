@@ -1,0 +1,4197 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=50&sort=newlyListed&offset=0",
+  "total": 42825,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=50&sort=newlyListed&offset=50",
+  "limit": 50,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|900000000038|0",
+      "title": "Charles Rennie Mackintosh Fine Flower Drawing Print. Hunterian Gallery.",
+      "leafCategoryIds": [
+        "360"
+      ],
+      "categories": [
+        {
+          "categoryId": "360",
+          "categoryName": "Art Prints"
+        },
+        {
+          "categoryId": "550",
+          "categoryName": "Art"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture182xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "18.29",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000038%7C0",
+      "seller": {
+        "username": "seller_033",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture182xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "6.50",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000038",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture183xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000038",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:43:18.000Z",
+      "itemCreationDate": "2026-09-13T20:43:18.000Z",
+      "itemEndDate": "2026-09-20T20:43:18.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000039|0",
+      "title": "Charles Rennie Mackintosh Fine Flower Drawing. Huntarian Gallery Print.",
+      "leafCategoryIds": [
+        "360"
+      ],
+      "categories": [
+        {
+          "categoryId": "360",
+          "categoryName": "Art Prints"
+        },
+        {
+          "categoryId": "550",
+          "categoryName": "Art"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture184xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "14.01",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000039%7C0",
+      "seller": {
+        "username": "seller_033",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture184xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "6.36",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000039",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture185xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000039",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:37:39.000Z",
+      "itemCreationDate": "2026-09-13T20:37:39.000Z",
+      "itemEndDate": "2026-09-20T20:37:39.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000040|0",
+      "title": "MACKINTOSH PHILOSOPHY Trench Coats Brown (Approx. XL) 2200720494075",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture186xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "120.67",
+        "currency": "GBP",
+        "convertedFromValue": "163.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000040%7C0",
+      "seller": {
+        "username": "seller_034"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture186xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP",
+            "convertedFromValue": "0.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000040",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture187xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture188xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture189xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture190xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture191xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture192xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture193xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000040",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:37:22.000Z",
+      "itemCreationDate": "2026-09-13T20:37:22.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000041|0",
+      "title": "MACKINTOSH NEW ENGLAND Women's Red Removable Hooded Rain Jacket Size Med",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture194xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "14.20",
+        "currency": "GBP",
+        "convertedFromValue": "19.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000041%7C0",
+      "seller": {
+        "username": "seller_035"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture194xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000041",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture195xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture196xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture197xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture198xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture199xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture200xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture201xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture202xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture203xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture204xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture205xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture206xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture207xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture208xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture209xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture210xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000041",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:36:29.000Z",
+      "itemCreationDate": "2026-09-13T20:36:29.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000042|0",
+      "title": "Charles Rennie Mackintosh Pewter Desk Clock,  St. Justin, Vintage",
+      "leafCategoryIds": [
+        "261605"
+      ],
+      "categories": [
+        {
+          "categoryId": "261605",
+          "categoryName": "Desk, Mantel & Shelf Clocks"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectables"
+        },
+        {
+          "categoryId": "13777",
+          "categoryName": "Decorative Collectables"
+        },
+        {
+          "categoryId": "261602",
+          "categoryName": "Clocks"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture211xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "24.96",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000042%7C0",
+      "seller": {
+        "username": "seller_036",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture211xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000042",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture212xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture213xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture214xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture215xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture216xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000042",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:29:19.000Z",
+      "itemCreationDate": "2026-09-13T20:29:19.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000043|0",
+      "title": "Caithness Glass Paperweight Saracen Teardrop Alastair MacIntosh 1995 VINTAGE VG+",
+      "leafCategoryIds": [
+        "262399"
+      ],
+      "categories": [
+        {
+          "categoryId": "262399",
+          "categoryName": "Paperweights"
+        },
+        {
+          "categoryId": "870",
+          "categoryName": "Pottery, Ceramics & Glass"
+        },
+        {
+          "categoryId": "262384",
+          "categoryName": "Decorative Pottery, Ceramics & Glass"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture217xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "25.99",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000043%7C0",
+      "seller": {
+        "username": "seller_037",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture217xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-20T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000043",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture218xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture219xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture220xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture221xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture222xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture223xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture224xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000043",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:29:00.000Z",
+      "itemCreationDate": "2026-09-13T20:29:00.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000044|0",
+      "title": "Salt & Pepper Shakers/Pots White China Rennie Macintosh Rose Design Pink Lilac",
+      "leafCategoryIds": [
+        "261697"
+      ],
+      "categories": [
+        {
+          "categoryId": "261697",
+          "categoryName": "Salt & Pepper Shakers"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectables"
+        },
+        {
+          "categoryId": "13905",
+          "categoryName": "Kitchen & Home"
+        },
+        {
+          "categoryId": "261694",
+          "categoryName": "Kitchen Tools & Gadgets"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture225xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "4.91",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000044%7C0",
+      "seller": {
+        "username": "seller_038",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture225xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000044",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture226xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture227xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture228xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture229xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000044",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:28:57.000Z",
+      "itemCreationDate": "2026-09-13T20:28:57.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000045|0",
+      "title": "The Disney Collection Screen Saver for Macintosh 3.5 Floppy Disks Voices Songs",
+      "leafCategoryIds": [
+        "14906"
+      ],
+      "categories": [
+        {
+          "categoryId": "14906",
+          "categoryName": "Vintage Manuals & Merchandise"
+        },
+        {
+          "categoryId": "11189",
+          "categoryName": "Vintage Computing"
+        },
+        {
+          "categoryId": "58058",
+          "categoryName": "Computers/Tablets & Networking"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture230xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "18.59",
+        "currency": "GBP",
+        "convertedFromValue": "25.14",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000045%7C0",
+      "seller": {
+        "username": "seller_039"
+      },
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture230xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED",
+          "shippingCost": {
+            "value": "26.92",
+            "currency": "GBP",
+            "convertedFromValue": "36.41",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "5.18",
+        "currency": "GBP",
+        "convertedFromValue": "7.00",
+        "convertedFromCurrency": "USD"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000045",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture231xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture232xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture233xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture234xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture235xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture236xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture237xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture238xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000045",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:18:47.000Z",
+      "itemCreationDate": "2026-09-13T20:18:47.000Z",
+      "itemEndDate": "2026-09-20T20:18:47.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000046|0",
+      "title": "Clan MacIntosh Information Booklet And Card Showing Clan Tartan& Crest & Motto.",
+      "leafCategoryIds": [
+        "259144"
+      ],
+      "categories": [
+        {
+          "categoryId": "259144",
+          "categoryName": "Other Historical Memorabilia"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectables"
+        },
+        {
+          "categoryId": "259135",
+          "categoryName": "Historical Memorabilia"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture239xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "5.00",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000046%7C0",
+      "seller": {
+        "username": "seller_038",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture239xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "1.55",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-17T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000046",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture240xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture241xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000046",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:18:28.000Z",
+      "itemCreationDate": "2026-09-13T20:18:28.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000047|0",
+      "title": "Dunoon Ceramic Jar with Wooden Lid White Multicolour Mackintosh Inspired Design",
+      "leafCategoryIds": [
+        "262375"
+      ],
+      "categories": [
+        {
+          "categoryId": "262375",
+          "categoryName": "Jars"
+        },
+        {
+          "categoryId": "870",
+          "categoryName": "Pottery, Ceramics & Glass"
+        },
+        {
+          "categoryId": "262364",
+          "categoryName": "Decorative Cookware & Tableware"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture242xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "20.96",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000047%7C0",
+      "seller": {
+        "username": "seller_040",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture242xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.71",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000047",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture243xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture244xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture245xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture246xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture247xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture248xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture249xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture250xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture251xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture252xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000047",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:18:13.000Z",
+      "itemCreationDate": "2026-09-13T20:18:13.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000048|0",
+      "title": "MACKINTOSH PHILOSOPHY Pants (Other) Black 40(Approx. L) 2200718900038",
+      "leafCategoryIds": [
+        "57989"
+      ],
+      "categories": [
+        {
+          "categoryId": "57989",
+          "categoryName": "Pants"
+        },
+        {
+          "categoryId": "1059",
+          "categoryName": "Men's Clothing"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture253xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "81.63",
+        "currency": "GBP",
+        "convertedFromValue": "110.40",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000048%7C0",
+      "seller": {
+        "username": "seller_034"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture253xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP",
+            "convertedFromValue": "0.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000048",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture254xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture255xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture256xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture257xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture258xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture259xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000048",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:15:39.000Z",
+      "itemCreationDate": "2026-09-13T20:15:39.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000049|0",
+      "title": "MACKINTOSH PHILOSOPHY Jackets Black 38(Approx. M) 2200718900021",
+      "leafCategoryIds": [
+        "57988"
+      ],
+      "categories": [
+        {
+          "categoryId": "57988",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "1059",
+          "categoryName": "Men's Clothing"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture260xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "98.49",
+        "currency": "GBP",
+        "convertedFromValue": "133.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000049%7C0",
+      "seller": {
+        "username": "seller_034"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture260xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP",
+            "convertedFromValue": "0.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000049",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture261xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture262xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture263xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture264xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture265xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture266xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000049",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:15:35.000Z",
+      "itemCreationDate": "2026-09-13T20:15:35.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000050|0",
+      "title": "MACKINTOSH PHILOSOPHY Jackets Black 38(Approx. M) 2200718900014",
+      "leafCategoryIds": [
+        "57988"
+      ],
+      "categories": [
+        {
+          "categoryId": "57988",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "1059",
+          "categoryName": "Men's Clothing"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture267xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "98.49",
+        "currency": "GBP",
+        "convertedFromValue": "133.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000050%7C0",
+      "seller": {
+        "username": "seller_034"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture267xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP",
+            "convertedFromValue": "0.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000050",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture268xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture269xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture270xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture271xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture272xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture273xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000050",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:15:31.000Z",
+      "itemCreationDate": "2026-09-13T20:15:31.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000051|0",
+      "title": "Vintage Apple Computers T-shirt Mens Size XXL Macintosh Mac Employee Reunion",
+      "leafCategoryIds": [
+        "21092"
+      ],
+      "categories": [
+        {
+          "categoryId": "21092",
+          "categoryName": "Computers & High Tech"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectibles"
+        },
+        {
+          "categoryId": "34",
+          "categoryName": "Advertising"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture274xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "51.46",
+        "currency": "GBP",
+        "convertedFromValue": "69.60",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000051%7C0",
+      "seller": {
+        "username": "seller_041"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture274xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000051",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture275xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture276xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture277xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture278xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture279xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000051",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:04:49.000Z",
+      "itemCreationDate": "2026-09-13T20:04:49.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000052|0",
+      "title": "Hope Fashion Dress Size 16 - 20 Damson A Line Tunic By Nayna Macintosh",
+      "leafCategoryIds": [
+        "63861"
+      ],
+      "categories": [
+        {
+          "categoryId": "63861",
+          "categoryName": "Dresses"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothes, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture280xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "21.00",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000052%7C0",
+      "seller": {
+        "username": "seller_042",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture280xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000052",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture281xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture282xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture283xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture284xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture285xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture286xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture287xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture288xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture289xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000052",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:53:50.000Z",
+      "itemCreationDate": "2026-09-13T19:53:50.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000053|0",
+      "title": "The Final Year: The Story of HMS Nancy, Alexander Mackintosh, Miller Worsley ...",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture290xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.56",
+        "currency": "GBP",
+        "convertedFromValue": "26.45",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000053%7C0",
+      "seller": {
+        "username": "seller_043"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture290xxxxxx/s-l500.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "14.78",
+            "currency": "GBP",
+            "convertedFromValue": "19.99",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "9038515235",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000053",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000053",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:39:10.000Z",
+      "itemCreationDate": "2026-09-13T19:39:10.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000054|0",
+      "title": "Disney Winnie The Pooh Learning Ages 18 Mos-3 Years CD-ROM Windows 95/Macintosh",
+      "leafCategoryIds": [
+        "181076"
+      ],
+      "categories": [
+        {
+          "categoryId": "181076",
+          "categoryName": "Other Home & Garden"
+        },
+        {
+          "categoryId": "11700",
+          "categoryName": "Home & Garden"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture291xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "10.65",
+        "currency": "GBP",
+        "convertedFromValue": "14.40",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000054%7C0",
+      "seller": {
+        "username": "seller_044"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture291xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000054",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture292xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture293xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture294xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture295xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture296xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture297xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture298xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture299xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000054",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:36:19.000Z",
+      "itemCreationDate": "2026-09-13T19:36:19.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000055|0",
+      "title": "Vintage Silver Plated Floral mackintosh Rose Photo Frame 4x6 inches new retro ",
+      "leafCategoryIds": [
+        "79654"
+      ],
+      "categories": [
+        {
+          "categoryId": "79654",
+          "categoryName": "Photo & Picture Frames"
+        },
+        {
+          "categoryId": "10033",
+          "categoryName": "Home Décor"
+        },
+        {
+          "categoryId": "11700",
+          "categoryName": "Home, Furniture & DIY"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture300xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "12.99",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000055%7C0",
+      "seller": {
+        "username": "seller_045",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture300xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000055",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture301xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture302xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture303xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture304xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture305xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture306xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture307xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture308xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture309xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture310xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000055",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:13:02.000Z",
+      "itemCreationDate": "2026-09-13T19:13:02.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000056|0",
+      "title": "A Game of Lies: A Novel, Mackintosh, Clare, 9781728296531",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        }
+      ],
+      "price": {
+        "value": "9.97",
+        "currency": "GBP",
+        "convertedFromValue": "13.48",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000056%7C0",
+      "seller": {
+        "username": "seller_046"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "5065014752",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000056",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000056",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:05:59.000Z",
+      "itemCreationDate": "2026-09-13T19:05:59.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000057|0",
+      "title": "Charles Rennie Mackintosh Made in Italy Wave Patterns 100% Silk - Stunning!",
+      "leafCategoryIds": [
+        "15662"
+      ],
+      "categories": [
+        {
+          "categoryId": "15662",
+          "categoryName": "Ties, Bow Ties & Cravats"
+        },
+        {
+          "categoryId": "4250",
+          "categoryName": "Men's Accessories"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothes, Shoes & Accessories"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture311xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.36",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000057%7C0",
+      "seller": {
+        "username": "seller_047",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture311xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "3.99",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000057",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture312xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture313xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture314xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture315xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture316xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture317xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture318xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture319xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000057",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:00:01.000Z",
+      "itemCreationDate": "2026-09-13T19:00:01.000Z",
+      "itemEndDate": "2026-09-20T19:00:01.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000058|0",
+      "title": "1980's Retro Computer Design Mirror Apple Macintosh IBM Commodore",
+      "leafCategoryIds": [
+        "69856"
+      ],
+      "categories": [
+        {
+          "categoryId": "69856",
+          "categoryName": "1980s"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectables"
+        },
+        {
+          "categoryId": "69851",
+          "categoryName": "Vintage & Retro Collectables"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture320xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.99",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000058%7C0",
+      "seller": {
+        "username": "seller_048",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture320xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "8.25",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-18T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-25T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000058",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture321xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000058",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T19:00:01.000Z",
+      "itemCreationDate": "2026-09-13T19:00:01.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000059|0",
+      "title": "Postcard - 1999 Vin Mifsud Exhibition Invitation, John Mackintosh Hall, Gibralta",
+      "leafCategoryIds": [
+        "262042"
+      ],
+      "categories": [
+        {
+          "categoryId": "262042",
+          "categoryName": "Topographical Postcards"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectables"
+        },
+        {
+          "categoryId": "914",
+          "categoryName": "Postcards & Supplies"
+        },
+        {
+          "categoryId": "262041",
+          "categoryName": "Postcards"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture322xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "4.99",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000059%7C0",
+      "seller": {
+        "username": "seller_049",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture322xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-20T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000059",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000059",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:58:05.000Z",
+      "itemCreationDate": "2026-09-13T18:58:05.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000060|0",
+      "title": "CAITHNESS GLASS BOWL * GLASGOW CITY OF CULTURE 1990 * CHARLES RENNIE MACKINTOSH",
+      "leafCategoryIds": [
+        "262366"
+      ],
+      "categories": [
+        {
+          "categoryId": "262366",
+          "categoryName": "Bowls"
+        },
+        {
+          "categoryId": "870",
+          "categoryName": "Pottery, Ceramics & Glass"
+        },
+        {
+          "categoryId": "262364",
+          "categoryName": "Decorative Cookware & Tableware"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture323xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "15.99",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000060%7C0",
+      "seller": {
+        "username": "seller_050",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture323xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000060",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture324xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture325xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture326xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture327xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture328xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture329xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture330xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture331xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000060",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:56:12.000Z",
+      "itemCreationDate": "2026-09-13T18:56:12.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000061|0",
+      "title": "THE HARRY MACINTOSH PROJECT SUCH IS THE VULTURE'S LOVE (F40) 4 Track Promo CD Si",
+      "leafCategoryIds": [
+        "176984"
+      ],
+      "categories": [
+        {
+          "categoryId": "176984",
+          "categoryName": "CDs"
+        },
+        {
+          "categoryId": "11233",
+          "categoryName": "Music"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture332xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "5.85",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000061%7C0",
+      "seller": {
+        "username": "seller_051",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture332xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-20T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000061",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture333xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture334xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture335xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture336xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture337xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture338xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000061",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:37:14.000Z",
+      "itemCreationDate": "2026-09-13T18:37:14.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000062|0",
+      "title": "Mackintosh Womens Rain Coat Long Sleeve Collared Blue Size Large",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture339xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.48",
+        "currency": "GBP",
+        "convertedFromValue": "26.34",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000062%7C0",
+      "seller": {
+        "username": "seller_052"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture339xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000062",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture340xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture341xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture342xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture343xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture344xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture345xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture346xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture347xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000062",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:36:25.000Z",
+      "itemCreationDate": "2026-09-13T18:36:25.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000063|0",
+      "title": "CAITHNESS GLASS PAPERWEIGHT Saracen Teardrop Alastair MacIntosh 1995 VINTAGE VG+",
+      "leafCategoryIds": [
+        "262399"
+      ],
+      "categories": [
+        {
+          "categoryId": "262399",
+          "categoryName": "Paperweights"
+        },
+        {
+          "categoryId": "870",
+          "categoryName": "Pottery, Ceramics & Glass"
+        },
+        {
+          "categoryId": "262384",
+          "categoryName": "Decorative Pottery, Ceramics & Glass"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture348xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.99",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000063%7C0",
+      "seller": {
+        "username": "seller_053",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture348xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.99",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-16T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000063",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture349xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture350xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture351xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture352xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture353xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture354xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture355xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture356xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture357xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture358xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture359xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture360xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture361xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture362xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture363xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture364xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture365xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000063",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:29:02.000Z",
+      "itemCreationDate": "2026-09-13T18:29:02.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000064|0",
+      "title": "GAP Womens M Rose Print Jacket Cream Red Pink Mackintosh Floral Cotton Coat",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture366xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "29.27",
+        "currency": "GBP",
+        "convertedFromValue": "39.59",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000064%7C0",
+      "seller": {
+        "username": "seller_054"
+      },
+      "condition": "Pre-owned - Excellent",
+      "conditionId": "2990",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture366xxxxxx/s-l960.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000064",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture367xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture368xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture369xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture370xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture371xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture372xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture373xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture374xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture375xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture376xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture377xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture378xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000064",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:14:37.000Z",
+      "itemCreationDate": "2026-09-13T18:14:37.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000065|0",
+      "title": "Dunoon Charles Rennie Mackintosh inspired Storage Jar with wood lid & Seal VGC ",
+      "leafCategoryIds": [
+        "20654"
+      ],
+      "categories": [
+        {
+          "categoryId": "20654",
+          "categoryName": "Canisters & Jars"
+        },
+        {
+          "categoryId": "11700",
+          "categoryName": "Home, Furniture & DIY"
+        },
+        {
+          "categoryId": "20625",
+          "categoryName": "Cookware, Dining & Bar"
+        },
+        {
+          "categoryId": "20652",
+          "categoryName": "Kitchen Storage & Organisation"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture379xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "13.63",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000065%7C0",
+      "seller": {
+        "username": "seller_055",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture379xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-20T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000065",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture380xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture381xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture382xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture383xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000065",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:10:43.000Z",
+      "itemCreationDate": "2026-09-13T18:10:43.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000066|0",
+      "title": "charles rennie mackintosh furniture and interiors book Roger Billcliffe mint",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books, Comics & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture384xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "96.38",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000066%7C0",
+      "seller": {
+        "username": "seller_056",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture384xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6.49",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000066",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture385xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture386xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture387xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture388xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture389xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000066",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:07:24.000Z",
+      "itemCreationDate": "2026-09-13T18:07:24.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000067|0",
+      "title": "Adventures of Macintosh, the Miniature Schnauzer : Happy Birthday, Macintosh!...",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture390xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "31.88",
+        "currency": "GBP",
+        "convertedFromValue": "43.11",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000067%7C0",
+      "seller": {
+        "username": "seller_043"
+      },
+      "condition": "Brand New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture390xxxxxx/s-l500.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "14.78",
+            "currency": "GBP",
+            "convertedFromValue": "19.99",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "3038537619",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000067",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000067",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T18:05:50.000Z",
+      "itemCreationDate": "2026-09-13T18:05:50.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000068|0",
+      "title": "SANYO Size Medium Mens Mackintosh Jacket Button Front Black Coat Waterproof",
+      "leafCategoryIds": [
+        "57988",
+        "185702"
+      ],
+      "categories": [
+        {
+          "categoryId": "57988",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "185702",
+          "categoryName": "Activewear Jackets"
+        },
+        {
+          "categoryId": "1059",
+          "categoryName": "Men's Clothing"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "185099",
+          "categoryName": "Activewear"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture391xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "143.44",
+        "currency": "GBP",
+        "convertedFromValue": "193.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000068%7C0",
+      "seller": {
+        "username": "seller_057"
+      },
+      "condition": "Pre-owned - Excellent",
+      "conditionId": "2990",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture391xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000068",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture392xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture393xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture394xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture395xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture396xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture397xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture398xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture399xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture400xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture401xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture402xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture403xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture404xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture405xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture406xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture407xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture408xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture409xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture410xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture411xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000068",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:59:51.000Z",
+      "itemCreationDate": "2026-09-13T17:59:51.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000069|0",
+      "title": "Mackintosh New England Women's XL Purple Hooded Rain Jacket Utility Coat",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture412xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "28.39",
+        "currency": "GBP",
+        "convertedFromValue": "38.40",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000069%7C0",
+      "seller": {
+        "username": "seller_058"
+      },
+      "condition": "Pre-owned - Excellent",
+      "conditionId": "2990",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture412xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000069",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture413xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture414xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture415xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture416xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture417xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture418xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture419xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000069",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:55:29.000Z",
+      "itemCreationDate": "2026-09-13T17:55:29.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000070|0",
+      "title": "New Mackintosh selvedge denim (W28) included",
+      "leafCategoryIds": [
+        "11554"
+      ],
+      "categories": [
+        {
+          "categoryId": "11554",
+          "categoryName": "Jeans"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothes, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture420xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "138.50",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000070%7C0",
+      "seller": {
+        "username": "seller_059",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture420xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000070",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture421xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture422xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture423xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture424xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture425xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture426xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture427xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture428xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture429xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000070",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:55:08.000Z",
+      "itemCreationDate": "2026-09-13T17:55:08.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000071|0",
+      "title": "DUST A Tale Of The Wired West Macintosh Mac CD-ROM Big Box Pc Computer Game CIB",
+      "leafCategoryIds": [
+        "180349"
+      ],
+      "categories": [
+        {
+          "categoryId": "180349",
+          "categoryName": "Contemporary Manufacture"
+        },
+        {
+          "categoryId": "220",
+          "categoryName": "Toys & Hobbies"
+        },
+        {
+          "categoryId": "233",
+          "categoryName": "Games"
+        },
+        {
+          "categoryId": "2550",
+          "categoryName": "Board & Traditional Games"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture430xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "35.49",
+        "currency": "GBP",
+        "convertedFromValue": "48.00",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000071%7C0",
+      "seller": {
+        "username": "seller_060"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture430xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000071",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture431xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture432xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture433xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture434xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture435xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture436xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture437xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000071",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:53:28.000Z",
+      "itemCreationDate": "2026-09-13T17:53:28.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000072|0",
+      "title": "MACKINTOSH x BAND OF OUTSIDERS Rubberized Anorak Jacket Green Size 38",
+      "leafCategoryIds": [
+        "57988"
+      ],
+      "categories": [
+        {
+          "categoryId": "57988",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "1059",
+          "categoryName": "Men's Clothing"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture438xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "440.70",
+        "currency": "GBP",
+        "convertedFromValue": "596.00",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000072%7C0",
+      "seller": {
+        "username": "seller_061"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture438xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "73.94",
+            "currency": "GBP",
+            "convertedFromValue": "100.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000072",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture439xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture440xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture441xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture442xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture443xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture444xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture445xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture446xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture447xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000072",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:51:14.000Z",
+      "itemCreationDate": "2026-09-13T17:51:14.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000073|0",
+      "title": "light green Mackintosh New England raincoat",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Vests"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture448xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "24.84",
+        "currency": "GBP",
+        "convertedFromValue": "33.60",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000073%7C0",
+      "seller": {
+        "username": "seller_062"
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture448xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000073",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture449xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture450xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture451xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000073",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:43:34.000Z",
+      "itemCreationDate": "2026-09-13T17:43:34.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000074|0",
+      "title": "Vintage Mackintosh's Toffee Advertising Confection Hammer Axe Candy Collectable",
+      "leafCategoryIds": [
+        "165217"
+      ],
+      "categories": [
+        {
+          "categoryId": "165217",
+          "categoryName": "Merchandise & Memorabilia"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectibles"
+        },
+        {
+          "categoryId": "34",
+          "categoryName": "Advertising"
+        },
+        {
+          "categoryId": "872",
+          "categoryName": "Candy & Nuts"
+        },
+        {
+          "categoryId": "13587",
+          "categoryName": "Food & Beverage"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture452xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "13.31",
+        "currency": "GBP",
+        "convertedFromValue": "18.00",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000074%7C0",
+      "seller": {
+        "username": "seller_063"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture452xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000074",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture453xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture454xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture455xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture456xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000074",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:24:17.000Z",
+      "itemCreationDate": "2026-09-13T17:24:17.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000075|0",
+      "title": "Mackintosh Style Mirror Winged Heart Stained Glass Handmade 17\" x  4\"",
+      "leafCategoryIds": [
+        "20580"
+      ],
+      "categories": [
+        {
+          "categoryId": "20580",
+          "categoryName": "Mirrors"
+        },
+        {
+          "categoryId": "10033",
+          "categoryName": "Home Décor"
+        },
+        {
+          "categoryId": "11700",
+          "categoryName": "Home, Furniture & DIY"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture457xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "29.82",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000075%7C0",
+      "seller": {
+        "username": "seller_064",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture457xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000075",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture458xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture459xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture460xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "unitPricingMeasure": "Unit",
+      "unitPrice": {
+        "value": "29.82",
+        "currency": "GBP"
+      },
+      "legacyItemId": "900000000075",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:22:37.000Z",
+      "itemCreationDate": "2026-09-13T17:22:37.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000076|0",
+      "title": "Millie Mackintosh Ladie UK20 Black Faux Shearling Biker Jacket Cracked Borg Coat",
+      "leafCategoryIds": [
+        "63862"
+      ],
+      "categories": [
+        {
+          "categoryId": "63862",
+          "categoryName": "Coats, Jackets & Waistcoats"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothes, Shoes & Accessories"
+        },
+        {
+          "categoryId": "15724",
+          "categoryName": "Women's Clothing"
+        },
+        {
+          "categoryId": "260010",
+          "categoryName": "Women"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture461xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "37.50",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000076%7C0",
+      "seller": {
+        "username": "seller_065",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Pre-owned - Excellent",
+      "conditionId": "2990",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture461xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000076",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture462xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture463xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture464xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture465xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture466xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture467xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture468xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture469xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture470xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000076",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:21:42.000Z",
+      "itemCreationDate": "2026-09-13T17:21:42.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000077|0",
+      "title": "Faking It by Macintosh, Portia, Like New Used, Free P&P in the UK",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books, Comics & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture471xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "20.23",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000077%7C0",
+      "seller": {
+        "username": "seller_066",
+        "sellerAccountType": "BUSINESS"
+      },
+      "marketingPrice": {
+        "originalPrice": {
+          "value": "23.51",
+          "currency": "GBP"
+        },
+        "discountPercentage": "14",
+        "discountAmount": {
+          "value": "3.28",
+          "currency": "GBP"
+        },
+        "priceTreatment": "LIST_PRICE"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture471xxxxxx/s-l500.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-25T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-10-02T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000077",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000077",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:15:08.000Z",
+      "itemCreationDate": "2026-09-13T17:15:08.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000078|0",
+      "title": "SPECIAL ED \"CLUB SCENE\" RARE 1989 CJ MACKINTOSH REMIXES  M25 SUMMER RAVE ANTHEM",
+      "leafCategoryIds": [
+        "176985"
+      ],
+      "categories": [
+        {
+          "categoryId": "176985",
+          "categoryName": "Vinyl Records"
+        },
+        {
+          "categoryId": "11233",
+          "categoryName": "Music"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture472xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "10.00",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000078%7C0",
+      "seller": {
+        "username": "seller_067",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture472xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-17T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000078",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture473xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture474xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture475xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000078",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:12:19.000Z",
+      "itemCreationDate": "2026-09-13T17:12:19.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000079|0",
+      "title": "THE REESE PROJECT VERSUS C.J. MACKINTOSH \"SO DEEP\" RARE  PROMO ONLY REMIXES 1993",
+      "leafCategoryIds": [
+        "176985"
+      ],
+      "categories": [
+        {
+          "categoryId": "176985",
+          "categoryName": "Vinyl Records"
+        },
+        {
+          "categoryId": "11233",
+          "categoryName": "Music"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture476xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "10.00",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000079%7C0",
+      "seller": {
+        "username": "seller_067",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture476xxxxxx/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-17T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000079",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture477xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000079",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:12:19.000Z",
+      "itemCreationDate": "2026-09-13T17:12:19.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000080|0",
+      "title": "Caithness Glass High Dive Paperweight - Alastair MacIntosh - Ltd Ed 68/750 1990",
+      "leafCategoryIds": [
+        "262399"
+      ],
+      "categories": [
+        {
+          "categoryId": "262399",
+          "categoryName": "Paperweights"
+        },
+        {
+          "categoryId": "870",
+          "categoryName": "Pottery, Ceramics & Glass"
+        },
+        {
+          "categoryId": "262384",
+          "categoryName": "Decorative Pottery, Ceramics & Glass"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture478xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "26.70",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000080%7C0",
+      "seller": {
+        "username": "seller_068",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture478xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000080",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture479xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture480xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture481xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture482xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture483xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture484xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture485xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture486xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture487xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture488xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture489xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture490xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture491xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture492xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture493xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture494xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture495xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture496xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture497xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture498xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture499xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000080",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T17:09:01.000Z",
+      "itemCreationDate": "2026-09-13T17:09:01.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000081|0",
+      "title": "MACKINTOSH'S MASTERWORK: THE GLASGOW SCHOOL OF ART By William Buchanan & Charles",
+      "leafCategoryIds": [
+        "1105"
+      ],
+      "categories": [
+        {
+          "categoryId": "1105",
+          "categoryName": "Textbooks"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        },
+        {
+          "categoryId": "184644",
+          "categoryName": "Textbooks, Education & Reference"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture500xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "29.54",
+        "currency": "GBP",
+        "convertedFromValue": "39.95",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000081%7C0",
+      "seller": {
+        "username": "seller_069"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture500xxxxxx/s-l500.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "30215869",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000081",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000081",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:56:19.000Z",
+      "itemCreationDate": "2026-09-13T16:56:19.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000082|0",
+      "title": "Pages For The Anxious [by C.h. Mackintosh] by Mackintosh, Charles Henry, Like...",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books, Comics & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture501xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "27.57",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000082%7C0",
+      "seller": {
+        "username": "seller_066",
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture501xxxxxx/s-l500.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-25T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-10-02T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000082",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000082",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:53:08.000Z",
+      "itemCreationDate": "2026-09-13T16:53:08.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000083|0",
+      "title": "Adventures of Macintosh, the Miniature Schnauzer : Happy Birthday, Macintosh!...",
+      "leafCategoryIds": [
+        "261186"
+      ],
+      "categories": [
+        {
+          "categoryId": "261186",
+          "categoryName": "Books"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture502xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "14.94",
+        "currency": "GBP",
+        "convertedFromValue": "20.20",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000083%7C0",
+      "seller": {
+        "username": "seller_043"
+      },
+      "condition": "Brand New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture502xxxxxx/s-l500.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "14.78",
+            "currency": "GBP",
+            "convertedFromValue": "19.99",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "28038387757",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000083",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000083",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:39:05.000Z",
+      "itemCreationDate": "2026-09-13T16:39:05.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000084|0",
+      "title": "Art Nouveau Leaded Stained Glass Mirror Red Floral Mackintosh Style Wall Mirror",
+      "leafCategoryIds": [
+        "20580"
+      ],
+      "categories": [
+        {
+          "categoryId": "20580",
+          "categoryName": "Mirrors"
+        },
+        {
+          "categoryId": "10033",
+          "categoryName": "Home Décor"
+        },
+        {
+          "categoryId": "11700",
+          "categoryName": "Home, Furniture & DIY"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture503xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "19.36",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000084%7C0",
+      "seller": {
+        "username": "seller_070",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture503xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000084",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture504xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture505xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture506xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture507xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture508xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture509xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture510xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000084",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:38:04.000Z",
+      "itemCreationDate": "2026-09-13T16:38:04.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000085|0",
+      "title": "JODECI HOUSE MUSIC VINYL CJ MACKINTOSH DUB YOU GOT IT FEENIN ASHLEY BEEDLE MIX",
+      "leafCategoryIds": [
+        "176985"
+      ],
+      "categories": [
+        {
+          "categoryId": "176985",
+          "categoryName": "Vinyl Records"
+        },
+        {
+          "categoryId": "11233",
+          "categoryName": "Music"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture511xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "5.45",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000085%7C0",
+      "seller": {
+        "username": "seller_071",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture511xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000085",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture512xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture513xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture514xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000085",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:33:09.000Z",
+      "itemCreationDate": "2026-09-13T16:33:09.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000086|0",
+      "title": "FLASH PROFESSIONAL CS5 ADVANCED FOR WINDOWS AND MACINTOSH: By Russell Chun Mint",
+      "leafCategoryIds": [
+        "1105"
+      ],
+      "categories": [
+        {
+          "categoryId": "1105",
+          "categoryName": "Textbooks"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        },
+        {
+          "categoryId": "184644",
+          "categoryName": "Textbooks, Education & Reference"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture515xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "20.67",
+        "currency": "GBP",
+        "convertedFromValue": "27.95",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000086%7C0",
+      "seller": {
+        "username": "seller_069"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture515xxxxxx/s-l500.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "84309882",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000086",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000086",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:18:08.000Z",
+      "itemCreationDate": "2026-09-13T16:18:08.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|900000000087|0",
+      "title": "International Sport Management, Hardcover by MacIntosh, Eric W., Ph.D. (EDT);...",
+      "leafCategoryIds": [
+        "1105"
+      ],
+      "categories": [
+        {
+          "categoryId": "1105",
+          "categoryName": "Textbooks"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books & Magazines"
+        },
+        {
+          "categoryId": "184644",
+          "categoryName": "Textbooks, Education & Reference"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture516xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "87.77",
+        "currency": "GBP",
+        "convertedFromValue": "118.70",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000087%7C0",
+      "seller": {
+        "username": "seller_043"
+      },
+      "condition": "Brand New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture516xxxxxx/s-l500.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "14.78",
+            "currency": "GBP",
+            "convertedFromValue": "19.99",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "24038372258",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000087",
+      "itemLocation": {
+        "country": "US"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000087",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T16:16:18.000Z",
+      "itemCreationDate": "2026-09-13T16:16:18.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    }
+  ]
+}

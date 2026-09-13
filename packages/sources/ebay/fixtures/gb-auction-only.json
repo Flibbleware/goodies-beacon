@@ -1,0 +1,612 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&filter=buyingOptions%3A%7BAUCTION%7D&sort=newlyListed&offset=0",
+  "total": 8,
+  "limit": 10,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|900000000027|0",
+      "title": "SCI Carmageddon 64 PAL for Nintendo 64. Includes Manual.",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture134xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000027%7C0",
+      "seller": {
+        "username": "seller_023",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture134xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION"
+      ],
+      "bidCount": 1,
+      "currentBidPrice": {
+        "value": "2.35",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000027",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture135xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture136xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture137xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture138xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture139xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture140xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture141xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000027",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T19:01:01.000Z",
+      "itemCreationDate": "2026-09-12T19:01:01.000Z",
+      "itemEndDate": "2026-09-19T19:01:01.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000028|0",
+      "title": "CARMAGEDDON PC GAME BIG BOX",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture142xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000028%7C0",
+      "seller": {
+        "username": "seller_024",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture142xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "21.50",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000028",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture143xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000028",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T18:22:30.000Z",
+      "itemCreationDate": "2026-09-12T18:22:30.000Z",
+      "itemEndDate": "2026-09-19T18:22:30.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000026|0",
+      "title": "11 Retro PC Game Job Lot Bundle - incl. Sonic3D, TombRaider 1 and 3, Carmageddon",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture132xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "26.70",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000026%7C0",
+      "seller": {
+        "username": "seller_022",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture132xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "4.59",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000026",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture133xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000026",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-04T09:23:01.000Z",
+      "itemCreationDate": "2026-09-11T09:23:15.000Z",
+      "itemEndDate": "2026-09-18T09:23:15.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000029|0",
+      "title": "Carmageddon II PC CD-ROM Big Box version great condition. Rare collectible ",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture144xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000029%7C0",
+      "seller": {
+        "username": "seller_025",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture144xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION",
+        "BEST_OFFER"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "49.99",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000029",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture145xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture146xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture147xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture148xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture149xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture150xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture151xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture152xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture153xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000029",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-08-23T19:15:24.000Z",
+      "itemCreationDate": "2026-09-13T19:15:58.000Z",
+      "itemEndDate": "2026-09-20T19:15:58.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000030|0",
+      "title": "Carmageddon: Max Damage",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture154xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000030%7C0",
+      "seller": {
+        "username": "seller_026",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture154xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.70",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION",
+        "BEST_OFFER"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "15.61",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000030",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture155xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000030",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-08-23T15:42:56.000Z",
+      "itemCreationDate": "2026-09-13T15:43:28.000Z",
+      "itemEndDate": "2026-09-20T15:43:28.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000031|0",
+      "title": "N64 Carmageddon 64 Boxed With Manual & Protective Case",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture156xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000031%7C0",
+      "seller": {
+        "username": "seller_027",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Acceptable",
+      "conditionId": "6000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture156xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION",
+        "BEST_OFFER"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "46.46",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000031",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture157xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture158xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture159xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture160xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture161xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture162xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture163xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000031",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-08-16T16:02:48.000Z",
+      "itemCreationDate": "2026-09-13T16:05:27.000Z",
+      "itemEndDate": "2026-09-20T16:05:27.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000032|0",
+      "title": "Edge Magazine November 1998 Issue 64 Spyro Metal Gear Carmageddon Sonic",
+      "leafCategoryIds": [
+        "280"
+      ],
+      "categories": [
+        {
+          "categoryId": "280",
+          "categoryName": "Magazines"
+        },
+        {
+          "categoryId": "267",
+          "categoryName": "Books, Comics & Magazines"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture164xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000032%7C0",
+      "seller": {
+        "username": "seller_028",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture164xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.70",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION",
+        "BEST_OFFER"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "10.80",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000032",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "adultOnly": false,
+      "legacyItemId": "900000000032",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-05-18T20:00:01.000Z",
+      "itemCreationDate": "2026-09-08T19:01:47.000Z",
+      "itemEndDate": "2026-09-15T19:01:47.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000033|0",
+      "title": "Carmageddon Replay Complete Version Big Box PC CD-ROM",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture165xxxxxx/s-l225.jpg"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000033%7C0",
+      "seller": {
+        "username": "seller_029",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Like New",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture165xxxxxx/s-l1200.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.94",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "AUCTION",
+        "BEST_OFFER"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "24.62",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000033",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture166xxxxxx/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture167xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000033",
+      "availableCoupons": false,
+      "itemOriginDate": "2025-11-27T14:13:35.000Z",
+      "itemCreationDate": "2026-09-12T12:53:33.000Z",
+      "itemEndDate": "2026-09-19T12:53:33.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    }
+  ]
+}

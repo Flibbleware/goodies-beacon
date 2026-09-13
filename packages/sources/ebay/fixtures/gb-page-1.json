@@ -1,0 +1,153 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=0",
+  "total": 42825,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=2",
+  "limit": 2,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|900000000038|0",
+      "title": "Charles Rennie Mackintosh Fine Flower Drawing Print. Hunterian Gallery.",
+      "leafCategoryIds": [
+        "360"
+      ],
+      "categories": [
+        {
+          "categoryId": "360",
+          "categoryName": "Art Prints"
+        },
+        {
+          "categoryId": "550",
+          "categoryName": "Art"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture182xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "18.29",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000038%7C0",
+      "seller": {
+        "username": "seller_033",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture182xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "6.50",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000038",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture183xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000038",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:43:18.000Z",
+      "itemCreationDate": "2026-09-13T20:43:18.000Z",
+      "itemEndDate": "2026-09-20T20:43:18.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|900000000039|0",
+      "title": "Charles Rennie Mackintosh Fine Flower Drawing. Huntarian Gallery Print.",
+      "leafCategoryIds": [
+        "360"
+      ],
+      "categories": [
+        {
+          "categoryId": "360",
+          "categoryName": "Art Prints"
+        },
+        {
+          "categoryId": "550",
+          "categoryName": "Art"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture184xxxxxx/s-l225.jpg"
+      },
+      "price": {
+        "value": "14.01",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000039%7C0",
+      "seller": {
+        "username": "seller_033",
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture184xxxxxx/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.38",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "6.36",
+        "currency": "GBP"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/900000000039",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture185xxxxxx/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "900000000039",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:37:39.000Z",
+      "itemCreationDate": "2026-09-13T20:37:39.000Z",
+      "itemEndDate": "2026-09-20T20:37:39.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    }
+  ]
+}

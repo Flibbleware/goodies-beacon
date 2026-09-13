@@ -1,0 +1,675 @@
+{
+  "itemId": "v1|900000000001|900000000002",
+  "sellerItemRevision": "2",
+  "title": "Games - C - List 1 - A3 Premium Poster Prints",
+  "shortDescription": "Boxed PC game, disc and manual included.",
+  "price": {
+    "value": "10.80",
+    "currency": "GBP"
+  },
+  "categoryPath": "Art|Art Prints",
+  "categoryIdPath": "550|360",
+  "condition": "Used",
+  "conditionId": "3000",
+  "itemLocation": {
+    "country": "GB"
+  },
+  "image": {
+    "imageUrl": "https://cdn.openlair.com/store/artwork/external/44ae477851c6b342d8512cc082faa92a.webp"
+  },
+  "itemCreationDate": "2026-09-12T21:36:58.000Z",
+  "seller": {
+    "username": "seller_001",
+    "sellerAccountType": "INDIVIDUAL"
+  },
+  "estimatedAvailabilities": [
+    {
+      "deliveryOptions": [
+        "SHIP_TO_HOME"
+      ],
+      "availabilityThresholdType": "MORE_THAN",
+      "availabilityThreshold": 10,
+      "estimatedAvailabilityStatus": "IN_STOCK",
+      "estimatedSoldQuantity": 0,
+      "estimatedRemainingQuantity": 100
+    }
+  ],
+  "shippingOptions": [
+    {
+      "shippingServiceCode": "Standard Tracked Delivery",
+      "shippingCarrierCode": "Evri",
+      "type": "Economy Delivery",
+      "shippingCost": {
+        "value": "2.94",
+        "currency": "GBP"
+      },
+      "quantityUsedForEstimate": 1,
+      "minEstimatedDeliveryDate": "2026-09-17T10:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-09-23T10:00:00.000Z"
+    },
+    {
+      "shippingServiceCode": "Express Tracked Delivery",
+      "shippingCarrierCode": "Royal Mail",
+      "type": "Standard Delivery",
+      "shippingCost": {
+        "value": "3.44",
+        "currency": "GBP"
+      },
+      "quantityUsedForEstimate": 1,
+      "minEstimatedDeliveryDate": "2026-09-16T10:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-09-21T10:00:00.000Z"
+    }
+  ],
+  "shipToLocations": {
+    "regionIncluded": [
+      {
+        "regionName": "United Kingdom",
+        "regionType": "COUNTRY",
+        "regionId": "GB"
+      },
+      {
+        "regionName": "Antigua and Barbuda",
+        "regionType": "COUNTRY",
+        "regionId": "AG"
+      },
+      {
+        "regionName": "Austria",
+        "regionType": "COUNTRY",
+        "regionId": "AT"
+      },
+      {
+        "regionName": "Belgium",
+        "regionType": "COUNTRY",
+        "regionId": "BE"
+      },
+      {
+        "regionName": "Bulgaria",
+        "regionType": "COUNTRY",
+        "regionId": "BG"
+      },
+      {
+        "regionName": "Republic of Croatia",
+        "regionType": "COUNTRY",
+        "regionId": "HR"
+      },
+      {
+        "regionName": "Cyprus",
+        "regionType": "COUNTRY",
+        "regionId": "CY"
+      },
+      {
+        "regionName": "Czech Republic",
+        "regionType": "COUNTRY",
+        "regionId": "CZ"
+      },
+      {
+        "regionName": "Denmark",
+        "regionType": "COUNTRY",
+        "regionId": "DK"
+      },
+      {
+        "regionName": "Estonia",
+        "regionType": "COUNTRY",
+        "regionId": "EE"
+      },
+      {
+        "regionName": "Finland",
+        "regionType": "COUNTRY",
+        "regionId": "FI"
+      },
+      {
+        "regionName": "France",
+        "regionType": "COUNTRY",
+        "regionId": "FR"
+      },
+      {
+        "regionName": "Germany",
+        "regionType": "COUNTRY",
+        "regionId": "DE"
+      },
+      {
+        "regionName": "Greece",
+        "regionType": "COUNTRY",
+        "regionId": "GR"
+      },
+      {
+        "regionName": "Hungary",
+        "regionType": "COUNTRY",
+        "regionId": "HU"
+      },
+      {
+        "regionName": "Ireland",
+        "regionType": "COUNTRY",
+        "regionId": "IE"
+      },
+      {
+        "regionName": "Italy",
+        "regionType": "COUNTRY",
+        "regionId": "IT"
+      },
+      {
+        "regionName": "Latvia",
+        "regionType": "COUNTRY",
+        "regionId": "LV"
+      },
+      {
+        "regionName": "Lithuania",
+        "regionType": "COUNTRY",
+        "regionId": "LT"
+      },
+      {
+        "regionName": "Luxembourg",
+        "regionType": "COUNTRY",
+        "regionId": "LU"
+      },
+      {
+        "regionName": "Malta",
+        "regionType": "COUNTRY",
+        "regionId": "MT"
+      },
+      {
+        "regionName": "Netherlands",
+        "regionType": "COUNTRY",
+        "regionId": "NL"
+      },
+      {
+        "regionName": "Poland",
+        "regionType": "COUNTRY",
+        "regionId": "PL"
+      },
+      {
+        "regionName": "Portugal",
+        "regionType": "COUNTRY",
+        "regionId": "PT"
+      },
+      {
+        "regionName": "Romania",
+        "regionType": "COUNTRY",
+        "regionId": "RO"
+      },
+      {
+        "regionName": "Slovakia",
+        "regionType": "COUNTRY",
+        "regionId": "SK"
+      },
+      {
+        "regionName": "Slovenia",
+        "regionType": "COUNTRY",
+        "regionId": "SI"
+      },
+      {
+        "regionName": "Spain",
+        "regionType": "COUNTRY",
+        "regionId": "ES"
+      },
+      {
+        "regionName": "Sweden",
+        "regionType": "COUNTRY",
+        "regionId": "SE"
+      },
+      {
+        "regionName": "Australia",
+        "regionType": "COUNTRY",
+        "regionId": "AU"
+      },
+      {
+        "regionName": "United States",
+        "regionType": "COUNTRY",
+        "regionId": "US"
+      },
+      {
+        "regionName": "Bahrain",
+        "regionType": "COUNTRY",
+        "regionId": "BH"
+      },
+      {
+        "regionName": "Canada",
+        "regionType": "COUNTRY",
+        "regionId": "CA"
+      },
+      {
+        "regionName": "Japan",
+        "regionType": "COUNTRY",
+        "regionId": "JP"
+      },
+      {
+        "regionName": "New Zealand",
+        "regionType": "COUNTRY",
+        "regionId": "NZ"
+      },
+      {
+        "regionName": "China",
+        "regionType": "COUNTRY",
+        "regionId": "CN"
+      },
+      {
+        "regionName": "Israel",
+        "regionType": "COUNTRY",
+        "regionId": "IL"
+      },
+      {
+        "regionName": "Hong Kong",
+        "regionType": "COUNTRY",
+        "regionId": "HK"
+      },
+      {
+        "regionName": "Norway",
+        "regionType": "COUNTRY",
+        "regionId": "NO"
+      },
+      {
+        "regionName": "Indonesia",
+        "regionType": "COUNTRY",
+        "regionId": "ID"
+      },
+      {
+        "regionName": "Malaysia",
+        "regionType": "COUNTRY",
+        "regionId": "MY"
+      },
+      {
+        "regionName": "Mexico",
+        "regionType": "COUNTRY",
+        "regionId": "MX"
+      },
+      {
+        "regionName": "Singapore",
+        "regionType": "COUNTRY",
+        "regionId": "SG"
+      },
+      {
+        "regionName": "South Korea",
+        "regionType": "COUNTRY",
+        "regionId": "KR"
+      },
+      {
+        "regionName": "Switzerland",
+        "regionType": "COUNTRY",
+        "regionId": "CH"
+      },
+      {
+        "regionName": "Taiwan",
+        "regionType": "COUNTRY",
+        "regionId": "TW"
+      },
+      {
+        "regionName": "Bangladesh",
+        "regionType": "COUNTRY",
+        "regionId": "BD"
+      },
+      {
+        "regionName": "Belize",
+        "regionType": "COUNTRY",
+        "regionId": "BZ"
+      },
+      {
+        "regionName": "Bermuda",
+        "regionType": "COUNTRY",
+        "regionId": "BM"
+      },
+      {
+        "regionName": "Bolivia",
+        "regionType": "COUNTRY",
+        "regionId": "BO"
+      },
+      {
+        "regionName": "Barbados",
+        "regionType": "COUNTRY",
+        "regionId": "BB"
+      },
+      {
+        "regionName": "Brunei Darussalam",
+        "regionType": "COUNTRY",
+        "regionId": "BN"
+      },
+      {
+        "regionName": "Cayman Islands",
+        "regionType": "COUNTRY",
+        "regionId": "KY"
+      },
+      {
+        "regionName": "Dominica",
+        "regionType": "COUNTRY",
+        "regionId": "DM"
+      },
+      {
+        "regionName": "Egypt",
+        "regionType": "COUNTRY",
+        "regionId": "EG"
+      },
+      {
+        "regionName": "Guernsey",
+        "regionType": "COUNTRY",
+        "regionId": "GG"
+      },
+      {
+        "regionName": "Gibraltar",
+        "regionType": "COUNTRY",
+        "regionId": "GI"
+      },
+      {
+        "regionName": "Guadeloupe",
+        "regionType": "COUNTRY",
+        "regionId": "GP"
+      },
+      {
+        "regionName": "Grenada",
+        "regionType": "COUNTRY",
+        "regionId": "GD"
+      },
+      {
+        "regionName": "French Guiana",
+        "regionType": "COUNTRY",
+        "regionId": "GF"
+      },
+      {
+        "regionName": "Iceland",
+        "regionType": "COUNTRY",
+        "regionId": "IS"
+      },
+      {
+        "regionName": "Jersey",
+        "regionType": "COUNTRY",
+        "regionId": "JE"
+      },
+      {
+        "regionName": "Jordan",
+        "regionType": "COUNTRY",
+        "regionId": "JO"
+      },
+      {
+        "regionName": "Cambodia",
+        "regionType": "COUNTRY",
+        "regionId": "KH"
+      },
+      {
+        "regionName": "Saint Kitts-Nevis",
+        "regionType": "COUNTRY",
+        "regionId": "KN"
+      },
+      {
+        "regionName": "Saint Lucia",
+        "regionType": "COUNTRY",
+        "regionId": "LC"
+      },
+      {
+        "regionName": "Liechtenstein",
+        "regionType": "COUNTRY",
+        "regionId": "LI"
+      },
+      {
+        "regionName": "Sri Lanka",
+        "regionType": "COUNTRY",
+        "regionId": "LK"
+      },
+      {
+        "regionName": "Macau",
+        "regionType": "COUNTRY",
+        "regionId": "MO"
+      },
+      {
+        "regionName": "Monaco",
+        "regionType": "COUNTRY",
+        "regionId": "MC"
+      },
+      {
+        "regionName": "Maldives",
+        "regionType": "COUNTRY",
+        "regionId": "MV"
+      },
+      {
+        "regionName": "Montserrat",
+        "regionType": "COUNTRY",
+        "regionId": "MS"
+      },
+      {
+        "regionName": "Martinique",
+        "regionType": "COUNTRY",
+        "regionId": "MQ"
+      },
+      {
+        "regionName": "Nicaragua",
+        "regionType": "COUNTRY",
+        "regionId": "NI"
+      },
+      {
+        "regionName": "Oman",
+        "regionType": "COUNTRY",
+        "regionId": "OM"
+      },
+      {
+        "regionName": "Pakistan",
+        "regionType": "COUNTRY",
+        "regionId": "PK"
+      },
+      {
+        "regionName": "Peru",
+        "regionType": "COUNTRY",
+        "regionId": "PE"
+      },
+      {
+        "regionName": "Paraguay",
+        "regionType": "COUNTRY",
+        "regionId": "PY"
+      },
+      {
+        "regionName": "Reunion",
+        "regionType": "COUNTRY",
+        "regionId": "RE"
+      },
+      {
+        "regionName": "Turks and Caicos Islands",
+        "regionType": "COUNTRY",
+        "regionId": "TC"
+      },
+      {
+        "regionName": "Aruba",
+        "regionType": "COUNTRY",
+        "regionId": "AW"
+      },
+      {
+        "regionName": "Saudi Arabia",
+        "regionType": "COUNTRY",
+        "regionId": "SA"
+      },
+      {
+        "regionName": "South Africa",
+        "regionType": "COUNTRY",
+        "regionId": "ZA"
+      },
+      {
+        "regionName": "United Arab Emirates",
+        "regionType": "COUNTRY",
+        "regionId": "AE"
+      },
+      {
+        "regionName": "Ukraine",
+        "regionType": "COUNTRY",
+        "regionId": "UA"
+      },
+      {
+        "regionName": "Chile",
+        "regionType": "COUNTRY",
+        "regionId": "CL"
+      },
+      {
+        "regionName": "Bahamas",
+        "regionType": "COUNTRY",
+        "regionId": "BS"
+      },
+      {
+        "regionName": "Colombia",
+        "regionType": "COUNTRY",
+        "regionId": "CO"
+      },
+      {
+        "regionName": "Costa Rica",
+        "regionType": "COUNTRY",
+        "regionId": "CR"
+      },
+      {
+        "regionName": "Dominican Republic",
+        "regionType": "COUNTRY",
+        "regionId": "DO"
+      },
+      {
+        "regionName": "Guatemala",
+        "regionType": "COUNTRY",
+        "regionId": "GT"
+      },
+      {
+        "regionName": "Honduras",
+        "regionType": "COUNTRY",
+        "regionId": "HN"
+      },
+      {
+        "regionName": "Jamaica",
+        "regionType": "COUNTRY",
+        "regionId": "JM"
+      },
+      {
+        "regionName": "Kuwait",
+        "regionType": "COUNTRY",
+        "regionId": "KW"
+      },
+      {
+        "regionName": "Panama",
+        "regionType": "COUNTRY",
+        "regionId": "PA"
+      },
+      {
+        "regionName": "Philippines",
+        "regionType": "COUNTRY",
+        "regionId": "PH"
+      },
+      {
+        "regionName": "Qatar",
+        "regionType": "COUNTRY",
+        "regionId": "QA"
+      },
+      {
+        "regionName": "El Salvador",
+        "regionType": "COUNTRY",
+        "regionId": "SV"
+      },
+      {
+        "regionName": "Trinidad and Tobago",
+        "regionType": "COUNTRY",
+        "regionId": "TT"
+      },
+      {
+        "regionType": "COUNTRY",
+        "regionId": "UY"
+      }
+    ],
+    "regionExcluded": [
+      {
+        "regionName": "Afghanistan",
+        "regionType": "COUNTRY",
+        "regionId": "AF"
+      },
+      {
+        "regionName": "Libya",
+        "regionType": "COUNTRY",
+        "regionId": "LY"
+      },
+      {
+        "regionName": "Nauru",
+        "regionType": "COUNTRY",
+        "regionId": "NR"
+      },
+      {
+        "regionName": "Somalia",
+        "regionType": "COUNTRY",
+        "regionId": "SO"
+      },
+      {
+        "regionName": "Yemen",
+        "regionType": "COUNTRY",
+        "regionId": "YE"
+      },
+      {
+        "regionName": "Iran",
+        "regionType": "COUNTRY",
+        "regionId": "IR"
+      },
+      {
+        "regionName": "Russian Federation",
+        "regionType": "COUNTRY",
+        "regionId": "RU"
+      }
+    ]
+  },
+  "returnTerms": {
+    "returnsAccepted": false
+  },
+  "taxes": [
+    {
+      "taxType": "VAT",
+      "includedInPrice": false,
+      "ebayCollectAndRemitTax": false
+    }
+  ],
+  "localizedAspects": [
+    {
+      "type": "STRING",
+      "name": "Item",
+      "value": "Carmageddon"
+    },
+    {
+      "type": "STRING",
+      "name": "Country of Origin",
+      "value": "United Kingdom"
+    }
+  ],
+  "topRatedBuyingExperience": false,
+  "buyingOptions": [
+    "FIXED_PRICE"
+  ],
+  "itemWebUrl": "https://www.ebay.co.uk/itm/900000000001",
+  "description": "<p>[description replaced for the fixture]</p><p>Boxed PC game. Disc, manual and inserts present. Light shelf wear to the box.</p>",
+  "paymentMethods": [
+    {
+      "paymentMethodType": "OTHER"
+    },
+    {
+      "paymentMethodType": "WALLET",
+      "paymentMethodBrands": [
+        {
+          "paymentMethodBrandType": "PAYPAL"
+        },
+        {
+          "paymentMethodBrandType": "APPLE_PAY"
+        }
+      ]
+    },
+    {
+      "paymentMethodType": "CREDIT_CARD",
+      "paymentMethodBrands": [
+        {
+          "paymentMethodBrandType": "VISA"
+        },
+        {
+          "paymentMethodBrandType": "MASTERCARD"
+        },
+        {
+          "paymentMethodBrandType": "DINERS_CLUB"
+        }
+      ]
+    }
+  ],
+  "immediatePay": true,
+  "primaryItemGroup": {
+    "itemGroupId": "900000000001",
+    "itemGroupType": "SELLER_DEFINED_VARIATIONS",
+    "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group",
+    "itemGroupTitle": "Example listing group"
+  },
+  "enabledForGuestCheckout": true,
+  "eligibleForInlineCheckout": true,
+  "legacyItemId": "900000000001",
+  "priorityListing": false,
+  "adultOnly": false,
+  "categoryId": "360",
+  "listingMarketplaceId": "EBAY_GB"
+}

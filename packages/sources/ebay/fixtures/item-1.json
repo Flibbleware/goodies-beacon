@@ -1,0 +1,247 @@
+{
+  "itemId": "v1|900000000038|0",
+  "title": "Charles Rennie Mackintosh Fine Flower Drawing Print. Hunterian Gallery.",
+  "shortDescription": "Boxed PC game, disc and manual included.",
+  "price": {
+    "value": "18.29",
+    "currency": "GBP"
+  },
+  "categoryPath": "Art|Art Prints",
+  "categoryIdPath": "550|360",
+  "condition": "Used",
+  "conditionId": "3000",
+  "itemLocation": {
+    "country": "GB"
+  },
+  "image": {
+    "imageUrl": "https://i.ebayimg.com/images/g/Fixture182xxxxxx/s-l1600.jpg",
+    "width": 1200,
+    "height": 1600
+  },
+  "additionalImages": [
+    {
+      "imageUrl": "https://i.ebayimg.com/images/g/Fixture183xxxxxx/s-l1600.jpg",
+      "width": 1200,
+      "height": 1600
+    }
+  ],
+  "currentBidPrice": {
+    "value": "6.50",
+    "currency": "GBP"
+  },
+  "size": "Medium",
+  "material": "Paper",
+  "itemCreationDate": "2026-09-13T20:43:18.000Z",
+  "itemEndDate": "2026-09-20T20:43:18.000Z",
+  "seller": {
+    "username": "seller_033",
+    "sellerAccountType": "INDIVIDUAL"
+  },
+  "estimatedAvailabilities": [
+    {
+      "deliveryOptions": [
+        "SHIP_TO_HOME",
+        "SELLER_ARRANGED_LOCAL_PICKUP"
+      ],
+      "estimatedAvailabilityStatus": "IN_STOCK",
+      "estimatedAvailableQuantity": 1,
+      "estimatedSoldQuantity": 0,
+      "estimatedRemainingQuantity": 1
+    }
+  ],
+  "shippingOptions": [
+    {
+      "shippingServiceCode": "Standard Tracked Delivery",
+      "shippingCarrierCode": "Royal Mail",
+      "type": "Economy Delivery",
+      "shippingCost": {
+        "value": "3.38",
+        "currency": "GBP"
+      },
+      "quantityUsedForEstimate": 1,
+      "minEstimatedDeliveryDate": "2026-09-16T10:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-09-21T10:00:00.000Z"
+    },
+    {
+      "shippingServiceCode": "Express Tracked Delivery",
+      "shippingCarrierCode": "Royal Mail",
+      "type": "Standard Delivery",
+      "shippingCost": {
+        "value": "4.00",
+        "currency": "GBP"
+      },
+      "quantityUsedForEstimate": 1,
+      "minEstimatedDeliveryDate": "2026-09-16T10:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-09-21T10:00:00.000Z"
+    }
+  ],
+  "shipToLocations": {
+    "regionIncluded": [
+      {
+        "regionName": "United Kingdom",
+        "regionType": "COUNTRY",
+        "regionId": "GB"
+      }
+    ],
+    "regionExcluded": [
+      {
+        "regionName": "Afghanistan",
+        "regionType": "COUNTRY",
+        "regionId": "AF"
+      },
+      {
+        "regionName": "Libya",
+        "regionType": "COUNTRY",
+        "regionId": "LY"
+      },
+      {
+        "regionName": "Nauru",
+        "regionType": "COUNTRY",
+        "regionId": "NR"
+      },
+      {
+        "regionName": "Somalia",
+        "regionType": "COUNTRY",
+        "regionId": "SO"
+      },
+      {
+        "regionName": "Yemen",
+        "regionType": "COUNTRY",
+        "regionId": "YE"
+      },
+      {
+        "regionName": "Ukraine",
+        "regionType": "COUNTRY",
+        "regionId": "UA"
+      },
+      {
+        "regionName": "Iran",
+        "regionType": "COUNTRY",
+        "regionId": "IR"
+      },
+      {
+        "regionName": "Russian Federation",
+        "regionType": "COUNTRY",
+        "regionId": "RU"
+      }
+    ]
+  },
+  "returnTerms": {
+    "returnsAccepted": false
+  },
+  "taxes": [
+    {
+      "taxType": "VAT",
+      "includedInPrice": false,
+      "ebayCollectAndRemitTax": false
+    }
+  ],
+  "localizedAspects": [
+    {
+      "type": "STRING",
+      "name": "Artist",
+      "value": "Charles Rennie Mackintosh"
+    },
+    {
+      "type": "STRING",
+      "name": "Type",
+      "value": "Print"
+    },
+    {
+      "type": "STRING",
+      "name": "Size",
+      "value": "Medium"
+    },
+    {
+      "type": "STRING",
+      "name": "Item Height",
+      "value": "50 cm"
+    },
+    {
+      "type": "STRING",
+      "name": "Theme",
+      "value": "Botanical"
+    },
+    {
+      "type": "STRING",
+      "name": "Material",
+      "value": "Paper"
+    },
+    {
+      "type": "STRING",
+      "name": "Original/Licensed Reprint",
+      "value": "Licensed Reprint"
+    },
+    {
+      "type": "STRING",
+      "name": "Production Technique",
+      "value": "print"
+    },
+    {
+      "type": "STRING",
+      "name": "Handmade",
+      "value": "Yes"
+    },
+    {
+      "type": "STRING",
+      "name": "Subject",
+      "value": "Flowers"
+    },
+    {
+      "type": "STRING",
+      "name": "Personalise",
+      "value": "No"
+    }
+  ],
+  "topRatedBuyingExperience": false,
+  "buyingOptions": [
+    "FIXED_PRICE",
+    "AUCTION"
+  ],
+  "itemWebUrl": "https://www.ebay.co.uk/itm/900000000038",
+  "description": "<p>[description replaced for the fixture]</p><p>Boxed PC game. Disc, manual and inserts present. Light shelf wear to the box.</p>",
+  "paymentMethods": [
+    {
+      "paymentMethodType": "OTHER"
+    },
+    {
+      "paymentMethodType": "WALLET",
+      "paymentMethodBrands": [
+        {
+          "paymentMethodBrandType": "PAYPAL"
+        },
+        {
+          "paymentMethodBrandType": "APPLE_PAY"
+        }
+      ]
+    },
+    {
+      "paymentMethodType": "CREDIT_CARD",
+      "paymentMethodBrands": [
+        {
+          "paymentMethodBrandType": "VISA"
+        },
+        {
+          "paymentMethodBrandType": "MASTERCARD"
+        },
+        {
+          "paymentMethodBrandType": "DINERS_CLUB"
+        }
+      ]
+    }
+  ],
+  "immediatePay": false,
+  "minimumPriceToBid": {
+    "value": "6.50",
+    "currency": "GBP"
+  },
+  "uniqueBidderCount": 0,
+  "enabledForGuestCheckout": true,
+  "eligibleForInlineCheckout": true,
+  "lotSize": 0,
+  "legacyItemId": "900000000038",
+  "priorityListing": false,
+  "adultOnly": false,
+  "categoryId": "360",
+  "listingMarketplaceId": "EBAY_GB"
+}
