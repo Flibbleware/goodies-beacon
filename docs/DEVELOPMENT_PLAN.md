@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.23; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.24; section numbers below refer to it.*
 
 Version 1.2 — 13 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -345,13 +345,15 @@ Done when:
 
 #### P1-02 Core types and Zod schemas — M
 
-`SpecSettings`, `Criterion`, `SearchPlan`, `ReferenceImage`, `WantedSpec`, `Listing`, `Verdict` and its per-criterion results, all as Zod schemas with inferred types, shared by API, UI, adapters and the AI layer. Includes the criteria linter from §4 (flags criteria mentioning prices, countries, listing types).
+`SpecSettings`, `Criterion`, `SearchPlan`, `ReferenceImage`, `WantedSpec`, `Listing`, `Verdict` and its per-criterion results, all as Zod schemas with inferred types, shared by API, UI, adapters and the AI layer.
+
+**The criteria linter §4 asked for is not built, and §4 is amended to match (v1.24).** It would have matched criteria text against prices, countries and listing types — but none of those are loose: `priceCeiling` is `{ amount, currency: 'GBP' }`, `listingTypes` and the rest are enums, a region is a field on the search plan, and each is a hard filter running before any model is called. The only route to a price in a criterion is hand-typing one into P1-13's raw JSON editor, which Phase 3 closes twice over — the typed form gives the ceiling a number field, and `propose_spec` is typed so the agent cannot emit it. What is kept is the one check that compares typed fields rather than matching English, so it cannot misfire.
 
 Done when:
 
-- [ ] Schemas round-trip the example specs for Carmageddon and the Power Mac 5500 (kept as fixtures).
-- [ ] The linter has tests for each pattern it catches and for a clean spec.
-- [ ] A spec with a hard, non-quantifiable criterion is accepted but flagged in validation output (it is legal, just unusual).
+- [x] Schemas round-trip the example specs for Carmageddon and the Power Mac 5500 (kept as fixtures). JSON in `packages/core/src/domain/fixtures/`, so P1-13's editor can seed itself from the same files it will be tested against. The round trip is parse → JSON → parse, because a spec lives in JSONB and is read back on every poll; anything the schema silently dropped would be lost between versions.
+- [x] The linter has tests for each pattern it catches and for a clean spec. Amended: there are no patterns, by the decision above. The surviving check is tested for the case it catches, for the three field combinations it must leave alone, for a clean spec, and — deliberately — for *not* flagging a criterion that merely mentions a price or a place, so the regexes are not reinstated by reflex.
+- [x] A spec with a hard, non-quantifiable criterion is accepted but flagged in validation output (it is legal, just unusual). It parses, and `lintSpec` returns `hard_non_quantifiable` explaining that such a criterion rejects on a blurry photo as readily as on a real fault, and that `soft` is usually what was meant. The Power Mac example carries one deliberately (`model-family`), so the fixtures cover the case rather than only the unit tests.
 
 #### P1-03 Adapter contract, context, template, test harness — L
 

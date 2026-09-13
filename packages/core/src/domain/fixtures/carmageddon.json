@@ -1,0 +1,88 @@
+{
+  "summary": "Carmageddon, the original 1997 big-box release. Macintosh preferred, PC acceptable. Box, manual and disc all present; not the jewel-case re-release, not Carmageddon 2, not the Splat Pack expansion.",
+  "plausibilityNote": "Sellers title these inconsistently and often omit the platform: 'Carmageddon PC CD-ROM big box', 'Carmageddon Mac', or just 'Carmageddon' with a photo of the box. Treat any 1990s boxed copy as plausible and let the reviewer sort the edition out. A listing that is clearly a t-shirt, a soundtrack or a Nintendo 64 cartridge is not.",
+  "settings": {
+    "sources": ["ebay"],
+    "listingTypes": ["auction", "fixed"],
+    "priceCeiling": { "amount": 120, "currency": "GBP" },
+    "shipsToUk": "show_all",
+    "conditionCategory": "any",
+    "gradingScaleId": null,
+    "minimumGrade": null,
+    "negativeKeywords": ["t-shirt", "poster", "soundtrack", "nintendo 64", "n64"],
+    "notificationMode": "realtime",
+    "pollEvery": null,
+    "relists": "show",
+    "defaultOnUnknown": "surface",
+    "backfill": { "enabled": true, "depth": "top_200" }
+  },
+  "criteria": [
+    {
+      "id": "big-box",
+      "text": "Big box release, not the jewel case or budget re-release",
+      "kind": "hard",
+      "quantifiable": true,
+      "onUnknown": "surface"
+    },
+    {
+      "id": "first-game",
+      "text": "The first Carmageddon, not Carmageddon 2, TDR 2000, or the Splat Pack expansion",
+      "kind": "hard",
+      "quantifiable": true,
+      "onUnknown": "reject"
+    },
+    {
+      "id": "contents-complete",
+      "text": "Box, manual and disc are all present",
+      "kind": "soft",
+      "quantifiable": true,
+      "onUnknown": "surface"
+    },
+    {
+      "id": "no-water-damage",
+      "text": "No water damage, mould or heavy crushing to the box",
+      "kind": "soft",
+      "quantifiable": true,
+      "onUnknown": "surface"
+    },
+    {
+      "id": "disc-readable",
+      "text": "The disc looks free of deep scratches that would stop it reading",
+      "kind": "soft",
+      "quantifiable": false,
+      "onUnknown": "surface"
+    }
+  ],
+  "searchPlans": [
+    {
+      "id": "ebay-gb-carmageddon",
+      "source": "ebay",
+      "query": "carmageddon",
+      "region": "EBAY_GB",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    },
+    {
+      "id": "ebay-us-carmageddon",
+      "source": "ebay",
+      "query": "carmageddon",
+      "region": "EBAY_US",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    },
+    {
+      "id": "ebay-gb-carmageddon-big-box",
+      "source": "ebay",
+      "query": "carmageddon big box",
+      "region": "EBAY_GB",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    }
+  ],
+  "referenceImages": [],
+  "createdBy": "manual_edit",
+  "changeNote": "First version, entered by hand."
+}

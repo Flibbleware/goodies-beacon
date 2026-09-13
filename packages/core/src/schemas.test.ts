@@ -10,6 +10,13 @@ const FORBIDDEN = ['pg', 'pg-boss', 'pino', 'drizzle-orm', '@node-rs/argon2'];
 const ENTRY = fileURLToPath(new URL('./schemas.ts', import.meta.url));
 
 describe('@goodies-beacon/core/schemas', () => {
+  it('does not export the seller hash helpers, which reach the database', () => {
+    // They live beside the spec schemas in src/domain and are easy to add here by reflex; the
+    // package root is where they belong.
+    expect(Object.keys(schemas)).not.toContain('loadSellerSalt');
+    expect(Object.keys(schemas)).not.toContain('sellerHash');
+  });
+
   it('exports the schemas the web app validates against', () => {
     expect(Object.keys(schemas)).toEqual(
       expect.arrayContaining([
@@ -19,6 +26,15 @@ describe('@goodies-beacon/core/schemas', () => {
         'isEmailConfigured',
         'changePasswordSchema',
         'passwordSchema',
+        // P1-13's editor validates and lints in the browser, so these have to reach it.
+        'wantedSpecSchema',
+        'specSettingsSchema',
+        'criterionSchema',
+        'searchPlanSchema',
+        'lintSpec',
+        'lintCriterion',
+        'normalisedListingSchema',
+        'verdictSchema',
       ]),
     );
   });
