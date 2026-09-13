@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.22 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.23 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -47,7 +47,7 @@ This is the part that decides how reliable Goodies Beacon is, so it is stated pl
 
 | Source | Access method | Reliability | Datacenter (VPS) IP | Notes |
 |---|---|---|---|---|
-| **eBay** | Official Browse API (`item_summary/search`, `item/{id}`), application token via client-credentials. | High — supported, versioned, documented. | Fine. | Marketplace chosen per request with the `X-EBAY-C-MARKETPLACE-ID` header (`EBAY_GB`, `EBAY_US`, `EBAY_DE`…). `sort=newlyListed`, filters for `buyingOptions`, `itemLocationCountry`, `price`, `conditions`, `itemStartDate`. Search returns title, price, thumbnail + `additionalImages`, location, `itemCreationDate`; `getItem` returns the full HTML description and full-size images. Default quota is thousands of calls per day — far more than we need. A production keyset is self-service; **spike confirms no extra approval is needed for Browse**. |
+| **eBay** | Official Browse API (`item_summary/search`, `item/{id}`), application token via client-credentials. | High — supported, versioned, documented. | Fine. | Marketplace chosen per request with the `X-EBAY-C-MARKETPLACE-ID` header (`EBAY_GB`, `EBAY_US`, `EBAY_DE`…). `sort=newlyListed`, filters for `buyingOptions`, `itemLocationCountry`, `price`, `conditions`, `itemStartDate`. Search returns title, price, thumbnail + `additionalImages`, location, `itemCreationDate`; `getItem` returns the full HTML description and full-size images. Quota measured by S1-01 at **5,000 Browse calls a day**, resetting 07:00 UTC — far more than we need. `itemLocationCountry` takes one value only; the `{A|B}` set form is accepted and silently ignored, so one country per plan. An auction's `price` is `null`, with the value in `currentBidPrice`. `shipToLocations` is `getItem`-only, so ships-to-UK is known only after enrichment. A production keyset is self-service, but it is issued **disabled**: S1-01 found that every call fails until the app either subscribes to Marketplace Account Deletion/Closure Notifications or claims the exemption for not persisting eBay user data. Goodies Beacon claims the exemption, which is why §4 stores a seller *hash* and never the username. See `docs/SPIKES.md`. |
 | **Vinted** | No public API. The site's own JSON catalog endpoint, called with a session cookie obtained from the homepage. Playwright as fallback. | Medium. Protected by DataDome (TLS fingerprinting + behaviour scoring). | **Effectively blocked.** DataDome flags AWS/GCP/Hetzner-style ranges within the first requests regardless of rate. | Works from residential IPs at low rates with a persisted DataDome cookie. Each country domain (`vinted.co.uk`, `vinted.fr`, `vinted.de`…) is a separate backend and session, so EU coverage is a list of domains in config, not extra code — it just multiplies request volume. Spike also checks whether `vinted.co.uk` already surfaces EU sellers shipping to the UK, which would make extra domains unnecessary. |
 | **Yahoo! Auctions JP** | HTML search page (`auctions.yahoo.co.jp/search/search?p=…&s1=new&o1=d`) + item page for description and images. | Medium-high. Plain HTML, light bot protection at low rates. | Fine in practice. | No login needed for search. Item descriptions are Japanese; the reviewer model reads them natively and writes the English summary, so no separate translation service. |
 | **Mercari JP** | The site's internal search API (`api.mercari.jp` `entities:search`), which requires a per-request DPoP-signed JWT — a well-known technique used by every existing Mercari scraper. | Medium. Works today; Mercari can change the signing scheme. | Fine in practice. | Isolated in one adapter so a break is a one-file fix. |
@@ -168,7 +168,26 @@ type SearchPlan = {
 
 **GradingScale** — `id, name, category ("Big box PC game"), grades[]` where each grade is `{ label, rank, description, exampleImages[] }`. Attached to a WantedItem manually. Example images can be added or removed at any time from the scale page; scales are versioned the same way as specs so a verdict can name the grade images it saw.
 
-**Listing** — One row per (source, externalId). `id, source, externalId, url, title, titleEn?, description, descriptionEn?, priceAmount, priceCurrency, priceGbp, buyingType (auction|fixed), sellerId, sellerName, itemLocationCountry, shipsToUk (yes|no|unknown), images[], listedAt, firstSeenAt, lastSeenAt, raw (jsonb)`.
+**Listing** — One row per (source, externalId). `id, source, externalId, url, title, titleEn?, description, descriptionEn?, priceAmount, priceCurrency, priceGbp, buyingType (auction|fixed), sellerHash, itemLocationCountry, shipsToUk (yes|no|unknown), images[], listedAt, firstSeenAt, lastSeenAt, raw (jsonb)`.
+
+**No marketplace user data is stored, anywhere.** `sellerHash` is `HMAC-SHA256(seller id, instance
+salt)` — a per-instance salt derived from `GOODIES_BEACON_SECRET_KEY`, so hashes are meaningless
+outside the instance that made them and cannot be reversed to a username by anyone who obtains a
+database copy. Relist detection (§7 step 2) only ever asks "is this the same seller as that
+earlier candidate", which is an equality test, so a hash serves it exactly as well as the name
+would. Nothing in the UI (§14) or in an email (§10) displays a seller, so nothing is lost.
+
+**The whole `seller` object is dropped before `raw` is persisted**, and that is a harder
+requirement than the hash. A marketplace response carries more than a pseudonym: eBay's `getItem`
+returns `seller.sellerLegalInfo` for business sellers — the trader's legal name, a street
+address, an email address and their terms — because UK and EU consumer law obliges a trader to
+publish them. S1-01 found one in three sampled listings was a named individual with their home
+address. Storing `raw` verbatim would put that in the database, in every nightly dump, and in any
+log that prints a response, so the adapter strips the object at ingest rather than the pipeline
+filtering it later. Assume the same of every source until its spike proves otherwise.
+
+This is what lets an instance claim eBay's "not persisting eBay user data" exemption truthfully
+(§2), and it is the right default for the scraped sources too.
 
 **Seen** — `(source, externalId, firstSeenAt)`. Never pruned. Prevents an old fixed-price listing from being re-notified after its Listing row is retained-then-deleted.
 
@@ -248,7 +267,7 @@ Safety valves: a per-poll cap on new candidates (default 50) so a bad query like
 Runs per Candidate in the review worker. Each stage can stop the pipeline early, which is where the cost control comes from.
 
 1. **Normalise.** Currency to GBP (daily ECB rates, cached), text cleaned, images deduped by perceptual hash.
-2. **Hard filters (no AI).** Price above ceiling → reject with reason `over_budget` (still visible in the UI). Negative keywords in title → reject `negative_keyword`. Relist detection: same seller + high title similarity or matching image hash against a previous candidate → flag `relistOf`, continue (v1 shows relists; a later setting suppresses them).
+2. **Hard filters (no AI).** Price above ceiling → reject with reason `over_budget` (still visible in the UI). Negative keywords in title → reject `negative_keyword`. Relist detection: same `sellerHash` + high title similarity, or a matching image hash, against a previous candidate → flag `relistOf`, continue (v1 shows relists; a later setting suppresses them).
 3. **Text pre-filter (cheap model).** Title + first ~1,500 characters of description + the spec summary, criteria and a per-item *plausibility note* written by the interviewer ("sellers often omit the model number; all-in-one Performa and Power Mac 5xxx listings are plausible") → `{ plausible: boolean, reason }`. Discards obvious misses ("Carmageddon t-shirt", "Game Boy game only"). Anything plausible or unclear continues. Target: rejects 60–70% of candidates from a targeted query and 90%+ from a broad one, for a few hundredths of a cent each.
 4. **Enrich.** Adapter fetches full description and all images; images downscaled to ~1024px longest edge and stored.
 5. **Vision review (mid-tier model).** Inputs: spec summary, every criterion with its `kind/quantifiable/onUnknown`, reference images (with their labels, so the model knows which variant each shows), the listing's description and images, the grading scale's example images if attached, and up to five recent Feedback examples for this item. Each reference or grading image costs roughly 1,000–1,500 input tokens per review, so images are downscaled on upload, the item page shows a running "images per review" count, and the UI nudges at six. Output is structured (JSON schema enforced): a result and one-line evidence per criterion, an overall grade if a scale is attached, an English summary of the listing (this is also the translation), and `shipsToUk` if the model can read it from the description.
@@ -363,6 +382,7 @@ Backups: a `backup` service in the compose file runs a nightly `pg_dump` into `.
 - **Authentication.** Single user. Password set on first run via the UI, stored as an Argon2id hash in the DB (OWASP's floor: 19 MiB, two passes, one lane). Until that happens the instance belongs to whoever reaches it first, so RUNNING.md says to claim it in the same minute it is deployed; Phase 6 closes the window with a one-time setup token, generated on first start and printed in the container log, which the first-run form requires alongside the password — no email needed, and an instance can then sit unclaimed safely. Session cookie `gb_session`: 256-bit random token, `HttpOnly`, `Secure`, `SameSite=Lax`, thirty-day expiry sliding on use, rotated on login and on a password change — which also ends every other session. The table stores only the token's SHA-256, so a database copy or a backup holds no usable session. Login is rate-limited to five failures per fifteen minutes per client address, then a lockout of the same length, and both are logged; the counters are in memory, so the limit is per API container and a restart clears them. Optional TOTP second factor is a small later addition.
 - **Secrets.** Marketplace and AI keys, SMTP password: provided through `.env` or entered in Settings; settings-entered secrets are encrypted at rest with a key from `.env` (`GOODIES_BEACON_SECRET_KEY`), masked in the UI and never logged.
 - **Seller content.** Descriptions are sanitised (DOMPurify server-side) before storage and rendered as text or sanitised HTML; never inline in emails.
+- **Marketplace user data.** None is persisted (§4). Seller identity is reduced to an HMAC keyed on the instance secret at ingest, and the entire `seller` object is dropped before the raw response is stored, so nothing about a seller reaches the database, a backup, or a log. This is not only about usernames: a marketplace response can carry a trader's legal name, street address and email, which UK and EU law obliges business sellers to publish and which eBay returns in `seller.sellerLegalInfo` (found by S1-01). Besides being the honest basis for eBay's account-deletion exemption (§2), it means a leaked dump exposes nobody's identity or address.
 - **Images.** Fetched only by the worker through the adapter's HTTP client with size limits, content-type checks and a private-address block list (SSRF). Re-encoded on ingest.
 - **Transport.** Caddy terminates TLS with automatic certificates, by either route in §11. TLS is required rather than recommended: the session cookie is `Secure`, so a browser discards it over plain HTTP and sign-in fails with nothing to explain why. `localhost` is the single exception, because browsers count it as a secure context — which is why local development and the Playwright run need no certificate.
 - **Surface.** Only Caddy is published; Postgres and the app listen on the compose network, which is the actual control — not a host firewall. Docker inserts its own iptables rules ahead of `ufw`'s, so a *published* port reaches the internet whatever `ufw` has been told; publishing none for Postgres is what closes it, and the provider's cloud firewall is the defence in depth behind that. CSRF protection on state-changing routes: a double-submit `gb_csrf` cookie, readable by the page, echoed in `X-CSRF-Token` and compared in constant time. Because only Caddy is published, the last `X-Forwarded-For` entry is the one it wrote and the only one a client cannot forge, so that is what rate limiting counts against. Dependabot/Renovate on the repo.
@@ -480,7 +500,7 @@ Deferred backlog: Facebook Marketplace (home worker only), Gumtree, quiet hours,
 *Runaway AI cost* — per-poll candidate cap, monthly budget cap, pre-filter before vision, batch mode.
 *False negatives (missed wanted items)* — the audit view exposes every rejection with evidence; uncertain-by-default policy for non-quantifiable criteria; challenge loop feeds corrections back.
 *Provider lock-in* — the AI SDK abstraction plus role config; prompts are written provider-neutral and tested against two providers in CI.
-*eBay keyset approval* — Browse API is available on a standard production keyset; confirmed in the Phase 1 spike before anything depends on it.
+*eBay keyset approval* — **found by S1-01 and resolved, not as predicted.** A production keyset is self-service but arrives disabled behind the Marketplace Account Deletion gate, so Browse is not usable until that is settled. Goodies Beacon stores no marketplace user data (§4), which makes the exemption truthful and the gate a one-off tick rather than an endpoint to host and an erasure obligation to honour. The alternative — hosting the challenge/notification endpoint — was rejected because it would put an unauthenticated public route in an API whose contract is that everything but `/healthz` and auth returns 401, and would hand every self-hoster a standing obligation.
 
 ---
 

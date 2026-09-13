@@ -1,0 +1,202 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=2",
+  "total": 42825,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=4",
+  "prev": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=0",
+  "limit": 2,
+  "offset": 2,
+  "itemSummaries": [
+    {
+      "itemId": "v1|800656989623|0",
+      "title": "Dunoon Ceramic Jar with Wooden Lid White Multicolour Mackintosh Inspired Design",
+      "leafCategoryIds": [
+        "262375"
+      ],
+      "categories": [
+        {
+          "categoryId": "262375",
+          "categoryName": "Jars"
+        },
+        {
+          "categoryId": "870",
+          "categoryName": "Pottery, Ceramics & Glass"
+        },
+        {
+          "categoryId": "262364",
+          "categoryName": "Decorative Cookware & Tableware"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/y-YAAeSw7fFqpwOQ/s-l225.jpg"
+      },
+      "price": {
+        "value": "20.96",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C800656989623%7C0",
+      "seller": {
+        "username": "seller_035",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 6,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/y-YAAeSw7fFqpwOQ/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "3.71",
+            "currency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/800656989623?_skw=macintosh&hash=itemba6ae01db7:g:y-YAAeSw7fFqpwOQ",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/5ZkAAeSwjsRqpwOB/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/tnAAAeSwpCRqpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/t4QAAeSwDG9qpwOB/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/jYcAAeSwfEhqpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/t4wAAeSwDG9qpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/ZAYAAeSwXfFqpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/XqcAAeSwkxFqpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/fWYAAeSwfuZqpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/mJ8AAeSwYD5qpwOC/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Yx4AAeSwj6RqpwOD/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "800656989623",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:18:13.000Z",
+      "itemCreationDate": "2026-09-13T20:18:13.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|227520077436|0",
+      "title": "MACKINTOSH PHILOSOPHY Pants (Other) Black 40(Approx. L) [number removed]",
+      "leafCategoryIds": [
+        "57989"
+      ],
+      "categories": [
+        {
+          "categoryId": "57989",
+          "categoryName": "Pants"
+        },
+        {
+          "categoryId": "1059",
+          "categoryName": "Men's Clothing"
+        },
+        {
+          "categoryId": "11450",
+          "categoryName": "Clothing, Shoes & Accessories"
+        },
+        {
+          "categoryId": "260012",
+          "categoryName": "Men"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/80AAAeSwRMlqpwRp/s-l225.jpg"
+      },
+      "price": {
+        "value": "81.63",
+        "currency": "GBP",
+        "convertedFromValue": "110.40",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C227520077436%7C0",
+      "seller": {
+        "username": "seller_036",
+        "feedbackPercentage": "99.8",
+        "feedbackScore": 13241
+      },
+      "condition": "Pre-owned - Good",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/80AAAeSwRMlqpwRp/s-l640.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "GBP",
+            "convertedFromValue": "0.00",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/227520077436?_skw=macintosh&hash=item34f940de7c:g:80AAAeSwRMlqpwRp",
+      "itemLocation": {
+        "country": "JP"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/P44AAeSwXS5qpwRp/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/928AAeSw-0FqpwRq/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/tl4AAeSwtpFqpwRq/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/0McAAeSwQ59qpwRq/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/0MgAAeSwQ59qpwRq/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/CqIAAeSwP-hqpwRr/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "227520077436",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:15:39.000Z",
+      "itemCreationDate": "2026-09-13T20:15:39.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    }
+  ]
+}

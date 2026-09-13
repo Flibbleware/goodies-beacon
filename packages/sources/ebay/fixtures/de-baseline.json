@@ -1,0 +1,768 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&sort=newlyListed&offset=0",
+  "total": 242,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&sort=newlyListed&offset=10",
+  "limit": 10,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|168655820458|468010854040",
+      "title": "Spiele - C - Liste 1 - A3 Premium Poster Drucke",
+      "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group?item_group_id=168655820458",
+      "leafCategoryIds": [
+        "360"
+      ],
+      "categories": [
+        {
+          "categoryId": "360",
+          "categoryName": "Art Prints"
+        },
+        {
+          "categoryId": "550",
+          "categoryName": "Art"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/U-gAAeSwS5hqpcZB/s-l225.jpg"
+      },
+      "price": {
+        "value": "11.66",
+        "currency": "EUR",
+        "convertedFromValue": "10.00",
+        "convertedFromCurrency": "GBP"
+      },
+      "itemGroupType": "SELLER_DEFINED_VARIATIONS",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C168655820458%7C468010854040",
+      "seller": {
+        "username": "seller_001",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 378,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/U-gAAeSwS5hqpcZB/s-l1200.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "15.66",
+            "currency": "EUR",
+            "convertedFromValue": "13.43",
+            "convertedFromCurrency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/168655820458?_skw=carmageddon&hash=item2744ab96aa:g:U-gAAeSwS5hqpcZB",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "adultOnly": false,
+      "legacyItemId": "168655820458",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T21:36:58.000Z",
+      "itemCreationDate": "2026-09-12T21:36:58.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|178487072544|0",
+      "title": "Carmageddon - PS1",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "PC- & Videospiele"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "PC- & Videospiele"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/g7EAAeSwR7Vqo7iH/s-l225.jpg"
+      },
+      "price": {
+        "value": "29.99",
+        "currency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C178487072544%7C0",
+      "seller": {
+        "username": "seller_016",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 1646,
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Gut",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/g7EAAeSwR7Vqo7iH/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "EUR"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T22:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-16T22:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "11050703160",
+      "itemWebUrl": "https://www.ebay.de/itm/178487072544?_skw=carmageddon&hash=item298ea89720:g:g7EAAeSwR7Vqo7iH",
+      "itemLocation": {
+        "country": "DE"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/YDkAAeSwAkhqo7iF/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/hTIAAeSwUZNqo7iH/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/faAAAeSwVCxqo7iG/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/W9MAAeSwmvhqo7iH/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/YkIAAeSwWX9qo7iH/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "178487072544",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T16:00:01.000Z",
+      "itemCreationDate": "2026-09-12T16:00:01.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_DE"
+    },
+    {
+      "itemId": "v1|267783331486|0",
+      "title": "1st Release Carmageddon PC CD-ROM Game / Retro Vintage From Big Box SCi UK PAL",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/Ah4AAeSw4ptqpXCF/s-l225.jpg"
+      },
+      "price": {
+        "value": "12.95",
+        "currency": "EUR",
+        "convertedFromValue": "11.11",
+        "convertedFromCurrency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C267783331486%7C0",
+      "seller": {
+        "username": "seller_003",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 1332,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Ah4AAeSw4ptqpXCF/s-l225.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "15.71",
+            "currency": "EUR",
+            "convertedFromValue": "13.47",
+            "convertedFromCurrency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/267783331486?_skw=carmageddon&hash=item3e59215e9e:g:Ah4AAeSw4ptqpXCF",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/H5AAAeSwV6RqpXCJ/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/AmEAAeSw4ptqpXCL/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "267783331486",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T15:31:53.000Z",
+      "itemCreationDate": "2026-09-12T15:31:53.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|407204568926|0",
+      "title": "Carmageddon Exclusive Playstation 1 PAL SLES-01960 NEW SEALED W MINOR DEFECT",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "PC- & Videospiele"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "PC- & Videospiele"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/xYwAAeSwtM1qoW5~/s-l225.jpg"
+      },
+      "price": {
+        "value": "39.00",
+        "currency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C407204568926%7C0",
+      "seller": {
+        "username": "seller_017",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 1906,
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Neuwertig",
+      "conditionId": "2750",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/xYwAAeSwtM1qoW5~/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "7.00",
+            "currency": "EUR"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/407204568926?_skw=carmageddon&hash=item5ecf489f5e:g:xYwAAeSwtM1qoW5~",
+      "itemLocation": {
+        "country": "SK"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/w-gAAeSw6nVqoW6E/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/yMwAAeSwBX5qoW52/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/ydMAAeSwehhqoW51/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/zyQAAeSwnzJqoW52/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/wboAAeSwv8BqoW52/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/BAkAAeSwPyVqoW6K/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "407204568926",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-09T14:37:23.000Z",
+      "itemCreationDate": "2026-09-09T14:37:23.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_DE"
+    },
+    {
+      "itemId": "v1|158274900691|0",
+      "title": "Carmageddon TDR 2000 PC Big Box SCi Vintage 2000 Komplett CIB Rennspiel Rarität",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "PC- & Videospiele"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "PC- & Videospiele"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/AokAAeSwd4xqoV7a/s-l225.jpg"
+      },
+      "price": {
+        "value": "45.00",
+        "currency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C158274900691%7C0",
+      "seller": {
+        "username": "seller_018",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 9,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Sehr gut",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/AokAAeSwd4xqoV7a/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "6.19",
+            "currency": "EUR"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T22:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-16T22:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/158274900691?_skw=carmageddon&hash=item24d9eb52d3:g:AokAAeSwd4xqoV7a",
+      "itemLocation": {
+        "country": "DE"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/f6cAAeSwKHZqoV7I/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/X44AAeSw7v5qoV7I/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/GRcAAeSwRu1qoV7I/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/ZMcAAeSwDudqoV7J/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/L1UAAeSwVzJqoV7J/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/XBEAAeSwo-5qoV7J/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "158274900691",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-09T13:31:28.000Z",
+      "itemCreationDate": "2026-09-09T13:31:28.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_DE"
+    },
+    {
+      "itemId": "v1|257730925741|0",
+      "title": "Carmageddon II 2 Carpocalypse Now PC Videospiel Handbuch",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/hL0AAeSwRXVqc2Rs/s-l225.jpg"
+      },
+      "price": {
+        "value": "13.34",
+        "currency": "EUR",
+        "convertedFromValue": "11.44",
+        "convertedFromCurrency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C257730925741%7C0",
+      "seller": {
+        "username": "seller_007",
+        "feedbackPercentage": "99.4",
+        "feedbackScore": 21743,
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/hL0AAeSwRXVqc2Rs/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "23.88",
+            "currency": "EUR",
+            "convertedFromValue": "20.48",
+            "convertedFromCurrency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/257730925741?_skw=carmageddon&hash=item3c01f5d4ad:g:hL0AAeSwRXVqc2Rs",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/nvIAAeSwzY5qc2Rs/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/02EAAeSwEM5qc2Rt/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/f-kAAeSw3Qtqc2Ru/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "257730925741",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-08T10:00:00.000Z",
+      "itemCreationDate": "2026-09-08T10:00:00.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|147557895028|0",
+      "title": "PS1 Carmageddon Sony Playstation 1 komplett mit Handbuch.",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/8VEAAeSwYK5qn0gP/s-l225.jpg"
+      },
+      "price": {
+        "value": "23.32",
+        "currency": "EUR",
+        "convertedFromValue": "20.00",
+        "convertedFromCurrency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C147557895028%7C0",
+      "seller": {
+        "username": "seller_009",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 1914,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/8VEAAeSwYK5qn0gP/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "16.07",
+            "currency": "EUR",
+            "convertedFromValue": "13.78",
+            "convertedFromCurrency": "GBP"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/147557895028?_skw=carmageddon&hash=item225b22cb74:g:8VEAAeSwYK5qn0gP",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/~0IAAeSwJntqn0gY/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/DWUAAeSw1Klqn0gi/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Ct8AAeSwqhpqn0g0/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/AqUAAeSwJntqn0hO/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/CXEAAeSwqR9qn0hi/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "147557895028",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-07T23:28:54.000Z",
+      "itemCreationDate": "2026-09-07T23:28:54.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    },
+    {
+      "itemId": "v1|128065350544|0",
+      "title": "(PC) - CARMAGEDDON",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "PC- & Videospiele"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "PC- & Videospiele"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/1SYAAeSwsrNqHrtM/s-l225.jpg"
+      },
+      "price": {
+        "value": "34.99",
+        "currency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C128065350544%7C0",
+      "seller": {
+        "username": "seller_019",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 16177,
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Gut",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/1SYAAeSwsrNqHrtM/s-l1200.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "EUR"
+          },
+          "minEstimatedDeliveryDate": "2026-09-14T22:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-15T22:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "24050706208",
+      "itemWebUrl": "https://www.ebay.de/itm/128065350544?_skw=carmageddon&hash=item1dd14a2b90:g:1SYAAeSwsrNqHrtM",
+      "itemLocation": {
+        "country": "DE"
+      },
+      "adultOnly": false,
+      "legacyItemId": "128065350544",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-06T11:16:20.000Z",
+      "itemCreationDate": "2026-09-06T11:16:20.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_DE"
+    },
+    {
+      "itemId": "v1|287566842200|0",
+      "title": "Carmageddon | PlayStation 1 (PS1) | inkl. Anleitung | Zustand: GUT",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "PC- & Videospiele"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "PC- & Videospiele"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/LLwAAeSwqn9qmqrL/s-l225.jpg"
+      },
+      "price": {
+        "value": "29.99",
+        "currency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C287566842200%7C0",
+      "seller": {
+        "username": "seller_020",
+        "feedbackPercentage": "99.9",
+        "feedbackScore": 10641,
+        "sellerAccountType": "BUSINESS"
+      },
+      "condition": "Gut",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/LLwAAeSwqn9qmqrL/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "0.00",
+            "currency": "EUR"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T22:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-16T22:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "14050706449",
+      "itemWebUrl": "https://www.ebay.de/itm/287566842200?_skw=carmageddon&hash=item42f451c958:g:LLwAAeSwqn9qmqrL",
+      "itemLocation": {
+        "country": "DE"
+      },
+      "adultOnly": false,
+      "legacyItemId": "287566842200",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-05T07:30:32.000Z",
+      "itemCreationDate": "2026-09-05T07:30:32.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_DE"
+    },
+    {
+      "itemId": "v1|147547679773|0",
+      "title": "Carmageddon: Fahr zur Hölle (PS1 / PlayStation 1) – PAL Retro Kultspiel",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "PC- & Videospiele"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "PC- & Videospiele"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/dZAAAeSwNhhqmcPc/s-l225.jpg"
+      },
+      "price": {
+        "value": "28.00",
+        "currency": "EUR"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C147547679773%7C0",
+      "seller": {
+        "username": "seller_021",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 29,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Gut",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/dZAAAeSwNhhqmcPc/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "2.90",
+            "currency": "EUR"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T22:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-16T22:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.de/itm/147547679773?_skw=carmageddon&hash=item225a86ec1d:g:dZAAAeSwNhhqmcPc",
+      "itemLocation": {
+        "country": "DE"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/r7YAAeSwhAZqmcPc/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/dTEAAeSwuNFqmcPc/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "147547679773",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-03T19:04:47.000Z",
+      "itemCreationDate": "2026-09-03T19:04:47.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_DE"
+    }
+  ]
+}

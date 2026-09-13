@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.22; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.23; section numbers below refer to it.*
 
-Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.2 — 13 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -230,10 +230,10 @@ Create the eBay developer account and production keyset. Obtain an application t
 
 Done when:
 
-- [ ] Confirmed whether Browse works on a standard production keyset without further approval, and what the daily quota is for your app.
-- [ ] Confirmed which fields the search response carries (`image`, `additionalImages`, `itemCreationDate`, `itemLocation`, `shippingOptions`) versus what needs `getItem` (description HTML, `shipToLocations`).
-- [ ] Confirmed how "worldwide" behaves on `EBAY_GB` without a location filter and whether `itemLocationCountry` accepts one value or several.
-- [ ] Ten anonymised search responses and three `getItem` responses saved as fixtures.
+- [x] Confirmed whether Browse works on a standard production keyset without further approval, and what the daily quota is for your app. **It does not, until the Marketplace Account Deletion gate is passed** — the keyset is issued disabled, which ARCHITECTURE.md §18 had not predicted; the exemption is taken and §4 changed so it is truthful (see the decision below). Past that gate no further approval is needed: `buy.browse` is **5,000 calls a day**, resetting 07:00 UTC, plus 5,000 for `buy.browse.item.bulk`.
+- [x] Confirmed which fields the search response carries (`image`, `additionalImages`, `itemCreationDate`, `itemLocation`, `shippingOptions`) versus what needs `getItem` (description HTML, `shipToLocations`). Measured over 162 summaries: `itemCreationDate` and `itemLocation` always; `image` 160/162, `additionalImages` 131/162, `shippingOptions` 128/162 — **two listings had no image at all**. `description`, `shortDescription`, `shipToLocations`, `conditionDescription` and `returnTerms` are `getItem`-only, so **`shipsToUk` cannot be known before enrichment**.
+- [x] Confirmed how "worldwide" behaves on `EBAY_GB` without a location filter and whether `itemLocationCountry` accepts one value or several. `EBAY_GB` returns the world by default (GB 24, US 19, JP 6, CA 1 of 50), which vindicates leaving the filter off per §5. `itemLocationCountry` takes **one value only**: `GB` and `US` each filtered correctly, while `{GB|US}` returned 200, the unfiltered total, and a Canadian listing — **accepted and silently ignored**.
+- [x] Ten anonymised search responses and three `getItem` responses saved as fixtures. Eighteen files in `packages/sources/ebay/fixtures/`: fifteen searches and three items.
 
 #### S1-02 Vinted spike — L
 
@@ -314,6 +314,24 @@ Done when:
 - [ ] Dependabot alerts and secret scanning are enabled on the repository, and Renovate is reading the committed config (the default branch is `development/0.2.0` until the final merge).
 - [ ] `sshd -T` on the droplet answers `permitrootlogin no`, `passwordauthentication no` and `kbdinteractiveauthentication no`, per RUNNING.md step 2.
 
+#### Decision — no marketplace user data is persisted (from S1-01, 13 September 2026)
+
+S1-01 found that an eBay production keyset arrives **disabled** behind the Marketplace Account
+Deletion gate: every call fails until the app either hosts a challenge/notification endpoint or
+claims the exemption for not persisting eBay user data. ARCHITECTURE.md §18 had predicted no such
+gate; §2, §4, §7, §12 and §18 are corrected in v1.23 and `docs/SPIKES.md` records the evidence.
+
+The exemption is taken, and it is made truthful rather than asserted: `Listing` stores
+`sellerHash` — `HMAC-SHA256(seller id, instance salt)` — instead of `sellerId`/`sellerName`, and
+ingest strips the seller block from the stored `raw` response. Relist detection (§7 step 2) tests
+only "same seller as before", which is equality, so a hash serves it unchanged; nothing in the UI
+or in an email ever displayed a seller. Hosting the endpoint was rejected: it would put an
+unauthenticated public route into an API whose contract (P0-07) is that everything but `/healthz`
+and auth returns 401, and would hand every self-hoster a standing erasure obligation.
+
+This lands in **P1-01** (the column) and **P1-04** (the eBay adapter computes the hash and strips
+`raw`), and there is no migration to write because no domain table exists yet.
+
 #### P1-01 Domain schema — M
 
 Tables from §4: `wanted_items`, `spec_versions` (with `settings`, `criteria`, `search_plans`, `reference_images` as JSONB validated at the boundary), `search_plan_state` (per plan id: watermark, last run, counters), `grading_scales` (stub), `listings`, `seen`, `candidates`, `verdicts`, `feedback` (stub), `notifications` (stub), `cost_ledger`, `media`.
@@ -323,6 +341,7 @@ Done when:
 - [ ] Migrations apply on a fresh database and on top of Phase 0's.
 - [ ] Unique constraints: `seen (source, external_id)`, `listings (source, external_id)`, `candidates (wanted_item_id, listing_id)`, `notifications (candidate_id, channel)`.
 - [ ] Indexes for the queries the UI will make: candidates by item and verdict; listings by first seen.
+- [ ] `listings` has `seller_hash` and no column that could hold a seller name, per the decision above; the hash helper is unit-tested, including that two instances with different secrets hash one seller id differently.
 
 #### P1-02 Core types and Zod schemas — M
 
@@ -352,6 +371,9 @@ Per §5, informed by S1-01. Token caching with refresh before expiry. `search` r
 Done when:
 
 - [ ] Harness tests cover: new listings since watermark, empty result, pagination stop, `shipsToUk` derived as yes/no/unknown, price and currency captured, auction versus fixed detected.
+- [ ] No seller identity survives ingest: a test asserts the stored `raw` has no `seller` block at all and that `seller_hash` is the HMAC, so the account-deletion exemption stays truthful. S1-01 found `getItem` returns `seller.sellerLegalInfo` for business sellers — a trader's legal name, street address and email — so dropping the whole object is the requirement, not just the username.
+- [ ] An auction's `price` is `null` and its value is in `currentBidPrice` (S1-01); the adapter normalises the two, and a fixture test covers an auction so the price-ceiling filter cannot be handed a null.
+- [ ] `itemLocationCountry` is sent as a single value only; the `{A|B}` set form is never generated, because S1-01 found eBay accepts it and silently ignores it.
 - [ ] A live run against your keyset from the dev environment returns real Carmageddon listings.
 - [ ] Rate: never more than one request in flight per marketplace; quota usage is recorded in the health status.
 

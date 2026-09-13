@@ -1,0 +1,6 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=zqxjklmnpvwrt+nonexistent+listing&limit=10&sort=newlyListed&offset=0",
+  "total": 0,
+  "limit": 10,
+  "offset": 0
+}

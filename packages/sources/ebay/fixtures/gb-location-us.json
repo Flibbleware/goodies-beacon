@@ -1,0 +1,737 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&filter=itemLocationCountry%3AUS&sort=newlyListed&offset=0",
+  "total": 310,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&filter=itemLocationCountry%3AUS&sort=newlyListed&offset=10",
+  "limit": 10,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|820120421341|0",
+      "title": "Carmageddon 64 (Nintendo 64 N64) Authentic - Game Only ",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/7SoAAeSwJVJqpg6i/s-l225.jpg"
+      },
+      "price": {
+        "value": "119.78",
+        "currency": "GBP",
+        "convertedFromValue": "161.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C820120421341%7C0",
+      "seller": {
+        "username": "seller_011",
+        "feedbackPercentage": "0.0",
+        "feedbackScore": 0
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/7SoAAeSwJVJqpg6i/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/820120421341?_skw=carmageddon&hash=itembef2fc83dd:g:7SoAAeSwJVJqpg6i",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/6OEAAeSwPphqpg6i/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/yGgAAeSwcFNqpg6j/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/y1oAAeSwYHRqpg6j/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/90MAAeSwGb1qpg6k/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/ynUAAeSwmuxqpg6k/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/8s4AAeSwNsRqpg6r/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "820120421341",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T02:48:15.000Z",
+      "itemCreationDate": "2026-09-13T02:48:15.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|278367340901|0",
+      "title": "CARMAGEDDON 64 Authentic 2000 Nintendo N64 Clean Pins Tested",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/UxAAAeSw0BhqpQCT/s-l225.jpg"
+      },
+      "price": {
+        "value": "128.62",
+        "currency": "GBP",
+        "convertedFromValue": "173.94",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278367340901%7C0",
+      "seller": {
+        "username": "seller_012",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 20968
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/UxAAAeSw0BhqpQCT/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/278367340901?_skw=carmageddon&hash=item40cffc8965:g:UxAAAeSw0BhqpQCT",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/zbUAAeSw-M1qpQCT/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/mz8AAeSwdWlqpQCT/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/A-QAAeSwkOJqpQCT/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/D6cAAeSwd3NqpQCT/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/GZYAAeSwqR1qpQCT/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/CncAAeSwKexqpQCT/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/D1MAAeSwpr5qpQCT/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "278367340901",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T08:21:46.000Z",
+      "itemCreationDate": "2026-09-12T08:21:46.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|366663879418|0",
+      "title": "2 Games,  Carmageddon 2 Carpocalypse Now,  Carmageddon 3 TDR 2000.  READ DESC!!",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/w0QAAeSwE6lqpOQI/s-l225.jpg"
+      },
+      "price": {
+        "value": "106.48",
+        "currency": "GBP",
+        "convertedFromValue": "144.00",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C366663879418%7C0",
+      "seller": {
+        "username": "seller_014",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 21
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/w0QAAeSwE6lqpOQI/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "7152",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/366663879418?_skw=carmageddon&hash=item555edecafa:g:w0QAAeSwE6lqpOQI",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/gbkAAeSwpwVqpOQJ/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/fWMAAeSwCMlqpOQK/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/1tkAAeSwWXNqpOQK/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/iUMAAeSwR25qpOQK/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/KncAAeSw6pdqpOQL/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/ixAAAeSwx6lqpOQL/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/wuQAAeSwAkhqpOQM/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/gDYAAeSwnnJqpOQM/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/viQAAeSw7k9qpOQN/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/y7QAAeSw~H9qpOQN/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/lccAAeSwXz1qpOQN/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/lUEAAeSw~n5qpOQO/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/gEsAAeSwnnJqpOQP/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/w20AAeSwSyBqpOQP/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/fusAAeSwFqxqpOQP/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/fjkAAeSw1XpqpOQQ/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/uZAAAeSwFXdqpOQQ/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/oPUAAeSw90JqpOQR/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/jlYAAeSwfUpqpOQk/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "366663879418",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T05:44:31.000Z",
+      "itemCreationDate": "2026-09-12T05:44:31.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|287581322739|0",
+      "title": "Carmageddon 2: Carpocalypse Now (PC, 1998) Big Box with Official Graphics Pack!",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/FkQAAeSwj~ZqpLBK/s-l225.jpg"
+      },
+      "price": {
+        "value": "53.23",
+        "currency": "GBP",
+        "convertedFromValue": "71.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C287581322739%7C0",
+      "seller": {
+        "username": "seller_015",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 2604
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/FkQAAeSwj~ZqpLBK/s-l1200.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "7152",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/287581322739?_skw=carmageddon&hash=item42f52ebdf3:g:FkQAAeSwj~ZqpLBK",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/vBYAAeSwCJxqpLBB/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/iJEAAeSw03ZqpLBB/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/1nsAAeSw4OBqpLBB/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/v5oAAeSwi8lqpLBB/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/r6gAAeSwFqxqpLBB/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "287581322739",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-12T01:58:25.000Z",
+      "itemCreationDate": "2026-09-12T01:58:25.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|278364053946|0",
+      "title": "Carmageddon (PC, 1997) Complete in box with Splat Pack Italian Language Ver.",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/~iYAAeSw7mFqo1WN/s-l225.jpg"
+      },
+      "price": {
+        "value": "88.72",
+        "currency": "GBP",
+        "convertedFromValue": "119.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278364053946%7C0",
+      "seller": {
+        "username": "seller_015",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 2604
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/~iYAAeSw7mFqo1WN/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/278364053946?_skw=carmageddon&hash=item40cfca61ba:g:~iYAAeSw7mFqo1WN",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/vtEAAeSwxtlqo1WN/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/OFMAAeSw2VRqo1WN/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "278364053946",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:13:51.000Z",
+      "itemCreationDate": "2026-09-11T05:44:47.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|278364053876|0",
+      "title": "Carmageddon 2: Carpocalypse Now & Crime Killer - Dual Jewel (PC, 1999) Brand new",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/QLAAAeSw2u5qo1U2/s-l225.jpg"
+      },
+      "price": {
+        "value": "17.74",
+        "currency": "GBP",
+        "convertedFromValue": "23.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278364053876%7C0",
+      "seller": {
+        "username": "seller_015",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 2604
+      },
+      "condition": "Brand New",
+      "conditionId": "1000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/QLAAAeSw2u5qo1U2/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "epid": "6232",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/278364053876?_skw=carmageddon&hash=item40cfca6174:g:QLAAAeSw2u5qo1U2",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/72cAAeSwNiVqo1Uw/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/6RgAAeSwzjRqo1Uw/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "278364053876",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:11:43.000Z",
+      "itemCreationDate": "2026-09-11T05:44:43.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|287579571707|0",
+      "title": "Carmageddon Max Pack PC Multi-player 3D Racing Interplay Discs in Case",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/OSUAAeSwEytqo1Rp/s-l225.jpg"
+      },
+      "price": {
+        "value": "8.87",
+        "currency": "GBP",
+        "convertedFromValue": "11.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C287579571707%7C0",
+      "seller": {
+        "username": "seller_015",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 2604
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/OSUAAeSwEytqo1Rp/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/287579571707?_skw=carmageddon&hash=item42f51405fb:g:OSUAAeSwEytqo1Rp",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/90wAAeSwFw5qo1Rp/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/5qgAAeSwlOlqo1Rp/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "287579571707",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:08:13.000Z",
+      "itemCreationDate": "2026-09-11T05:44:44.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|278364053936|0",
+      "title": "Carmageddon Max Pack PC Multi-player 3D Racing Interplay With Manual!",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/39gAAeSwd89qo1QU/s-l225.jpg"
+      },
+      "price": {
+        "value": "11.53",
+        "currency": "GBP",
+        "convertedFromValue": "15.59",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278364053936%7C0",
+      "seller": {
+        "username": "seller_015",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 2604
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/39gAAeSwd89qo1QU/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "BEST_OFFER"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/278364053936?_skw=carmageddon&hash=item40cfca61b0:g:39gAAeSwd89qo1QU",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/yGgAAeSw7bRqo1QU/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Ks0AAeSwSIRqo1QU/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "278364053936",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-11T01:07:20.000Z",
+      "itemCreationDate": "2026-09-11T05:44:46.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|237061177176|0",
+      "title": "Sony Playstation 4 - PS4 Carmageddon Max Damage, Excellent Tested Works",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/r-oAAOSweKZn4BSO/s-l225.jpg"
+      },
+      "price": {
+        "value": "21.30",
+        "currency": "GBP",
+        "convertedFromValue": "28.80",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C237061177176%7C0",
+      "seller": {
+        "username": "seller_031",
+        "feedbackPercentage": "99.8",
+        "feedbackScore": 8234
+      },
+      "condition": "Very Good",
+      "conditionId": "4000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/r-oAAOSweKZn4BSO/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "222305577",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/237061177176?_skw=carmageddon&hash=item3731f27f58:g:r-oAAOSweKZn4BSO",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/BfIAAOSwijpn4BSO/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/MBEAAOSwh6Fn4BSO/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/4i0AAOSw5ZZn4BSN/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "237061177176",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-10T13:12:16.000Z",
+      "itemCreationDate": "2026-09-10T13:12:16.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|147562974294|0",
+      "title": "Carmageddon Max Damage (Sony PlayStation 4 PS4, 2016)",
+      "leafCategoryIds": [
+        "139973"
+      ],
+      "categories": [
+        {
+          "categoryId": "139973",
+          "categoryName": "Video Games"
+        },
+        {
+          "categoryId": "1249",
+          "categoryName": "Video Games & Consoles"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/RI0AAeSwi01qofBR/s-l225.jpg"
+      },
+      "price": {
+        "value": "17.74",
+        "currency": "GBP",
+        "convertedFromValue": "23.99",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C147562974294%7C0",
+      "seller": {
+        "username": "seller_032",
+        "feedbackPercentage": "99.7",
+        "feedbackScore": 4562
+      },
+      "condition": "Good",
+      "conditionId": "5000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/RI0AAeSwi01qofBR/s-l1600.jpg"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "epid": "222305577",
+      "itemWebUrl": "https://www.ebay.co.uk/itm/147562974294?_skw=carmageddon&hash=item225b704c56:g:RI0AAeSwi01qofBR",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/I8QAAeSwN-9qofBS/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/HHcAAeSwFu5qofBS/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/I1sAAeSwMxFqofBS/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/Kg0AAeSwSyZqofBS/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "147562974294",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-09T23:47:26.000Z",
+      "itemCreationDate": "2026-09-09T23:47:26.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    }
+  ]
+}

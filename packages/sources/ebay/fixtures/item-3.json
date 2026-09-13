@@ -1,0 +1,996 @@
+{
+  "itemId": "v1|237063388283|0",
+  "title": "Carmageddon 2: Carpocalypse Now ( PC, 1998 )",
+  "price": {
+    "value": "15.99",
+    "currency": "GBP",
+    "convertedFromValue": "30.00",
+    "convertedFromCurrency": "CAD"
+  },
+  "categoryPath": "Video Games & Consoles|Video Games",
+  "categoryIdPath": "1249|139973",
+  "condition": "Very Good",
+  "conditionId": "4000",
+  "itemLocation": {
+    "city": "Blainville",
+    "country": "CA"
+  },
+  "image": {
+    "imageUrl": "https://i.ebayimg.com/images/g/rawAAeSwiHtqpFDa/s-l1600.jpg",
+    "width": 1600,
+    "height": 1600
+  },
+  "additionalImages": [
+    {
+      "imageUrl": "https://i.ebayimg.com/images/g/DLMAAeSwR2JqpFDa/s-l1600.jpg",
+      "width": 1600,
+      "height": 1600
+    },
+    {
+      "imageUrl": "https://i.ebayimg.com/images/g/AqYAAeSwvoBqpFDa/s-l1600.jpg",
+      "width": 1599,
+      "height": 1199
+    }
+  ],
+  "itemCreationDate": "2026-09-11T19:05:49.000Z",
+  "seller": {
+    "username": "seller_004",
+    "feedbackPercentage": "100.0",
+    "feedbackScore": 1298,
+    "sellerAccountType": "BUSINESS",
+    "sellerLegalInfo": {
+      "name": "Example Trading Ltd",
+      "legalContactFirstName": "Example",
+      "legalContactLastName": "Trader",
+      "sellerProvidedLegalAddress": {
+        "addressLine1": "1 Example Street",
+        "city": "Exampleton",
+        "stateOrProvince": "EX",
+        "country": "GB",
+        "countryName": "United Kingdom"
+      },
+      "email": "trader@example.invalid",
+      "termsOfService": "[terms removed]"
+    }
+  },
+  "gtin": "0040421001545",
+  "estimatedAvailabilities": [
+    {
+      "deliveryOptions": [
+        "SHIP_TO_HOME"
+      ],
+      "estimatedAvailabilityStatus": "IN_STOCK",
+      "estimatedAvailableQuantity": 1,
+      "estimatedSoldQuantity": 0,
+      "estimatedRemainingQuantity": 1
+    }
+  ],
+  "shippingOptions": [
+    {
+      "shippingServiceCode": "eBay International Shipping",
+      "shippingCarrierCode": "eBaySend",
+      "type": "Expedited shipping",
+      "shippingCost": {
+        "value": "15.24",
+        "currency": "GBP",
+        "convertedFromValue": "28.60",
+        "convertedFromCurrency": "CAD"
+      },
+      "importCharges": {
+        "value": "0.00",
+        "currency": "GBP",
+        "convertedFromValue": "0.00",
+        "convertedFromCurrency": "CAD"
+      },
+      "quantityUsedForEstimate": 1,
+      "minEstimatedDeliveryDate": "2026-09-25T10:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-09-30T10:00:00.000Z",
+      "additionalShippingCostPerUnit": {
+        "value": "0.00",
+        "currency": "GBP",
+        "convertedFromValue": "0.00",
+        "convertedFromCurrency": "CAD"
+      },
+      "shippingCostType": "FIXED"
+    }
+  ],
+  "shipToLocations": {
+    "regionIncluded": [
+      {
+        "regionName": "Canada",
+        "regionType": "COUNTRY",
+        "regionId": "CA"
+      },
+      {
+        "regionName": "Denmark",
+        "regionType": "COUNTRY",
+        "regionId": "DK"
+      },
+      {
+        "regionName": "Switzerland",
+        "regionType": "COUNTRY",
+        "regionId": "CH"
+      },
+      {
+        "regionName": "Ireland",
+        "regionType": "COUNTRY",
+        "regionId": "IE"
+      },
+      {
+        "regionName": "Netherlands",
+        "regionType": "COUNTRY",
+        "regionId": "NL"
+      },
+      {
+        "regionName": "Slovakia",
+        "regionType": "COUNTRY",
+        "regionId": "SK"
+      },
+      {
+        "regionName": "Slovenia",
+        "regionType": "COUNTRY",
+        "regionId": "SI"
+      },
+      {
+        "regionName": "Lithuania",
+        "regionType": "COUNTRY",
+        "regionId": "LT"
+      },
+      {
+        "regionName": "Republic of Croatia",
+        "regionType": "COUNTRY",
+        "regionId": "HR"
+      },
+      {
+        "regionName": "Portugal",
+        "regionType": "COUNTRY",
+        "regionId": "PT"
+      },
+      {
+        "regionName": "United Kingdom",
+        "regionType": "COUNTRY",
+        "regionId": "GB"
+      },
+      {
+        "regionName": "Australia",
+        "regionType": "COUNTRY",
+        "regionId": "AU"
+      },
+      {
+        "regionName": "Austria",
+        "regionType": "COUNTRY",
+        "regionId": "AT"
+      },
+      {
+        "regionName": "Hungary",
+        "regionType": "COUNTRY",
+        "regionId": "HU"
+      },
+      {
+        "regionName": "Sweden",
+        "regionType": "COUNTRY",
+        "regionId": "SE"
+      },
+      {
+        "regionName": "Spain",
+        "regionType": "COUNTRY",
+        "regionId": "ES"
+      },
+      {
+        "regionName": "Estonia",
+        "regionType": "COUNTRY",
+        "regionId": "EE"
+      },
+      {
+        "regionName": "Belgium",
+        "regionType": "COUNTRY",
+        "regionId": "BE"
+      },
+      {
+        "regionName": "Finland",
+        "regionType": "COUNTRY",
+        "regionId": "FI"
+      },
+      {
+        "regionName": "Bulgaria",
+        "regionType": "COUNTRY",
+        "regionId": "BG"
+      },
+      {
+        "regionName": "Poland",
+        "regionType": "COUNTRY",
+        "regionId": "PL"
+      },
+      {
+        "regionName": "Luxembourg",
+        "regionType": "COUNTRY",
+        "regionId": "LU"
+      },
+      {
+        "regionName": "Czech Republic",
+        "regionType": "COUNTRY",
+        "regionId": "CZ"
+      },
+      {
+        "regionName": "Norway",
+        "regionType": "COUNTRY",
+        "regionId": "NO"
+      },
+      {
+        "regionName": "France",
+        "regionType": "COUNTRY",
+        "regionId": "FR"
+      },
+      {
+        "regionName": "Germany",
+        "regionType": "COUNTRY",
+        "regionId": "DE"
+      },
+      {
+        "regionName": "Latvia",
+        "regionType": "COUNTRY",
+        "regionId": "LV"
+      },
+      {
+        "regionName": "Italy",
+        "regionType": "COUNTRY",
+        "regionId": "IT"
+      },
+      {
+        "regionName": "Greece",
+        "regionType": "COUNTRY",
+        "regionId": "GR"
+      },
+      {
+        "regionName": "Romania",
+        "regionType": "COUNTRY",
+        "regionId": "RO"
+      },
+      {
+        "regionName": "Alaska/Hawaii",
+        "regionType": "COUNTRY_REGION",
+        "regionId": "_AH"
+      },
+      {
+        "regionName": "APO/FPO",
+        "regionType": "COUNTRY_REGION",
+        "regionId": "_AP"
+      },
+      {
+        "regionName": "American Samoa",
+        "regionType": "COUNTRY",
+        "regionId": "AS"
+      },
+      {
+        "regionName": "Micronesia",
+        "regionType": "COUNTRY",
+        "regionId": "FM"
+      },
+      {
+        "regionName": "Guam",
+        "regionType": "COUNTRY",
+        "regionId": "GU"
+      },
+      {
+        "regionName": "Marshall Islands",
+        "regionType": "COUNTRY",
+        "regionId": "MH"
+      },
+      {
+        "regionName": "Palau",
+        "regionType": "COUNTRY",
+        "regionId": "PW"
+      },
+      {
+        "regionName": "Puerto Rico",
+        "regionType": "COUNTRY",
+        "regionId": "PR"
+      },
+      {
+        "regionName": "Virgin Islands (U.S.)",
+        "regionType": "COUNTRY",
+        "regionId": "VI"
+      },
+      {
+        "regionName": "United States",
+        "regionType": "COUNTRY",
+        "regionId": "US"
+      }
+    ],
+    "regionExcluded": [
+      {
+        "regionName": "Ethiopia",
+        "regionType": "COUNTRY",
+        "regionId": "ET"
+      },
+      {
+        "regionName": "Senegal",
+        "regionType": "COUNTRY",
+        "regionId": "SN"
+      },
+      {
+        "regionName": "Guinea-Bissau",
+        "regionType": "COUNTRY",
+        "regionId": "GW"
+      },
+      {
+        "regionName": "Ghana",
+        "regionType": "COUNTRY",
+        "regionId": "GH"
+      },
+      {
+        "regionName": "Central African Republic",
+        "regionType": "COUNTRY",
+        "regionId": "CF"
+      },
+      {
+        "regionName": "Egypt",
+        "regionType": "COUNTRY",
+        "regionId": "EG"
+      },
+      {
+        "regionName": "Djibouti",
+        "regionType": "COUNTRY",
+        "regionId": "DJ"
+      },
+      {
+        "regionName": "Zambia",
+        "regionType": "COUNTRY",
+        "regionId": "ZM"
+      },
+      {
+        "regionName": "Tunisia",
+        "regionType": "COUNTRY",
+        "regionId": "TN"
+      },
+      {
+        "regionName": "Lesotho",
+        "regionType": "COUNTRY",
+        "regionId": "LS"
+      },
+      {
+        "regionName": "Eritrea",
+        "regionType": "COUNTRY",
+        "regionId": "ER"
+      },
+      {
+        "regionName": "Algeria",
+        "regionType": "COUNTRY",
+        "regionId": "DZ"
+      },
+      {
+        "regionName": "Burkina Faso",
+        "regionType": "COUNTRY",
+        "regionId": "BF"
+      },
+      {
+        "regionName": "Togo",
+        "regionType": "COUNTRY",
+        "regionId": "TG"
+      },
+      {
+        "regionName": "Angola",
+        "regionType": "COUNTRY",
+        "regionId": "AO"
+      },
+      {
+        "regionName": "Equatorial Guinea",
+        "regionType": "COUNTRY",
+        "regionId": "GQ"
+      },
+      {
+        "regionName": "Côte d'Ivoire (Ivory Coast)",
+        "regionType": "COUNTRY",
+        "regionId": "CI"
+      },
+      {
+        "regionName": "Benin",
+        "regionType": "COUNTRY",
+        "regionId": "BJ"
+      },
+      {
+        "regionName": "Reunion",
+        "regionType": "COUNTRY",
+        "regionId": "RE"
+      },
+      {
+        "regionName": "South Africa",
+        "regionType": "COUNTRY",
+        "regionId": "ZA"
+      },
+      {
+        "regionName": "Botswana",
+        "regionType": "COUNTRY",
+        "regionId": "BW"
+      },
+      {
+        "regionName": "Mozambique",
+        "regionType": "COUNTRY",
+        "regionId": "MZ"
+      },
+      {
+        "regionName": "Namibia",
+        "regionType": "COUNTRY",
+        "regionId": "NA"
+      },
+      {
+        "regionName": "Uganda",
+        "regionType": "COUNTRY",
+        "regionId": "UG"
+      },
+      {
+        "regionName": "Nigeria",
+        "regionType": "COUNTRY",
+        "regionId": "NG"
+      },
+      {
+        "regionName": "Burundi",
+        "regionType": "COUNTRY",
+        "regionId": "BI"
+      },
+      {
+        "regionName": "Mali",
+        "regionType": "COUNTRY",
+        "regionId": "ML"
+      },
+      {
+        "regionName": "Morocco",
+        "regionType": "COUNTRY",
+        "regionId": "MA"
+      },
+      {
+        "regionName": "Democratic Republic of the Congo",
+        "regionType": "COUNTRY",
+        "regionId": "CD"
+      },
+      {
+        "regionName": "Tanzania",
+        "regionType": "COUNTRY",
+        "regionId": "TZ"
+      },
+      {
+        "regionName": "Niger",
+        "regionType": "COUNTRY",
+        "regionId": "NE"
+      },
+      {
+        "regionName": "Cameroon",
+        "regionType": "COUNTRY",
+        "regionId": "CM"
+      },
+      {
+        "regionName": "Mauritania",
+        "regionType": "COUNTRY",
+        "regionId": "MR"
+      },
+      {
+        "regionName": "Seychelles",
+        "regionType": "COUNTRY",
+        "regionId": "SC"
+      },
+      {
+        "regionName": "Madagascar",
+        "regionType": "COUNTRY",
+        "regionId": "MG"
+      },
+      {
+        "regionName": "Saint Helena",
+        "regionType": "COUNTRY",
+        "regionId": "SH"
+      },
+      {
+        "regionName": "Mayotte",
+        "regionType": "COUNTRY",
+        "regionId": "YT"
+      },
+      {
+        "regionName": "Malawi",
+        "regionType": "COUNTRY",
+        "regionId": "MW"
+      },
+      {
+        "regionName": "Comoros",
+        "regionType": "COUNTRY",
+        "regionId": "KM"
+      },
+      {
+        "regionName": "Mauritius",
+        "regionType": "COUNTRY",
+        "regionId": "MU"
+      },
+      {
+        "regionName": "Swaziland",
+        "regionType": "COUNTRY",
+        "regionId": "SZ"
+      },
+      {
+        "regionName": "Sierra Leone",
+        "regionType": "COUNTRY",
+        "regionId": "SL"
+      },
+      {
+        "regionName": "Somalia",
+        "regionType": "COUNTRY",
+        "regionId": "SO"
+      },
+      {
+        "regionName": "Gambia",
+        "regionType": "COUNTRY",
+        "regionId": "GM"
+      },
+      {
+        "regionName": "Guinea",
+        "regionType": "COUNTRY",
+        "regionId": "GN"
+      },
+      {
+        "regionName": "Libya",
+        "regionType": "COUNTRY",
+        "regionId": "LY"
+      },
+      {
+        "regionName": "Cape Verde Islands",
+        "regionType": "COUNTRY",
+        "regionId": "CV"
+      },
+      {
+        "regionName": "Western Sahara",
+        "regionType": "COUNTRY",
+        "regionId": "EH"
+      },
+      {
+        "regionName": "Kenya",
+        "regionType": "COUNTRY",
+        "regionId": "KE"
+      },
+      {
+        "regionName": "Liberia",
+        "regionType": "COUNTRY",
+        "regionId": "LR"
+      },
+      {
+        "regionName": "Chad",
+        "regionType": "COUNTRY",
+        "regionId": "TD"
+      },
+      {
+        "regionName": "Republic of the Congo",
+        "regionType": "COUNTRY",
+        "regionId": "CG"
+      },
+      {
+        "regionName": "Zimbabwe",
+        "regionType": "COUNTRY",
+        "regionId": "ZW"
+      },
+      {
+        "regionName": "Gabon Republic",
+        "regionType": "COUNTRY",
+        "regionId": "GA"
+      },
+      {
+        "regionName": "Rwanda",
+        "regionType": "COUNTRY",
+        "regionId": "RW"
+      },
+      {
+        "regionName": "Afghanistan",
+        "regionType": "COUNTRY",
+        "regionId": "AF"
+      },
+      {
+        "regionName": "Russian Federation",
+        "regionType": "COUNTRY",
+        "regionId": "RU"
+      },
+      {
+        "regionName": "Turkmenistan",
+        "regionType": "COUNTRY",
+        "regionId": "TM"
+      },
+      {
+        "regionName": "Bhutan",
+        "regionType": "COUNTRY",
+        "regionId": "BT"
+      },
+      {
+        "regionName": "Sri Lanka",
+        "regionType": "COUNTRY",
+        "regionId": "LK"
+      },
+      {
+        "regionName": "Uzbekistan",
+        "regionType": "COUNTRY",
+        "regionId": "UZ"
+      },
+      {
+        "regionName": "Nepal",
+        "regionType": "COUNTRY",
+        "regionId": "NP"
+      },
+      {
+        "regionName": "Kyrgyzstan",
+        "regionType": "COUNTRY",
+        "regionId": "KG"
+      },
+      {
+        "regionName": "Bangladesh",
+        "regionType": "COUNTRY",
+        "regionId": "BD"
+      },
+      {
+        "regionName": "Tajikistan",
+        "regionType": "COUNTRY",
+        "regionId": "TJ"
+      },
+      {
+        "regionName": "Pakistan",
+        "regionType": "COUNTRY",
+        "regionId": "PK"
+      },
+      {
+        "regionName": "Maldives",
+        "regionType": "COUNTRY",
+        "regionId": "MV"
+      },
+      {
+        "regionName": "Georgia",
+        "regionType": "COUNTRY",
+        "regionId": "GE"
+      },
+      {
+        "regionName": "China",
+        "regionType": "COUNTRY",
+        "regionId": "CN"
+      },
+      {
+        "regionName": "Japan",
+        "regionType": "COUNTRY",
+        "regionId": "JP"
+      },
+      {
+        "regionName": "Azerbaijan Republic",
+        "regionType": "COUNTRY",
+        "regionId": "AZ"
+      },
+      {
+        "regionName": "Armenia",
+        "regionType": "COUNTRY",
+        "regionId": "AM"
+      },
+      {
+        "regionName": "Kazakhstan",
+        "regionType": "COUNTRY",
+        "regionId": "KZ"
+      },
+      {
+        "regionName": "South Korea",
+        "regionType": "COUNTRY",
+        "regionId": "KR"
+      },
+      {
+        "regionName": "Mongolia",
+        "regionType": "COUNTRY",
+        "regionId": "MN"
+      },
+      {
+        "regionName": "India",
+        "regionType": "COUNTRY",
+        "regionId": "IN"
+      },
+      {
+        "regionName": "Bahrain",
+        "regionType": "COUNTRY",
+        "regionId": "BH"
+      },
+      {
+        "regionName": "Kuwait",
+        "regionType": "COUNTRY",
+        "regionId": "KW"
+      },
+      {
+        "regionName": "Israel",
+        "regionType": "COUNTRY",
+        "regionId": "IL"
+      },
+      {
+        "regionName": "Saudi Arabia",
+        "regionType": "COUNTRY",
+        "regionId": "SA"
+      },
+      {
+        "regionName": "Oman",
+        "regionType": "COUNTRY",
+        "regionId": "OM"
+      },
+      {
+        "regionName": "Iraq",
+        "regionType": "COUNTRY",
+        "regionId": "IQ"
+      },
+      {
+        "regionName": "Turkey",
+        "regionType": "COUNTRY",
+        "regionId": "TR"
+      },
+      {
+        "regionName": "United Arab Emirates",
+        "regionType": "COUNTRY",
+        "regionId": "AE"
+      },
+      {
+        "regionName": "Jordan",
+        "regionType": "COUNTRY",
+        "regionId": "JO"
+      },
+      {
+        "regionName": "Qatar",
+        "regionType": "COUNTRY",
+        "regionId": "QA"
+      },
+      {
+        "regionName": "Yemen",
+        "regionType": "COUNTRY",
+        "regionId": "YE"
+      },
+      {
+        "regionName": "Lebanon",
+        "regionType": "COUNTRY",
+        "regionId": "LB"
+      },
+      {
+        "regionName": "Tonga",
+        "regionType": "COUNTRY",
+        "regionId": "TO"
+      },
+      {
+        "regionName": "Niue",
+        "regionType": "COUNTRY",
+        "regionId": "NU"
+      },
+      {
+        "regionName": "Wallis and Futuna",
+        "regionType": "COUNTRY",
+        "regionId": "WF"
+      },
+      {
+        "regionName": "Kiribati",
+        "regionType": "COUNTRY",
+        "regionId": "KI"
+      },
+      {
+        "regionName": "Western Samoa",
+        "regionType": "COUNTRY",
+        "regionId": "WS"
+      },
+      {
+        "regionName": "Cook Islands",
+        "regionType": "COUNTRY",
+        "regionId": "CK"
+      },
+      {
+        "regionName": "Fiji",
+        "regionType": "COUNTRY",
+        "regionId": "FJ"
+      },
+      {
+        "regionName": "New Caledonia",
+        "regionType": "COUNTRY",
+        "regionId": "NC"
+      },
+      {
+        "regionName": "Vanuatu",
+        "regionType": "COUNTRY",
+        "regionId": "VU"
+      },
+      {
+        "regionName": "Nauru",
+        "regionType": "COUNTRY",
+        "regionId": "NR"
+      },
+      {
+        "regionName": "Solomon Islands",
+        "regionType": "COUNTRY",
+        "regionId": "SB"
+      },
+      {
+        "regionName": "Papua New Guinea",
+        "regionType": "COUNTRY",
+        "regionId": "PG"
+      },
+      {
+        "regionName": "Tuvalu",
+        "regionType": "COUNTRY",
+        "regionId": "TV"
+      },
+      {
+        "regionName": "New Zealand",
+        "regionType": "COUNTRY",
+        "regionId": "NZ"
+      },
+      {
+        "regionName": "French Polynesia",
+        "regionType": "COUNTRY",
+        "regionId": "PF"
+      },
+      {
+        "regionName": "Hong Kong",
+        "regionType": "COUNTRY",
+        "regionId": "HK"
+      },
+      {
+        "regionName": "Thailand",
+        "regionType": "COUNTRY",
+        "regionId": "TH"
+      },
+      {
+        "regionName": "Taiwan",
+        "regionType": "COUNTRY",
+        "regionId": "TW"
+      },
+      {
+        "regionName": "Cambodia",
+        "regionType": "COUNTRY",
+        "regionId": "KH"
+      },
+      {
+        "regionName": "Singapore",
+        "regionType": "COUNTRY",
+        "regionId": "SG"
+      },
+      {
+        "regionName": "Macau",
+        "regionType": "COUNTRY",
+        "regionId": "MO"
+      },
+      {
+        "regionName": "Vietnam",
+        "regionType": "COUNTRY",
+        "regionId": "VN"
+      },
+      {
+        "regionName": "Brunei Darussalam",
+        "regionType": "COUNTRY",
+        "regionId": "BN"
+      },
+      {
+        "regionName": "Laos",
+        "regionType": "COUNTRY",
+        "regionId": "LA"
+      },
+      {
+        "regionName": "Indonesia",
+        "regionType": "COUNTRY",
+        "regionId": "ID"
+      },
+      {
+        "regionName": "Malaysia",
+        "regionType": "COUNTRY",
+        "regionId": "MY"
+      },
+      {
+        "regionName": "Philippines",
+        "regionType": "COUNTRY",
+        "regionId": "PH"
+      },
+      {
+        "regionName": "Macedonia",
+        "regionType": "COUNTRY",
+        "regionId": "MK"
+      },
+      {
+        "regionName": "Ukraine",
+        "regionType": "COUNTRY",
+        "regionId": "UA"
+      },
+      {
+        "regionName": "Belarus",
+        "regionType": "COUNTRY",
+        "regionId": "BY"
+      }
+    ]
+  },
+  "returnTerms": {
+    "returnsAccepted": false
+  },
+  "taxes": [
+    {
+      "taxJurisdiction": {
+        "taxJurisdictionId": "UK"
+      },
+      "taxType": "VAT",
+      "taxPercentage": "20.0",
+      "includedInPrice": true,
+      "ebayCollectAndRemitTax": true
+    }
+  ],
+  "localizedAspects": [
+    {
+      "type": "STRING",
+      "name": "Region Code",
+      "value": "NTSC-U/C (US/Canada)"
+    },
+    {
+      "type": "STRING",
+      "name": "Platform",
+      "value": "PC"
+    },
+    {
+      "type": "STRING",
+      "name": "Release Year",
+      "value": "1998"
+    },
+    {
+      "type": "STRING",
+      "name": "Rating",
+      "value": "M - Mature"
+    },
+    {
+      "type": "STRING",
+      "name": "Publisher",
+      "value": "Interplay Productions"
+    },
+    {
+      "type": "STRING",
+      "name": "Genre",
+      "value": "Action & Adventure, Racing"
+    },
+    {
+      "type": "STRING",
+      "name": "Game Name",
+      "value": "Carmageddon 2 Carpocalypse Now"
+    },
+    {
+      "type": "STRING",
+      "name": "Country of Origin",
+      "value": "United States"
+    },
+    {
+      "type": "STRING",
+      "name": "UPC",
+      "value": "0040421001545"
+    }
+  ],
+  "topRatedBuyingExperience": false,
+  "buyingOptions": [
+    "FIXED_PRICE"
+  ],
+  "itemWebUrl": "https://www.ebay.co.uk/itm/237063388283?amdata=enc%3AAQALAAAAoCHNgUiiE%2FjQhlDTaMiAde9ET%2BGWegAKzMvFxaArrv3m%2FFpxJP02cOUM%2FJqs4E4LuLj9iTe%2FysfDnppwwyeU2qDCoDeG98yDet1YgLBgyQ9BTWbsSRC9Rg5PjqwTPCnxPY2qHzH5pVUIkjMqlvDlkEjG3klnZQf3uSxRxK%2FxLbFKz8KIhIlzZOZblNEc7IylJ3F40tlH0QBGwWUjhp4ffUY%3D",
+  "description": "Carmageddon 2: Carpocalypse Now ( PC, 1998 ). Condition is Very Good. Shipped with Canada Post Lettermail. ",
+  "paymentMethods": [
+    {
+      "paymentMethodType": "WALLET",
+      "paymentMethodBrands": [
+        {
+          "paymentMethodBrandType": "PAYPAL"
+        },
+        {
+          "paymentMethodBrandType": "APPLE_PAY"
+        }
+      ]
+    },
+    {
+      "paymentMethodType": "CREDIT_CARD",
+      "paymentMethodBrands": [
+        {
+          "paymentMethodBrandType": "VISA"
+        },
+        {
+          "paymentMethodBrandType": "MASTERCARD"
+        },
+        {
+          "paymentMethodBrandType": "DINERS_CLUB"
+        }
+      ]
+    }
+  ],
+  "immediatePay": false,
+  "enabledForGuestCheckout": true,
+  "eligibleForInlineCheckout": true,
+  "lotSize": 0,
+  "legacyItemId": "237063388283",
+  "priorityListing": true,
+  "adultOnly": false,
+  "categoryId": "139973",
+  "listingMarketplaceId": "EBAY_CA"
+}

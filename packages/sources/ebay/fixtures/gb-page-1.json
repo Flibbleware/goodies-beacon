@@ -1,0 +1,187 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=0",
+  "total": 42825,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=macintosh&limit=2&sort=newlyListed&offset=2",
+  "limit": 2,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|158288813135|0",
+      "title": "The Disney Collection Screen Saver for Macintosh 3.5 Floppy Disks Voices Songs",
+      "leafCategoryIds": [
+        "14906"
+      ],
+      "categories": [
+        {
+          "categoryId": "14906",
+          "categoryName": "Vintage Manuals & Merchandise"
+        },
+        {
+          "categoryId": "11189",
+          "categoryName": "Vintage Computing"
+        },
+        {
+          "categoryId": "58058",
+          "categoryName": "Computers/Tablets & Networking"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/ZuMAAeSwFGVqpwNv/s-l225.jpg"
+      },
+      "price": {
+        "value": "18.59",
+        "currency": "GBP",
+        "convertedFromValue": "25.14",
+        "convertedFromCurrency": "USD"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C158288813135%7C0",
+      "seller": {
+        "username": "seller_033",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 899
+      },
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/ZuMAAeSwFGVqpwNv/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "CALCULATED",
+          "shippingCost": {
+            "value": "26.92",
+            "currency": "GBP",
+            "convertedFromValue": "36.41",
+            "convertedFromCurrency": "USD"
+          }
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE",
+        "AUCTION"
+      ],
+      "bidCount": 0,
+      "currentBidPrice": {
+        "value": "5.18",
+        "currency": "GBP",
+        "convertedFromValue": "7.00",
+        "convertedFromCurrency": "USD"
+      },
+      "itemWebUrl": "https://www.ebay.co.uk/itm/158288813135?_skw=macintosh&hash=item24dabf9c4f:g:ZuMAAeSwFGVqpwNv",
+      "itemLocation": {
+        "country": "US"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/AlUAAeSw4ptqpwNv/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/CGkAAeSwaw5qpwQe/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/EZsAAeSwJVJqpwNv/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/yrsAAeSwkOJqpwNv/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/BtMAAeSweQVqpwNv/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/vnoAAeSwvoBqpwNv/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/108AAeSwErFqpwNv/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/NMsAAeSwMXRqpwNw/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "158288813135",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:18:47.000Z",
+      "itemCreationDate": "2026-09-13T20:18:47.000Z",
+      "itemEndDate": "2026-09-20T20:18:47.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_US"
+    },
+    {
+      "itemId": "v1|800656990868|0",
+      "title": "Clan MacIntosh Information Booklet And Card Showing Clan Tartan& Crest & Motto.",
+      "leafCategoryIds": [
+        "259144"
+      ],
+      "categories": [
+        {
+          "categoryId": "259144",
+          "categoryName": "Other Historical Memorabilia"
+        },
+        {
+          "categoryId": "1",
+          "categoryName": "Collectables"
+        },
+        {
+          "categoryId": "259135",
+          "categoryName": "Historical Memorabilia"
+        }
+      ],
+      "image": {
+        "imageUrl": "https://i.ebayimg.com/images/g/DoMAAeSwycNqIZez/s-l225.jpg"
+      },
+      "price": {
+        "value": "5.00",
+        "currency": "GBP"
+      },
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C800656990868%7C0",
+      "seller": {
+        "username": "seller_034",
+        "feedbackPercentage": "100.0",
+        "feedbackScore": 1754,
+        "sellerAccountType": "INDIVIDUAL"
+      },
+      "condition": "Used",
+      "conditionId": "3000",
+      "thumbnailImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/DoMAAeSwycNqIZez/s-l1600.jpg"
+        }
+      ],
+      "shippingOptions": [
+        {
+          "shippingCostType": "FIXED",
+          "shippingCost": {
+            "value": "1.55",
+            "currency": "GBP"
+          },
+          "minEstimatedDeliveryDate": "2026-09-15T23:00:00.000Z",
+          "maxEstimatedDeliveryDate": "2026-09-17T23:00:00.000Z"
+        }
+      ],
+      "buyingOptions": [
+        "FIXED_PRICE"
+      ],
+      "itemWebUrl": "https://www.ebay.co.uk/itm/800656990868?_skw=macintosh&hash=itemba6ae02294:g:DoMAAeSwycNqIZez",
+      "itemLocation": {
+        "country": "GB"
+      },
+      "additionalImages": [
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/DowAAeSwycNqIZe0/s-l225.jpg"
+        },
+        {
+          "imageUrl": "https://i.ebayimg.com/images/g/FnAAAeSww3lqIZe0/s-l225.jpg"
+        }
+      ],
+      "adultOnly": false,
+      "legacyItemId": "800656990868",
+      "availableCoupons": false,
+      "itemOriginDate": "2026-09-13T20:18:28.000Z",
+      "itemCreationDate": "2026-09-13T20:18:28.000Z",
+      "topRatedBuyingExperience": false,
+      "priorityListing": false,
+      "listingMarketplaceId": "EBAY_GB"
+    }
+  ]
+}
