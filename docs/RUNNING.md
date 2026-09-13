@@ -5,7 +5,7 @@ below assumes you have read anything else.
 
 - [Installing on a fresh droplet](#installing-on-a-fresh-droplet)
 - [Upgrading and rolling back](#upgrading-and-rolling-back)
-- [Backups](#backups)
+- [Backups](#backups) and [restoring](#restoring)
 - [The two images](#the-two-images) · [TLS](#tls) · [Process roles](#process-roles) ·
   [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email)
 
@@ -75,6 +75,12 @@ cd /opt/goodies-beacon
 curl -fsSLO https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/docker-compose.yml
 curl -fsSLO https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/Caddyfile
 curl -fsSL  https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/.env.example -o .env
+
+# The two scripts compose and the deploy workflow reach for.
+mkdir -p scripts
+curl -fsSL https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/scripts/backup.sh -o scripts/backup.sh
+curl -fsSL https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/scripts/deploy.sh -o deploy.sh
+chmod +x scripts/backup.sh deploy.sh
 ```
 
 Then edit `.env`. The four that matter on a first install:
@@ -157,13 +163,10 @@ failing, so a fork stays green:
 
 ### Restricting the deploy key
 
-The deploy key can run one thing. On the droplet, put `deploy.sh` where the workflow expects it
-and pin the key to it:
+The deploy key can run one thing. `deploy.sh` is already in place from step 4; pin the key to it:
 
 ```sh
 sudo -iu deploy
-curl -fsSLO https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/scripts/deploy.sh
-chmod +x deploy.sh
 
 # The forced command: whatever the client asks to run is ignored, and this runs instead.
 cat >> ~/.ssh/authorized_keys <<'KEY'
@@ -193,19 +196,83 @@ ssh -i deploy_key deploy@beacon.example.co.uk
 
 ## Backups
 
-Dumps live in `/opt/goodies-beacon/backups`. `deploy.sh` writes one before every deploy, named
-`pre-deploy-<timestamp>.sql.gz`; the bootstrap script creates the directory. The nightly job, its
-fourteen-day retention and the rehearsed restore procedure are P0-14. Until then, take one by hand
-whenever you want:
+A `backup` service takes a `pg_dump` every night at `BACKUP_AT` (03:30 UTC by default), keeps
+`BACKUP_KEEP_DAYS` of them (fourteen), and prunes the rest. `deploy.sh` writes one before every
+deploy too. They all land in `/opt/goodies-beacon/backups`, a plain directory rather than a Docker
+volume — a dump you cannot reach without `docker` is no use in the hour you need it:
+
+```sh
+ls -la /opt/goodies-beacon/backups
+# goodies-beacon-20260913T033000Z.sql.gz   the nightly
+# pre-deploy-20260913T101500Z.sql.gz       taken by deploy.sh
+```
+
+Is it working? The service says so on every run:
+
+```sh
+docker compose logs backup
+# 2026-09-13T03:30:00Z  dumped goodies-beacon-20260913T033000Z.sql.gz (412K)
+# 2026-09-13T03:30:01Z  14 dump(s) kept, 1 pruned (keeping 14 days)
+# 2026-09-13T03:30:01Z  next dump in 23h 59m
+```
+
+Take one now with `docker compose exec backup backup.sh --once`.
+
+**Copy them somewhere else.** A dump on the same droplet as the database it came from survives a
+mistake, not a lost droplet. `scp deploy@beacon.example.co.uk:/opt/goodies-beacon/backups/*.sql.gz .`
+on a schedule of your own is enough.
+
+The nightly dumps are written by a root process in the container, so they belong to root and are
+world-readable — `scp` and `gzip -dc` work as `deploy`, but removing one by hand wants `sudo`. The
+pruning does that for you, so it rarely comes up.
+
+### What is and is not in a dump
+
+The dump holds the `public` and `drizzle` schemas — your settings, password, wanted items,
+candidates and verdicts, and the migration journal. It deliberately leaves out `pgboss`, the job
+queue: queued and finished jobs are transient, pg-boss rebuilds its own schema when the app starts,
+and the poll schedules are recreated from the wanted items.
+
+Downscaled listing images in the `media` volume are not backed up either — they can be fetched
+again. And keep a copy of `.env` somewhere safe: without `GOODIES_BEACON_SECRET_KEY` a restored
+dump cannot decrypt the SMTP password.
+
+### Restoring
+
+Stop the app first, so nothing writes while the tables are being replaced:
 
 ```sh
 cd /opt/goodies-beacon
-docker compose exec -T db pg_dump -U goodies_beacon goodies_beacon | gzip > backups/manual.sql.gz
+docker compose stop app
+gzip -dc backups/goodies-beacon-20260913T033000Z.sql.gz \
+  | docker compose exec -T db psql -U goodies_beacon -d goodies_beacon
+docker compose start app
 ```
 
-The database is the only thing that must be backed up. Downscaled listing images in the `media`
-volume are re-fetchable, and `.env` you should already have a copy of somewhere safe — without
-`GOODIES_BEACON_SECRET_KEY` a restored dump cannot decrypt the SMTP password.
+The dump drops and recreates what it restores, so this works over a live database as well as an
+empty one. A clean restore prints no `ERROR` lines. Then check it took:
+
+```sh
+curl https://beacon.example.co.uk/healthz
+```
+
+and sign in — your password comes from the dump, so it is whatever it was when the dump was taken.
+
+### Rehearsing a restore without touching anything
+
+Restore into a scratch database instead, and look at it there:
+
+```sh
+docker compose exec -T db createdb -U goodies_beacon goodies_beacon_restore
+gzip -dc backups/goodies-beacon-20260913T033000Z.sql.gz \
+  | docker compose exec -T db psql -U goodies_beacon -d goodies_beacon_restore
+docker compose exec -T db psql -U goodies_beacon -d goodies_beacon_restore \
+  -c "select data->'instance' from settings"
+docker compose exec -T db dropdb -U goodies_beacon goodies_beacon_restore
+```
+
+Worth doing once when you set the instance up, so the first time you restore is not the day you
+need to.
 
 ## The two images
 
@@ -262,9 +329,11 @@ the main worker, which must handle everything.
 
 ## Queues
 
-Job queues live in the same Postgres database as the application data, in the `pgboss` schema, so a
-`pg_dump` of the database captures both. Queue names are stable and carry their subject: `poll.ebay`,
-`heartbeat.api`. Renaming one orphans whatever is already queued under the old name.
+Job queues live in the same Postgres database as the application data, in the `pgboss` schema —
+which the nightly dump deliberately leaves out, because the jobs in it are transient and pg-boss
+rebuilds the schema on start (see [what is and is not in a dump](#what-is-and-is-not-in-a-dump)).
+Queue names are stable and carry their subject: `poll.ebay`, `heartbeat.api`. Renaming one orphans
+whatever is already queued under the old name.
 
 ## Liveness
 

@@ -11,6 +11,16 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   "HTTP on the tailnet is acceptable" allowance §12 carried would have left a Tailscale-only
   instance unable to sign in at all, with nothing on screen to say why. `localhost` is the one
   exception, so local development and the Playwright run still need no certificate.
+- P0-14 Nightly backup job: a `backup` service takes a `pg_dump` every night at `BACKUP_AT`
+  (03:30 UTC by default), keeps `BACKUP_KEEP_DAYS` of them (fourteen), prunes the rest, and reports
+  each run on stdout. Dumps go to `backups/` beside the compose file rather than into a Docker
+  volume, where `deploy.sh` already writes its pre-deploy dumps and where they can be copied off
+  with `scp`. `docs/RUNNING.md` documents restoring, and rehearsing a restore against a scratch
+  database without touching the live one.
+- The dump covers the `public` and `drizzle` schemas and deliberately not `pgboss`: its jobs are
+  transient, pg-boss rebuilds its schema on start, and including it made a restore print errors
+  about inherited constraints on its partitioned tables that an operator could not tell apart from
+  a real failure.
 - P0-13 Release workflow and deploy script: publishing a GitHub Release builds and pushes both
   images for amd64 and arm64, writes the release notes from the conventional commits since the last
   tag, and deploys. The *Deploy* workflow puts any built tag on the droplet on demand, defaulting to

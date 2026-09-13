@@ -58,6 +58,28 @@ services:
     # being killed and retried on the next start.
     stop_grace_period: 60s
 
+  backup:
+    # The same image as the database, so pg_dump always matches the server's major version.
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-goodies_beacon}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      PGDATABASE: ${POSTGRES_DB:-goodies_beacon}
+      BACKUP_AT: ${BACKUP_AT:-03:30}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+      # A bind mount rather than a named volume: a dump you cannot reach without docker is not
+      # much use in the hour you need it, and deploy.sh writes its pre-deploy dumps here too.
+      - ./backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ['/bin/bash', '/usr/local/bin/backup.sh']
+    mem_limit: 128m
+
   caddy:
     image: caddy:2.10
     restart: unless-stopped

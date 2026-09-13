@@ -192,8 +192,8 @@ A `backup` service in compose (or a pg-boss job in the app) that runs `pg_dump` 
 
 Done when:
 
-- [ ] A dump appears each night and old ones are pruned.
-- [ ] The restore procedure has been rehearsed once on the droplet against a scratch database.
+- [x] A dump appears each night and old ones are pruned. Verified against the running stack: the service computes the next run correctly, a dump on demand covers all four tables and the migration journal, and pruning with fourteen days kept removed 30- and 15-day-old dumps while keeping 14, 13, 7 and 1 — plus a `.partial` left by an interrupted dump, which nothing else would clean up.
+- [x] The restore procedure has been rehearsed once against a scratch database, and then for real: the live database was deliberately damaged (settings changed, the user deleted) and the dump brought it back — no `ERROR` lines, the pre-restore password still signed in, and pg-boss rebuilt its seven queues from nothing. **Not yet on the droplet**, which does not exist; that belongs to P0-15's exit test.
 
 ### P0-15 Phase 0 exit — S
 
