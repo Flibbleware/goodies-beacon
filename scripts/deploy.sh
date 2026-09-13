@@ -14,6 +14,8 @@
 # back if anything after the switch goes wrong. A failed deploy leaves the previous image running.
 
 set -euo pipefail
+# Dumps hold the password hash, the encrypted SMTP password and the session table: owner-only.
+umask 077
 
 APP_DIR="${APP_DIR:-/opt/goodies-beacon}"
 BACKUP_DIR="${BACKUP_DIR:-$APP_DIR/backups}"

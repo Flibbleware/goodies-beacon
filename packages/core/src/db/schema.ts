@@ -35,7 +35,7 @@ export const authUser = pgTable(
 export const authSession = pgTable(
   'auth_session',
   {
-    /** 256 bits of randomness, base64url; never a sequential id. */
+    /** SHA-256 of the 256-bit token the cookie carries, so a copy of this table opens nothing. */
     id: text('id').primaryKey(),
     userId: smallint('user_id')
       .notNull()

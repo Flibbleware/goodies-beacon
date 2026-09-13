@@ -36,6 +36,21 @@ describe('GET /healthz', () => {
   });
 });
 
+describe('security headers', () => {
+  it('sends HSTS, a same-origin CSP and the frame and sniffing protections on every answer', async () => {
+    for (const path of ['/healthz', '/api/auth/session', '/api/nowhere']) {
+      const res = await app.request(path);
+      const h = res.headers;
+      expect(h.get('strict-transport-security'), path).toBe('max-age=31536000; includeSubDomains');
+      expect(h.get('content-security-policy'), path).toContain("default-src 'self'");
+      expect(h.get('content-security-policy'), path).toContain("frame-ancestors 'none'");
+      expect(h.get('x-content-type-options'), path).toBe('nosniff');
+      expect(h.get('x-frame-options'), path).toBe('SAMEORIGIN');
+      expect(h.get('referrer-policy'), path).toBe('strict-origin-when-cross-origin');
+    }
+  });
+});
+
 describe('the /api guard', () => {
   it('refuses any /api route without a session', async () => {
     for (const path of ['/api/settings', '/api/items', '/api/does-not-exist']) {

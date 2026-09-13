@@ -7,6 +7,7 @@ import { createAuthRoutes } from './auth/routes.js';
 import { errorHandler, notFoundHandler } from './errors.js';
 import { createHealthRoute } from './health.js';
 import { type RequestVariables, requestId } from './request-id.js';
+import { securityHeaders } from './security-headers.js';
 import { createSettingsRoutes } from './settings/routes.js';
 import { serveWebApp } from './web.js';
 
@@ -32,6 +33,7 @@ export function createApp(deps: AppDeps) {
   app.notFound(notFoundHandler());
 
   app.use('*', requestId(logger));
+  app.use('*', securityHeaders());
 
   app.route('/healthz', createHealthRoute({ db, version: config.version, sha: config.sha }));
 

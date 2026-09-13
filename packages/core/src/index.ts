@@ -19,9 +19,11 @@ export {
 } from './auth/schemas.js';
 export {
   createSession,
-  createSessionId,
+  createSessionToken,
   deleteOtherSessions,
   deleteSession,
+  hashSessionToken,
+  type IssuedSession,
   loadSession,
   SESSION_ID_BYTES,
   SESSION_REFRESH_AFTER_MS,

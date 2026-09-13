@@ -120,8 +120,8 @@ export function createAuthRoutes({ db, logger, rateLimiter }: AuthRouteDeps) {
     await updatePassword(db, body.value.newPassword);
     // A new password ends every session but the one making the change, including any an
     // attacker holds — which is the point of changing it.
-    const id = await startSession(c, db, USER_ID);
-    await deleteOtherSessions(db, USER_ID, id);
+    const token = await startSession(c, db, USER_ID);
+    await deleteOtherSessions(db, USER_ID, token);
     logger.info('password changed', { ip: clientOf(c) });
     return c.json({ authenticated: true });
   });
@@ -129,12 +129,12 @@ export function createAuthRoutes({ db, logger, rateLimiter }: AuthRouteDeps) {
   return routes;
 }
 
-/** Issues a fresh session with its cookies and returns its id. */
+/** Issues a fresh session with its cookies and returns the token the cookie now carries. */
 async function startSession(c: AuthContext, db: Database, userId: number): Promise<string> {
-  const session = await createSession(db, userId);
-  setSessionCookie(c, session.id);
+  const { token } = await createSession(db, userId);
+  setSessionCookie(c, token);
   setCsrfCookie(c, createCsrfToken());
-  return session.id;
+  return token;
 }
 
 function clientOf(c: AuthContext): string {

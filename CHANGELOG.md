@@ -4,6 +4,23 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- The plan for Phase 1 was revised at the Phase 0 exit (`docs/DEVELOPMENT_PLAN.md`,
+  ARCHITECTURE.md §17 v1.22): the eBay spike goes first; P1-13 shrinks to the JSON spec editor
+  §17 always described, with the typed form and version diff moved to the interviewer phase;
+  P1-12 sends a plain real-time email for a match, since the transport already exists; the eval
+  suite runs only when prompts, fixtures or its own code change; and Phases 2 and 3 are swapped
+  so notifications and retention come before the interviewer.
+
+- P1-00 Hardening from the Phase 0 review. Sessions: the database now stores the SHA-256 of the
+  cookie token rather than the token itself, so a copy of the database or a backup cannot be
+  replayed as a signed-in session. **Upgrading signs every browser out once.** Every response now
+  carries HSTS, a same-origin Content-Security-Policy, `frame-ancestors 'none'`, `nosniff` and a
+  strict referrer policy. Nightly and pre-deploy dumps are written owner-only, since they hold the
+  password hash, the encrypted SMTP password and the session table, and RUNNING.md's copy-off
+  command changes to suit. Container logs are capped at five files of 10 MB per service.
+- RUNNING.md step 2 now locks SSH to keys and disables root login, and the plan carries a
+  "later hardening" list so the smaller items from the review are not lost.
+
 ## v0.1.0 — 13 September 2026
 
 Phase 0 exit. Published as a GitHub pre-release, since nothing works yet: the release exists to
