@@ -109,13 +109,19 @@ export {
 export {
   AI_ROLES,
   type AiRole,
+  BACKFILL_DEPTHS,
+  type BackfillDepth,
   BUYING_TYPES,
   type BuyingType,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
   type CandidateOrigin,
   type CandidateStage,
+  CONDITION_CATEGORIES,
+  type ConditionCategory,
+  CRITERION_KINDS,
   CRITERION_RESULTS,
+  type CriterionKind,
   type CriterionResult,
   FEEDBACK_RESOLUTIONS,
   FEEDBACK_TYPES,
@@ -127,10 +133,16 @@ export {
   NOTIFICATION_MODES,
   type NotificationChannel,
   type NotificationMode,
+  ON_UNKNOWN,
+  type OnUnknown,
   REJECTION_REASONS,
+  RELIST_POLICIES,
   type RejectionReason,
+  type RelistPolicy,
   SHIPS_TO_UK,
+  SHIPS_TO_UK_POLICIES,
   type ShipsToUk,
+  type ShipsToUkPolicy,
   SPEC_ORIGINS,
   type SpecOrigin,
   VERDICT_DECISIONS,
@@ -139,11 +151,50 @@ export {
   type WantedItemStatus,
 } from './domain/constants.js';
 export {
+  LINT_CODES,
+  type LintCode,
+  lintCriterion,
+  lintSpec,
+  type SpecWarning,
+} from './domain/lint.js';
+export {
+  type ListingImage,
+  listingImageSchema,
+  type NormalisedListing,
+  normalisedListingSchema,
+} from './domain/listing.js';
+export {
   loadSellerSalt,
   SELLER_SALT_BYTES,
   sellerHash,
   sellerHashesEqual,
 } from './domain/seller.js';
+export {
+  backfillSchema,
+  type Criterion,
+  criterionSchema,
+  durationSchema,
+  type PriceCeiling,
+  priceCeilingSchema,
+  type ReferenceImage,
+  referenceImageSchema,
+  type SearchPlan,
+  type SpecSettings,
+  searchPlanSchema,
+  specSettingsSchema,
+  type WantedSpec,
+  wantedSpecSchema,
+} from './domain/spec.js';
+export {
+  type CriterionResultEntry,
+  criterionResultSchema,
+  type PrefilterOutput,
+  prefilterOutputSchema,
+  type ReviewerOutput,
+  reviewerOutputSchema,
+  type VerdictResult,
+  verdictSchema,
+} from './domain/verdict.js';
 export { createLogger, createSilentLogger, type Logger } from './logger.js';
 export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
 export {

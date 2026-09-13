@@ -9,8 +9,6 @@ import {
   runMigrations,
   SESSION_TTL_MS,
 } from '@goodies-beacon/core';
-import type { Hono } from 'hono';
-import type { Pool } from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import { CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE } from './cookies.js';
@@ -25,9 +23,9 @@ const databaseUrl = process.env.TEST_DATABASE_URL;
 const PASSWORD = 'a-good-enough-password';
 const logger: Logger = { error() {}, warn() {}, info() {}, debug() {}, child: () => logger };
 
-let pool: Pool | undefined;
+let pool: ReturnType<typeof createPool> | undefined;
 let db: Database;
-let app: Hono;
+let app: ReturnType<typeof createApp>;
 let rateLimiter: ReturnType<typeof createLoginRateLimiter>;
 
 afterAll(async () => {

@@ -45,7 +45,8 @@ describe('encryptSecret / decryptSecret', () => {
   it('detects a tampered ciphertext', () => {
     const encrypted = encryptSecret('smtp-password', KEY_A);
     const payload = Buffer.from(encrypted.slice('enc:v1:'.length), 'base64');
-    payload[payload.length - 1] ^= 0xff;
+    const last = payload.length - 1;
+    payload.writeUInt8(payload.readUInt8(last) ^ 0xff, last);
     const tampered = `enc:v1:${payload.toString('base64')}`;
 
     expect(() => decryptSecret(tampered, KEY_A)).toThrow(DecryptionError);

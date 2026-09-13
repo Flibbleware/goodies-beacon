@@ -57,7 +57,11 @@ describe.skipIf(!databaseUrl)('the settings store against a real Postgres', () =
     await writeSettings(db, { email: { ...CONFIGURED, password: 'hunter2' } }, KEY);
 
     const [row] = await db.select().from(settings);
-    const stored = (row as { data: { email: { password: string } } }).data.email.password;
+    const stored = (row?.data as { email?: { password?: string } } | undefined)?.email?.password;
+
+    // Narrowed rather than asserted with expect(): `expect(undefined).not.toBe('hunter2')` passes,
+    // so a write that silently stored nothing would have gone unnoticed.
+    if (typeof stored !== 'string') throw new Error('no SMTP password was stored');
 
     expect(stored).not.toBe('hunter2');
     expect(isEncrypted(stored)).toBe(true);

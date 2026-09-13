@@ -4,6 +4,30 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- **Test files are typechecked.** Every package's `tsconfig.json` excludes `*.test.ts` so tests
+  never reach `dist/`, with the side effect that `tsc -b` checked none of them — 30 files, a third
+  of the TypeScript in the repo, and Vitest does not typecheck either since esbuild strips types
+  without reading them. A new `tsconfig.tests.json` checks them with `noEmit`, run by
+  `pnpm typecheck` after the build. It found eleven real errors, all pre-existing: three hand-made
+  `Logger` stubs missing `child`, two `as Config` casts claiming eleven fields that were not there,
+  `Pool` imported from a package `apps/api` does not depend on, two `Hono` variables typed without
+  their context, and an unchecked buffer index. One was a live weakness rather than a nuisance: a
+  settings test asserted a stored password was `not.toBe('hunter2')`, which `undefined` also
+  satisfies, so a write that silently stored nothing would have passed.
+
+- P1-02 Core types and Zod schemas. `SpecSettings`, `Criterion`, `SearchPlan`, `ReferenceImage`,
+  `WantedSpec`, the normalised listing and the reviewer's output, shared by the API, the web app,
+  the adapters and the AI layer, with the Carmageddon and Power Mac 5500 example specs kept as
+  JSON fixtures. Price ceilings, listing types, condition and regions are typed fields with
+  bounded values, applied as hard filters before any model is called.
+- The criteria linter §4 described is not built, and ARCHITECTURE.md §4 is amended to say so
+  (v1.24). It would have matched criteria text against prices, countries and listing types, none
+  of which are loose — the only route to a price in a criterion is hand-typing one into the raw
+  JSON editor, which Phase 3 closes twice over. One check is kept: a criterion that is `hard` but
+  not `quantifiable` is flagged, because `hard` sounds like the careful choice while actually
+  meaning a blurry photo rejects the listing outright. It compares two typed fields rather than
+  matching English, so it cannot misfire, and it is a warning rather than an error.
+
 - P1-01 Domain schema. The tables from ARCHITECTURE.md §4 — wanted items, immutable spec versions,
   per-plan search state, listings, `seen`, candidates, verdicts, the cost ledger and media, plus
   stubs for grading scales, feedback and notifications. `listings` carries a `seller_hash` and no

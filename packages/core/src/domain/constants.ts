@@ -74,3 +74,33 @@ export type MediaKind = (typeof MEDIA_KINDS)[number];
  */
 export const AI_ROLES = ['interviewer', 'prefilter', 'reviewer'] as const;
 export type AiRole = (typeof AI_ROLES)[number];
+
+/**
+ * What the item does about listings that will not ship to the UK (§4 `SpecSettings`). Distinct
+ * from SHIPS_TO_UK above, which is what a listing turned out to be: this is the policy, that is
+ * the observation. v1 defaults to `show_all` with the flag displayed.
+ */
+export const SHIPS_TO_UK_POLICIES = ['show_all', 'flag', 'only'] as const;
+export type ShipsToUkPolicy = (typeof SHIPS_TO_UK_POLICIES)[number];
+
+/** Mapped to each source's own condition filter where one exists (§4). */
+export const CONDITION_CATEGORIES = ['any', 'new', 'used', 'for_parts'] as const;
+export type ConditionCategory = (typeof CONDITION_CATEGORIES)[number];
+
+/** A hard failure rejects; a soft one surfaces as uncertain (§7 step 6). */
+export const CRITERION_KINDS = ['hard', 'soft'] as const;
+export type CriterionKind = (typeof CRITERION_KINDS)[number];
+
+/**
+ * What to do when the evidence cannot settle a criterion. `surface` is the default and the
+ * point of requirement 8/9: the thing you cannot tell is shown to you, not quietly dropped.
+ */
+export const ON_UNKNOWN = ['surface', 'reject'] as const;
+export type OnUnknown = (typeof ON_UNKNOWN)[number];
+
+/** v1 shows relists with a "seen before" flag; suppression is the later toggle (§4). */
+export const RELIST_POLICIES = ['show', 'suppress'] as const;
+export type RelistPolicy = (typeof RELIST_POLICIES)[number];
+
+export const BACKFILL_DEPTHS = ['top_50', 'top_200', 'last_30_days'] as const;
+export type BackfillDepth = (typeof BACKFILL_DEPTHS)[number];

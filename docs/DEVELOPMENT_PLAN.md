@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.23; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.24; section numbers below refer to it.*
 
 Version 1.2 — 13 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -14,7 +14,7 @@ Working conventions for the repo:
 
 - One branch per task, named after the id (`p0-07-auth`). Squash-merge through a pull request so CI runs on every change, even solo. Until this document is complete the base is the integration branch `development/0.2.0`, not `main`; `main` receives a single merge at the end.
 - Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`), which also feed the release notes.
-- Nothing merges with Biome warnings, type errors or failing tests. There is no "fix it later" lane.
+- Nothing merges with Biome warnings, type errors or failing tests. There is no "fix it later" lane. `pnpm typecheck` covers test files as well as source: they are excluded from each package's build so they stay out of `dist/`, and `tsconfig.tests.json` checks them separately.
 - The integration branch is always deployable, and `main` after the final merge. Releases are tags (`v0.1.0`) created through GitHub Releases, cut from the integration branch until then; the release workflow deploys them. Between releases, `deploy.yml` puts any built image on the droplet on demand, so an exit test can be rehearsed without publishing a release.
 - Secrets never enter the repo. `.env.example` lists every variable with a comment; real values live in `.env` locally and on the droplet.
 - Before a release, deploy the integration branch's `dev` image to the droplet with the *Deploy* workflow and walk the phase's exit test there. Phase 0's exit found nine defects that only a real deployment could show; the release should confirm a rehearsal, not be one.
@@ -345,13 +345,15 @@ Done when:
 
 #### P1-02 Core types and Zod schemas — M
 
-`SpecSettings`, `Criterion`, `SearchPlan`, `ReferenceImage`, `WantedSpec`, `Listing`, `Verdict` and its per-criterion results, all as Zod schemas with inferred types, shared by API, UI, adapters and the AI layer. Includes the criteria linter from §4 (flags criteria mentioning prices, countries, listing types).
+`SpecSettings`, `Criterion`, `SearchPlan`, `ReferenceImage`, `WantedSpec`, `Listing`, `Verdict` and its per-criterion results, all as Zod schemas with inferred types, shared by API, UI, adapters and the AI layer.
+
+**The criteria linter §4 asked for is not built, and §4 is amended to match (v1.24).** It would have matched criteria text against prices, countries and listing types — but none of those are loose: `priceCeiling` is `{ amount, currency: 'GBP' }`, `listingTypes` and the rest are enums, a region is a field on the search plan, and each is a hard filter running before any model is called. The only route to a price in a criterion is hand-typing one into P1-13's raw JSON editor, which Phase 3 closes twice over — the typed form gives the ceiling a number field, and `propose_spec` is typed so the agent cannot emit it. What is kept is the one check that compares typed fields rather than matching English, so it cannot misfire.
 
 Done when:
 
-- [ ] Schemas round-trip the example specs for Carmageddon and the Power Mac 5500 (kept as fixtures).
-- [ ] The linter has tests for each pattern it catches and for a clean spec.
-- [ ] A spec with a hard, non-quantifiable criterion is accepted but flagged in validation output (it is legal, just unusual).
+- [x] Schemas round-trip the example specs for Carmageddon and the Power Mac 5500 (kept as fixtures). JSON in `packages/core/src/domain/fixtures/`, so P1-13's editor can seed itself from the same files it will be tested against. The round trip is parse → JSON → parse, because a spec lives in JSONB and is read back on every poll; anything the schema silently dropped would be lost between versions.
+- [x] The linter has tests for each pattern it catches and for a clean spec. Amended: there are no patterns, by the decision above. The surviving check is tested for the case it catches, for the three field combinations it must leave alone, for a clean spec, and — deliberately — for *not* flagging a criterion that merely mentions a price or a place, so the regexes are not reinstated by reflex.
+- [x] A spec with a hard, non-quantifiable criterion is accepted but flagged in validation output (it is legal, just unusual). It parses, and `lintSpec` returns `hard_non_quantifiable` explaining that such a criterion rejects on a blurry photo as readily as on a real fault, and that `soft` is usually what was meant. The Power Mac example carries one deliberately (`model-family`), so the fixtures cover the case rather than only the unit tests.
 
 #### P1-03 Adapter contract, context, template, test harness — L
 

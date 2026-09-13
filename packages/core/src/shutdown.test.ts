@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Logger } from './logger.js';
+import { createSilentLogger } from './logger.js';
 import { createShutdown } from './shutdown.js';
 
-const logger: Logger = { error() {}, warn() {}, info() {}, debug() {} };
+const logger = createSilentLogger();
 
 function harness(timeoutMs?: number) {
   const exit = vi.fn<(code: number) => void>();

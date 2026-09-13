@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.23 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.24 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -120,7 +120,11 @@ Names below are the tables/entities; types are illustrative.
 
 **WantedSpecVersion** — Immutable. `id, wantedItemId, version, createdBy (interview|amendment|challenge|manual_edit|image_added), summary, settings, criteria[], searchPlans[], referenceImages[], changeNote`. Every change — a chat amendment, a direct edit in the form, or adding an image — creates a new version; a verdict records which version judged it, so "why did it reject this in July" is always answerable, and any two versions can be diffed in the UI.
 
-The **settings vs criteria rule.** `settings` holds everything with a bounded set of values and is rendered as toggles, dropdowns and number fields; `criteria` holds only judgement calls that require reading the description or looking at the photos. The interviewer's `propose_spec` tool is typed to this split, so it cannot express "under £150" or "UK only" as a criterion, and a small linter flags criteria that mention prices, countries or listing types.
+The **settings vs criteria rule.** `settings` holds everything with a bounded set of values and is rendered as toggles, dropdowns and number fields; `criteria` holds only judgement calls that require reading the description or looking at the photos. The interviewer's `propose_spec` tool is typed to this split, so it cannot express "under £150" or "UK only" as a criterion.
+
+**There is deliberately no linter matching criteria text against prices, countries or listing types.** Earlier versions of this document called for one; P1-02 dropped it, and the reasoning is worth keeping because it will look like an omission otherwise. Nothing about those values is loose: `priceCeiling` is `{ amount, currency: 'GBP' }` — a literal, so another currency is a parse error — `listingTypes` is an enum, `conditionCategory` and `shipsToUk` are enums, and a region is a typed field on the search plan. Every one is a hard filter or a source-side filter that runs before a model is called (§7 step 2), because the sources return these predictably: S1-01 measured `price`, `itemLocation.country` and `buyingOptions` as structured on every eBay response. The *only* way a price reaches a criterion is someone hand-typing one into P1-13's raw JSON editor, and both of Phase 3's deliverables close that — the typed form gives the ceiling its own number field, and `propose_spec` is typed so the agent cannot emit it. A regular expression over English was never going to be a third guard worth its false positives: "the £10 budget re-release" is a legitimate criterion, and warnings nobody trusts are warnings nobody reads.
+
+One check does survive, and it is not pattern matching: a criterion that is `hard` but not `quantifiable` is flagged, because it compares two typed fields and cannot misfire. `hard` sounds like the careful choice, which is the trap — it rejects outright, so evidence the photos cannot settle rejects a listing on a blurry image as readily as on a real fault, where `soft` would surface it as uncertain. It is legal and stays legal; the spec saves with a warning beside it.
 
 ```ts
 type SpecSettings = {

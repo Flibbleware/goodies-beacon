@@ -17,6 +17,59 @@ export {
   passwordSchema,
 } from './auth/schemas.js';
 export {
+  BACKFILL_DEPTHS,
+  type BackfillDepth,
+  CONDITION_CATEGORIES,
+  type ConditionCategory,
+  CRITERION_KINDS,
+  type CriterionKind,
+  ON_UNKNOWN,
+  type OnUnknown,
+  RELIST_POLICIES,
+  type RelistPolicy,
+  SHIPS_TO_UK_POLICIES,
+  type ShipsToUkPolicy,
+} from './domain/constants.js';
+export {
+  LINT_CODES,
+  type LintCode,
+  lintCriterion,
+  lintSpec,
+  type SpecWarning,
+} from './domain/lint.js';
+export {
+  type ListingImage,
+  listingImageSchema,
+  type NormalisedListing,
+  normalisedListingSchema,
+} from './domain/listing.js';
+export {
+  backfillSchema,
+  type Criterion,
+  criterionSchema,
+  durationSchema,
+  type PriceCeiling,
+  priceCeilingSchema,
+  type ReferenceImage,
+  referenceImageSchema,
+  type SearchPlan,
+  type SpecSettings,
+  searchPlanSchema,
+  specSettingsSchema,
+  type WantedSpec,
+  wantedSpecSchema,
+} from './domain/spec.js';
+export {
+  type CriterionResultEntry,
+  criterionResultSchema,
+  type PrefilterOutput,
+  prefilterOutputSchema,
+  type ReviewerOutput,
+  reviewerOutputSchema,
+  type VerdictResult,
+  verdictSchema,
+} from './domain/verdict.js';
+export {
   DEFAULT_DIGEST_TIME,
   DEFAULT_SMTP_PORT,
   DEFAULT_TIMEZONE,

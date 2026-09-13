@@ -1,0 +1,97 @@
+{
+  "summary": "A Power Macintosh 5500 all-in-one, working or repairable. The related 5400 and Performa 5xxx all-in-ones are of interest too; a bare logic board or a monitor on its own is not.",
+  "plausibilityNote": "Sellers rarely give the model number: expect 'vintage apple computer', 'apple macintosh all in one', 'retro mac' with a photo and nothing else. Any 1990s beige all-in-one Macintosh is plausible and should reach the reviewer, which can read the model from the photographs. Japanese listings often say Performa rather than Power Macintosh.",
+  "settings": {
+    "sources": ["ebay", "yahoo_auctions_jp"],
+    "listingTypes": ["auction", "fixed"],
+    "priceCeiling": { "amount": 400, "currency": "GBP" },
+    "shipsToUk": "flag",
+    "conditionCategory": "any",
+    "gradingScaleId": null,
+    "minimumGrade": null,
+    "negativeKeywords": ["logic board only", "motherboard only", "spares or repair lot", "empty case"],
+    "notificationMode": "digest",
+    "pollEvery": "PT8H",
+    "relists": "show",
+    "defaultOnUnknown": "surface",
+    "backfill": { "enabled": true, "depth": "top_50" }
+  },
+  "criteria": [
+    {
+      "id": "all-in-one",
+      "text": "An all-in-one Macintosh with the screen built into the case, not a separate tower and monitor",
+      "kind": "hard",
+      "quantifiable": true,
+      "onUnknown": "surface"
+    },
+    {
+      "id": "model-family",
+      "text": "A Power Macintosh 5500, 5400, or a Performa 5xxx of the same all-in-one shape",
+      "kind": "hard",
+      "quantifiable": false,
+      "onUnknown": "surface"
+    },
+    {
+      "id": "complete-machine",
+      "text": "A complete machine rather than a stripped case, bare logic board or loose parts",
+      "kind": "hard",
+      "quantifiable": true,
+      "onUnknown": "reject"
+    },
+    {
+      "id": "crt-condition",
+      "text": "The CRT is not visibly burned in, cracked or badly discoloured",
+      "kind": "soft",
+      "quantifiable": false,
+      "onUnknown": "surface"
+    },
+    {
+      "id": "no-battery-damage",
+      "text": "No signs of a leaked PRAM battery or corrosion on the visible boards",
+      "kind": "soft",
+      "quantifiable": false,
+      "onUnknown": "surface"
+    }
+  ],
+  "searchPlans": [
+    {
+      "id": "ebay-gb-power-mac",
+      "source": "ebay",
+      "query": "power macintosh 5500",
+      "region": "EBAY_GB",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    },
+    {
+      "id": "ebay-gb-vintage-apple",
+      "source": "ebay",
+      "query": "vintage apple all in one",
+      "region": "EBAY_GB",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    },
+    {
+      "id": "ebay-us-performa",
+      "source": "ebay",
+      "query": "macintosh performa 5400",
+      "region": "EBAY_US",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    },
+    {
+      "id": "yahoo-jp-performa",
+      "source": "yahoo_auctions_jp",
+      "query": "マッキントッシュ パフォーマ",
+      "region": "jp",
+      "options": {},
+      "enabled": true,
+      "watermark": null
+    }
+  ],
+  "referenceImages": [],
+  "createdBy": "manual_edit",
+  "changeNote": "First version, entered by hand."
+}
