@@ -5,8 +5,13 @@ import { decryptSecret, isEncrypted } from '../crypto.js';
 import { createDb, createPool, type Database } from '../db/client.js';
 import { runMigrations } from '../db/migrate.js';
 import { settings } from '../db/schema.js';
-import { DEFAULT_DIGEST_TIME, DEFAULT_SMTP_PORT, DEFAULT_TIMEZONE } from './schema.js';
-import { readSettings, resolveSmtp, writeSettings } from './store.js';
+import {
+  DEFAULT_DIGEST_TIME,
+  DEFAULT_SMTP_PORT,
+  DEFAULT_TIMEZONE,
+  toPublicSettings,
+} from './schema.js';
+import { readSettings, resolveEbay, resolveSmtp, writeSettings } from './store.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const KEY = randomBytes(32).toString('base64');
@@ -49,6 +54,9 @@ describe.skipIf(!databaseUrl)('the settings store against a real Postgres', () =
         password: '',
         fromAddress: '',
         notificationAddress: '',
+      },
+      sources: {
+        ebay: { clientId: '', clientSecret: '', proxyUrl: '' },
       },
     });
   });
@@ -135,6 +143,90 @@ describe.skipIf(!databaseUrl)('the settings store against a real Postgres', () =
       const saved = await readSettings(db);
 
       expect(() => resolveSmtp(saved, OTHER_KEY)).toThrow(/GOODIES_BEACON_SECRET_KEY/);
+    });
+  });
+});
+
+describe.skipIf(!databaseUrl)('the eBay source settings', () => {
+  beforeAll(async () => {
+    await runMigrations(databaseUrl as string);
+    pool ??= createPool(databaseUrl as string);
+    db = createDb(pool);
+  });
+
+  beforeEach(async () => {
+    await db.delete(settings);
+  });
+
+  const KEYSET = { clientId: 'App-ID-1', clientSecret: 'PRD-secret', proxyUrl: '' };
+
+  it('encrypts the client secret rather than storing what was typed', async () => {
+    await writeSettings(db, { sources: { ebay: KEYSET } }, KEY);
+
+    const [row] = await db.select().from(settings);
+    const stored = (row?.data as { sources?: { ebay?: { clientSecret?: string } } } | undefined)
+      ?.sources?.ebay?.clientSecret;
+
+    if (typeof stored !== 'string') throw new Error('no client secret was stored');
+    expect(stored).not.toBe('PRD-secret');
+    expect(isEncrypted(stored)).toBe(true);
+    expect(decryptSecret(stored, KEY)).toBe('PRD-secret');
+  });
+
+  it('encrypts the proxy URL too, since it carries a username and password', async () => {
+    await writeSettings(
+      db,
+      { sources: { ebay: { ...KEYSET, proxyUrl: 'http://user:pass@proxy.example:8080' } } },
+      KEY,
+    );
+
+    const [row] = await db.select().from(settings);
+    const stored = JSON.stringify(row?.data);
+
+    expect(stored).not.toContain('user:pass');
+    expect(resolveEbay(await readSettings(db), KEY)?.proxyUrl).toBe(
+      'http://user:pass@proxy.example:8080',
+    );
+  });
+
+  it('keeps the stored secret when a save leaves it out', async () => {
+    await writeSettings(db, { sources: { ebay: KEYSET } }, KEY);
+    await writeSettings(db, { sources: { ebay: { clientId: 'App-ID-2' } } }, KEY);
+
+    const resolved = resolveEbay(await readSettings(db), KEY);
+
+    expect(resolved?.clientId).toBe('App-ID-2');
+    expect(resolved?.clientSecret).toBe('PRD-secret');
+  });
+
+  it('clears the secret when an empty string is sent, which is how a keyset is removed', async () => {
+    await writeSettings(db, { sources: { ebay: KEYSET } }, KEY);
+    await writeSettings(db, { sources: { ebay: { clientSecret: '' } } }, KEY);
+
+    expect(resolveEbay(await readSettings(db), KEY)).toBeUndefined();
+  });
+
+  it('resolves to undefined until both halves of the keyset are present', async () => {
+    await writeSettings(db, { sources: { ebay: { clientId: 'App-ID-1' } } }, KEY);
+
+    expect(resolveEbay(await readSettings(db), KEY)).toBeUndefined();
+  });
+
+  it('never sends either secret to the browser, only whether there is one', async () => {
+    await writeSettings(
+      db,
+      { sources: { ebay: { ...KEYSET, proxyUrl: 'http://user:pass@proxy.example:8080' } } },
+      KEY,
+    );
+
+    const publicView = toPublicSettings(await readSettings(db));
+
+    expect(JSON.stringify(publicView)).not.toContain('PRD-secret');
+    expect(JSON.stringify(publicView)).not.toContain('proxy.example');
+    expect(publicView.sources.ebay).toEqual({
+      clientId: 'App-ID-1',
+      clientSecretSet: true,
+      proxySet: true,
     });
   });
 });

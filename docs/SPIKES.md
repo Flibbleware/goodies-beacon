@@ -156,9 +156,13 @@ it on would have hidden roughly half of what is actually available to a UK buyer
 `shipToLocations`, which is `getItem`-only, so the flag is only available at §7 step 4 and after —
 not at the pre-filter. That is fine as the pipeline stands, but it means ships-to-UK can never be
 a pre-filter input, and a candidate rejected before enrichment will never have the flag. Deriving
-it is also not a string match: `regionIncluded`/`regionExcluded` entries carry a `regionType` of
-either `COUNTRY` or `COUNTRY_REGION`, so "Europe" and "Worldwide" have to be resolved as well as
-"United Kingdom", and the exclusion list checked too. All three sampled items ship to the UK; one
+it is also not a string match: `regionIncluded`/`regionExcluded` are lists of `{ regionName,
+regionType, regionId }`, and the exclusion list has to be checked as well as the inclusion one.
+In the three sampled items every entry was `regionType: COUNTRY` and all three named `GB`
+explicitly; the two `COUNTRY_REGION` entries seen were sub-national (`Alaska/Hawaii`, `APO/FPO`)
+rather than continents. eBay's schema also allows `WORLDWIDE` and `WORLD_REGION`, which this
+sample did not exercise, so P1-04 handles them defensively and falls back to `unknown` rather
+than guessing. All three sampled items ship to the UK; one
 listed a single included country, one listed 100, one mixed countries and regions.
 
 **5. `getItem` returns business sellers' real-world identity, and it is worse than a username.**

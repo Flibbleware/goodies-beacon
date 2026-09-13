@@ -46,7 +46,7 @@ export function createApp(deps: AppDeps) {
   // After the auth routes, which have already answered by the time this is reached, so it guards
   // every other /api path — including ones that do not exist.
   app.use('/api/*', requireSession(db));
-  app.route('/api/settings', createSettingsRoutes({ db, config }));
+  app.route('/api/settings', createSettingsRoutes({ db, config, logger }));
 
   // The API's own 404, before the web app's catch-all: an unknown /api path is a mistake worth a
   // JSON error, not a page.

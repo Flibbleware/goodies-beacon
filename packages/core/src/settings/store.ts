@@ -4,6 +4,7 @@ import type { Database } from '../db/client.js';
 import { settings } from '../db/schema.js';
 import {
   type EmailSettings,
+  isEbayConfigured,
   isEmailConfigured,
   type Settings,
   type SettingsPatch,
@@ -42,6 +43,23 @@ export async function writeSettings(
       ...defined(patch.email),
       password: nextPassword(current.email.password, patch.email?.password, secretKey),
     },
+    sources: {
+      ebay: {
+        ...current.sources.ebay,
+        ...defined(patch.sources?.ebay),
+        // Both follow the SMTP password's rule: absent keeps what is stored, empty clears it.
+        clientSecret: nextPassword(
+          current.sources.ebay.clientSecret,
+          patch.sources?.ebay?.clientSecret,
+          secretKey,
+        ),
+        proxyUrl: nextPassword(
+          current.sources.ebay.proxyUrl,
+          patch.sources?.ebay?.proxyUrl,
+          secretKey,
+        ),
+      },
+    },
   });
 
   await db
@@ -71,6 +89,28 @@ export function resolveSmtp(settings: Settings, secretKey: string): SmtpCredenti
 
   const { password, ...rest } = settings.email;
   return { ...rest, password: password === '' ? '' : decryptSecret(password, secretKey) };
+}
+
+export interface EbayCredentials {
+  readonly clientId: string;
+  readonly clientSecret: string;
+  /** Empty when no proxy is configured, which means go direct. */
+  readonly proxyUrl: string;
+}
+
+/**
+ * The eBay keyset with its secrets decrypted, or undefined if it is not configured. The only
+ * place the plaintext exists, and only for as long as a poll takes.
+ */
+export function resolveEbay(settings: Settings, secretKey: string): EbayCredentials | undefined {
+  const ebay = settings.sources.ebay;
+  if (!isEbayConfigured(ebay)) return undefined;
+
+  return {
+    clientId: ebay.clientId,
+    clientSecret: decryptSecret(ebay.clientSecret, secretKey),
+    proxyUrl: ebay.proxyUrl === '' ? '' : decryptSecret(ebay.proxyUrl, secretKey),
+  };
 }
 
 /**

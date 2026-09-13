@@ -20,6 +20,16 @@ export function sendTestEmail(): Promise<{ sentTo: string }> {
   return api('/api/settings/email/test', { method: 'POST' });
 }
 
+export interface EbayTestResponse {
+  health: { status: string; message: string; details?: { quota?: unknown } };
+  /** Present only when a proxy is configured, so the exit address can be shown beside it. */
+  exit?: { ip: string; country?: string };
+}
+
+export function testEbay(): Promise<EbayTestResponse> {
+  return api('/api/settings/sources/ebay/test', { method: 'POST' });
+}
+
 export function changePassword(currentPassword: string, newPassword: string): Promise<unknown> {
   return api('/api/auth/password', {
     method: 'POST',

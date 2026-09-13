@@ -32,6 +32,9 @@ importers:
       '@goodies-beacon/email':
         specifier: workspace:*
         version: link:../../packages/email
+      '@goodies-beacon/source-ebay':
+        specifier: workspace:*
+        version: link:../../packages/sources/ebay
       '@goodies-beacon/worker':
         specifier: workspace:*
         version: link:../worker
@@ -169,6 +172,19 @@ importers:
       zod:
         specifier: 4.4.3
         version: 4.4.3
+
+  packages/sources/ebay:
+    dependencies:
+      '@goodies-beacon/core':
+        specifier: workspace:*
+        version: link:../../core
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      tsx:
+        specifier: 4.23.13
+        version: 4.23.13
 
 packages:
 

@@ -18,7 +18,8 @@
     "@goodies-beacon/worker": "workspace:*",
     "@hono/node-server": "2.1.1",
     "hono": "4.13.7",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@goodies-beacon/source-ebay": "workspace:*"
   },
   "devDependencies": {
     "tsx": "4.23.13"

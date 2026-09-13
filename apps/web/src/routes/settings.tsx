@@ -4,6 +4,7 @@ import { settingsQuery } from '../api/settings.js';
 import { AccountSection } from '../settings/account-section.js';
 import { EmailSection } from '../settings/email-section.js';
 import { InstanceSection } from '../settings/instance-section.js';
+import { SourcesSection } from '../settings/sources-section.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export const settingsRoute = createRoute({
@@ -12,7 +13,7 @@ export const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
-/** Account, email and instance, in the order §P0-10 lists them. Later sections add themselves. */
+/** Account, email, sources and instance. Later sections add themselves (§14). */
 function SettingsPage() {
   const { data, isPending, isError } = useQuery(settingsQuery);
 
@@ -33,6 +34,7 @@ function SettingsPage() {
         <>
           <AccountSection />
           <EmailSection email={data.settings.email} />
+          <SourcesSection ebay={data.settings.sources.ebay} />
           <InstanceSection instance={data.settings.instance} host={data.instanceHost} />
         </>
       ) : null}
