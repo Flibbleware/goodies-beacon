@@ -88,13 +88,14 @@ describe.skipIf(!databaseUrl)('the settings store against a real Postgres', () =
     expect((await readSettings(db)).email.password).toBe('');
   });
 
-  it('does not encrypt an envelope twice, so a round-trip through the store is safe', async () => {
+  it('encrypts a submitted value that merely looks like a stored envelope', async () => {
     await writeSettings(db, { email: { ...CONFIGURED, password: 'hunter2' } }, KEY);
-    const once = await readSettings(db);
+    const stored = (await readSettings(db)).email.password;
 
-    await writeSettings(db, { email: { password: once.email.password } }, KEY);
+    await writeSettings(db, { email: { password: stored } }, KEY);
 
-    expect(decryptSecret((await readSettings(db)).email.password, KEY)).toBe('hunter2');
+    // Taken as a new password, not passed through: what decrypts is the envelope itself.
+    expect(decryptSecret((await readSettings(db)).email.password, KEY)).toBe(stored);
   });
 
   it('leaves the other section alone when one is saved', async () => {

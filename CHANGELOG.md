@@ -4,6 +4,28 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: a published release would have failed to deploy. The release workflow tagged images
+  with the version number alone (`0.1.0`) while handing the deploy job the release's tag name
+  (`v0.1.0`), so the pull on the droplet found nothing. Images are now tagged with the tag name
+  as it is, which is also what `/healthz` reports and what `deploy.sh` takes.
+- Fixed: the dump `deploy.sh` takes before a deploy now uses the same flags as the nightly one,
+  so it can be restored by the procedure in `docs/RUNNING.md` — over a live database, and without
+  the pgboss errors a plain dump prints. It also reads the database role from the container rather
+  than assuming the default, so a custom `POSTGRES_USER` no longer aborts every deploy at the dump.
+- Fixed: the `backup` service stops as soon as it is asked. It is PID 1 in its container and had no
+  signal handler, so every `docker compose stop` or deploy waited out the ten-second timeout before
+  killing it. A dump in progress still finishes before it exits.
+- Sessions that expired without being presented again are now swept whenever a new session is
+  minted, so the table no longer keeps a row per sign-in for ever.
+- A settings save that submits an SMTP password which happens to look like a stored envelope is
+  now encrypted like any other, rather than stored as sent and left undecryptable.
+- Docs brought back in step with the code: README no longer says the compose files are still to
+  come or that P0-06 is next; RUNNING.md names the heartbeat queue with the period pg-boss requires
+  and says where `ROLE` is actually decided; ARCHITECTURE.md §11 and §16 describe the `./backups`
+  directory the backup service and `deploy.sh` really write to; CLAUDE.md states the integration
+  branch and the branch naming in use; and the Costs page in the navigation is labelled Phase 5,
+  which is when §17 schedules it.
+
 - Work merges into the `development/0.2.0` integration branch until Phase 1 is complete; `main` receives a single merge at the end. `v0.1.0` is still tagged from the integration branch at the Phase 0 exit.
 
 - HTTPS is now stated as required rather than recommended (ARCHITECTURE.md §11 and §12). The

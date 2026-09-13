@@ -2,6 +2,7 @@
   "name": "goodies-beacon",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Self-hosted, AI-reviewed wanted list for collectors. Polls marketplaces, judges new listings against your criteria, emails you real matches.",
   "license": "MIT",
   "engines": {

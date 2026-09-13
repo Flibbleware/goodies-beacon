@@ -32,13 +32,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # {{raw}} rather than {{version}}: the latter strips the leading v, which would publish
+      # `0.1.0` while the deploy job below asks the droplet for `v0.1.0` — the release's own tag
+      # name, and what GOODIES_BEACON_VERSION is baked as. One spelling everywhere.
       - name: Derive full image tags
         id: meta
         uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
+            type=semver,pattern={{raw}}
             type=raw,value=latest
 
       - name: Derive slim image tags
@@ -47,7 +50,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/slim
           tags: |
-            type=semver,pattern={{version}}
+            type=semver,pattern={{raw}}
             type=raw,value=latest
 
       - name: Build and push the full image
