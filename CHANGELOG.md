@@ -11,6 +11,19 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   "HTTP on the tailnet is acceptable" allowance §12 carried would have left a Tailscale-only
   instance unable to sign in at all, with nothing on screen to say why. `localhost` is the one
   exception, so local development and the Playwright run still need no certificate.
+- P0-13 Release workflow and deploy script: publishing a GitHub Release builds and pushes both
+  images for amd64 and arm64, writes the release notes from the conventional commits since the last
+  tag, and deploys. The *Deploy* workflow puts any built tag on the droplet on demand, defaulting to
+  `dev`, which every push to the integration branch now publishes. Both triggers share one job, so
+  `scripts/deploy.sh` has a single caller.
+- `scripts/deploy.sh` dumps the database, pulls, switches `GOODIES_BEACON_VERSION`, restarts and
+  polls `/healthz` for two minutes — putting the previous version back and restarting it if the new
+  image never becomes healthy, so a failed deploy leaves the working image running.
+- The deploy key is restricted to `deploy.sh` by a forced command in `authorized_keys`, so a stolen
+  `DEPLOY_KEY` can deploy a published image and nothing else. The tag arrives in
+  `SSH_ORIGINAL_COMMAND` and is refused unless it looks like a tag.
+- `GOODIES_BEACON_IMAGE` now holds the whole image reference including the registry, so a fork can
+  point it somewhere other than GHCR.
 - P0-12 Droplet bootstrap and RUNNING.md: `docs/RUNNING.md` now starts from a fresh Ubuntu 24.04
   droplet and ends at a login page — cloud firewall, bootstrap, DNS, the three files, first start,
   and claiming the instance — followed by upgrade and rollback, backups, and the operational

@@ -3,7 +3,8 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    # The integration branch publishes too, so a manual deploy always has something to pull.
+    branches: [main, 'development/**']
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -212,7 +213,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=edge,enable=${{ github.event_name == 'push' }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=dev,enable=${{ startsWith(github.ref, 'refs/heads/development/') }}
             type=sha,prefix=sha-,format=short
 
       - name: Derive slim image tags
@@ -221,7 +223,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/slim
           tags: |
-            type=raw,value=edge,enable=${{ github.event_name == 'push' }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=dev,enable=${{ startsWith(github.ref, 'refs/heads/development/') }}
             type=sha,prefix=sha-,format=short
 
       # Loaded as well as pushed, so the size gate and the start-up check have something local
