@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { decryptSecret, encryptSecret, isEncrypted } from '../crypto.js';
+import { decryptSecret, encryptSecret } from '../crypto.js';
 import type { Database } from '../db/client.js';
 import { settings } from '../db/schema.js';
 import {
@@ -75,13 +75,13 @@ export function resolveSmtp(settings: Settings, secretKey: string): SmtpCredenti
 
 /**
  * Absent means "not sent, keep what is stored"; empty means "clear it", for a relay that wants no
- * authentication. Anything else is a new password to encrypt. A value that is already an envelope
- * is passed through, so re-saving a document read straight from the database cannot double-encrypt.
+ * authentication. Anything else is a new password and is encrypted as it is — even something that
+ * looks like a stored envelope, since the browser is never given one to send back and a value
+ * stored unencrypted would only fail to decrypt later.
  */
 function nextPassword(stored: string, submitted: string | undefined, secretKey: string): string {
   if (submitted === undefined) return stored;
   if (submitted === '') return '';
-  if (isEncrypted(submitted)) return submitted;
   return encryptSecret(submitted, secretKey);
 }
 

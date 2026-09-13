@@ -109,7 +109,7 @@ a certificate. Wait for `goodies-beacon started`, then:
 
 ```sh
 curl https://beacon.example.co.uk/healthz
-# {"status":"ok","version":"0.1.0","sha":"9f2c1ab","db":"ok"}
+# {"status":"ok","version":"v0.1.0","sha":"9f2c1ab","db":"ok"}
 ```
 
 ### 6. Claim it
@@ -130,8 +130,9 @@ cd /opt/goodies-beacon
 ./deploy.sh v0.2.0      # or any published tag: dev, latest, sha-9f2c1ab
 ```
 
-It dumps the database to `backups/` first, pulls the new image, switches `GOODIES_BEACON_VERSION`,
-restarts, and polls `/healthz` for up to two minutes. Nothing is switched until the pull succeeds,
+It dumps the database to `backups/` first — the same kind of dump as the nightly, so it restores
+the same way — pulls the new image, switches `GOODIES_BEACON_VERSION`, restarts, and polls
+`/healthz` for up to two minutes. Nothing is switched until the pull succeeds,
 and if the new image does not come up healthy it puts the old version back and restarts it — so a
 failed deploy leaves the previous image running rather than a broken one.
 
@@ -309,7 +310,9 @@ Either way HTTPS is required, not optional — see [Signing in](#signing-in).
 
 ## Process roles
 
-One image runs every role, selected by `ROLE` in `.env`. `apps/api/dist/main.js` is the entrypoint
+One image runs every role, selected by `ROLE`. `docker-compose.yml` pins `all` for its `app`
+service, so `.env` only decides it for a container defined elsewhere — a remote worker, say.
+`apps/api/dist/main.js` is the entrypoint
 for all of them:
 
 | `ROLE` | What starts | Notes |
@@ -337,7 +340,7 @@ whatever is already queued under the old name.
 
 ## Liveness
 
-A `heartbeat:<role>` job runs every five minutes and updates `process_heartbeat.last_seen_at` for
+A `heartbeat.<role>` job runs every five minutes and updates `process_heartbeat.last_seen_at` for
 that role. A `last_seen_at` older than about ten minutes means no process is answering for that
 role — not that a job failed, because each process subscribes only to its own role's queue. The
 dashboard surfaces this in P1-16; until then:
@@ -351,11 +354,12 @@ docker compose exec db psql -U goodies_beacon -c 'select * from process_heartbea
 `/healthz` needs no session and reports what is running:
 
 ```json
-{ "status": "ok", "version": "0.1.0", "sha": "9f2c1ab", "db": "ok" }
+{ "status": "ok", "version": "v0.1.0", "sha": "9f2c1ab", "db": "ok" }
 ```
 
 `version` and `sha` are baked into the image at build time, so they say what is *actually* running
-rather than what the compose file asks for. A database that cannot be reached — or that accepts the
+rather than what the compose file asks for. `version` is the image tag as published — a release's
+own tag name (`v0.1.0`), or `dev`, `edge` or `sha-<short sha>` for a branch build. A database that cannot be reached — or that accepts the
 connection and never answers — makes it `503` with `"db": "unreachable"` within about two seconds,
 so the deploy script and any monitor can act on the status code and never hang.
 
@@ -417,7 +421,7 @@ sends with the wrong credentials: the test send and every notification fail loud
 the password again to recover.
 
 In development, mail goes to [Mailpit](https://mailpit.axllent.org) with its inbox at
-`localhost:8025` — P0-11 adds it to `compose.dev.yml`.
+`localhost:8025`, started by `compose.dev.yml`.
 
 ## The web app
 

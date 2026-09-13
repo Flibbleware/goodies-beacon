@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, lt, ne } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { type AuthSession, authSession } from '../db/schema.js';
 
@@ -23,6 +23,10 @@ export async function createSession(
   userId: number,
   now = new Date(),
 ): Promise<AuthSession> {
+  // A session that expires without ever being presented again is never deleted by loadSession,
+  // so the table would grow by one row per sign-in for ever. A sign-in is rare enough to sweep on.
+  await db.delete(authSession).where(lt(authSession.expiresAt, now));
+
   const [created] = await db
     .insert(authSession)
     .values({

@@ -72,6 +72,14 @@ describe.skipIf(!databaseUrl)('sessions against a real Postgres', () => {
     expect(refreshed?.lastUsedAt.getTime()).toBe(useAt.getTime());
   });
 
+  it('sweeps sessions that expired without being presented again when a new one is minted', async () => {
+    const stale = await createSession(db, USER_ID, NOW);
+    const fresh = await createSession(db, USER_ID, later(SESSION_TTL_MS + 1000));
+
+    expect(await db.select().from(authSession).where(eq(authSession.id, stale.id))).toEqual([]);
+    expect(await db.select().from(authSession).where(eq(authSession.id, fresh.id))).toHaveLength(1);
+  });
+
   it('refuses an expired session and deletes the row on the way past', async () => {
     const { id } = await createSession(db, USER_ID, NOW);
 

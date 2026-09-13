@@ -42,9 +42,12 @@ pnpm build
 
 To run one package's tests: `pnpm --filter @goodies-beacon/core test`.
 
-Database work needs a Postgres 18 to point `DATABASE_URL` at (compose files arrive in P0-11):
+`compose.dev.yml` runs the Postgres and the Mailpit mail catcher that `pnpm dev` expects, with
+Mailpit's inbox at `localhost:8025`:
 
 ```
+docker compose -f compose.dev.yml up -d
+pnpm dev           # api and workers (ROLE=all) plus the web app at localhost:5173
 pnpm db:generate   # write a migration from a schema change
 pnpm db:migrate    # apply outstanding migrations
 ```
@@ -70,4 +73,5 @@ Read `CLAUDE.md` (also provided as `AGENTS.md`). It points the agent at the arch
 
 ## Next task
 
-P0-06 (pg-boss and process roles) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-05 are done.
+P0-15 (Phase 0 exit) — see docs/DEVELOPMENT_PLAN.md. P0-01 to P0-14 are done; the three boxes
+still open in P0-03, P0-11 and P0-12 are proved by the exit test itself.

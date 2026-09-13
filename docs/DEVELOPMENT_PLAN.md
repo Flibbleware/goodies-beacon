@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.19; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.20; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 

@@ -61,11 +61,16 @@ previous="$(sed -n 's/^GOODIES_BEACON_VERSION=//p' .env | head -1)"
 log "deploying $tag (currently ${previous:-unset})"
 
 # ------------------------------------------------------------------ 1. dump, before anything
+# The same flags as the nightly in backup.sh, so this dump restores by the procedure RUNNING.md
+# gives: --clean so it can go over a live database, and no pgboss schema, whose partitioned
+# tables cannot be dropped that way and only print errors. The role and database are read inside
+# the db container, where compose has already resolved them from .env — this script does not.
 mkdir -p "$BACKUP_DIR"
 dump="$BACKUP_DIR/pre-deploy-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
 log "dumping the database to $(basename "$dump")"
-if ! docker compose exec -T db pg_dump -U "${POSTGRES_USER:-goodies_beacon}" \
-	"${POSTGRES_DB:-goodies_beacon}" | gzip > "$dump"; then
+if ! docker compose exec -T db sh -c \
+	'pg_dump --clean --if-exists --schema=public --schema=drizzle -U "$POSTGRES_USER" "$POSTGRES_DB"' \
+	| gzip > "$dump"; then
 	rm -f "$dump"
 	fail "could not dump the database; nothing has changed."
 fi

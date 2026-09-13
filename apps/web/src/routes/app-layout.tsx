@@ -24,7 +24,7 @@ const NAV = [
   { to: '/items', label: 'Wanted items', soon: 'P1-14' },
   { to: '/candidates', label: 'Candidates', soon: 'P1-15' },
   { to: '/scales', label: 'Grading scales', soon: 'Phase 5' },
-  { to: '/costs', label: 'Costs', soon: 'P1-08' },
+  { to: '/costs', label: 'Costs', soon: 'Phase 5' },
   { to: '/settings', label: 'Settings', soon: undefined },
 ] as const;
 

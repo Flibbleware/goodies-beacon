@@ -88,10 +88,18 @@ fi
 
 log "nightly dump of $PGDATABASE at $BACKUP_AT UTC, keeping $BACKUP_KEEP_DAYS days in $BACKUP_DIR"
 
+# This is PID 1 in its container, and PID 1 ignores any signal it has no handler for — so without
+# this trap `docker compose stop` would wait out its ten-second timeout and kill the loop. The
+# sleep runs in the background and is waited on, because `wait` is interrupted by a trap where a
+# foreground sleep is not. A dump in progress is a foreground pipeline, so bash finishes it before
+# running the trap: stopping the service never truncates a dump.
+trap 'log "stopping"; exit 0' TERM INT
+
 while true; do
 	wait_for="$(seconds_until_next)"
 	log "next dump in $((wait_for / 3600))h $(((wait_for % 3600) / 60))m"
-	sleep "$wait_for"
+	sleep "$wait_for" &
+	wait $!
 
 	# A failed dump must not stop the loop: tomorrow's attempt may well work, and the log is
 	# what carries the failure to whoever is looking.

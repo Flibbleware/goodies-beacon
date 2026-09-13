@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.19 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.20 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -354,7 +354,7 @@ Tailscale (or WireGuard) is also the recommended way to let a home worker reach 
 
 Hardware: the whole stack runs on a 2 vCPU / 2 GB VPS (e.g. a basic DigitalOcean droplet) or a Raspberry Pi 5 / Mac mini. Resting footprint is about 1 GB (Postgres 100–200 MB, Node API + workers 200–400 MB, Caddy and Docker overhead under 150 MB); a headless Chromium for the Vinted fallback adds 300–500 MB while it runs, so the worker runs at most one browser at a time and closes it after each poll. Two rules keep 2 GB comfortable: add a 2 GB swap file, and never build the image on the droplet — GitHub Actions builds and publishes it, the droplet only pulls. Resize to 4 GB only if the OOM killer ever appears in the logs. Playwright adds ~620 MB to the image — Chromium's headless shell plus the X, GTK and Mesa libraries it links, none of which can be pared back without the browser failing to start — so the full image is budgeted at 1.0 GB and the `-slim` image without it at 400 MB. Slim is built for API-only deployments and for workers that poll no scraped source.
 
-Backups: nightly `pg_dump` to the media volume; the compose file includes the job. Media is reproducible enough (listing photos) that losing it is not critical.
+Backups: a `backup` service in the compose file runs a nightly `pg_dump` into `./backups` beside the compose file — a plain directory rather than a volume, so a dump can be copied off with `scp` without going through Docker — and prunes dumps older than fourteen days. `deploy.sh` writes a dump there before every deploy. Media is reproducible enough (listing photos) that losing it is not critical.
 
 ---
 
@@ -443,7 +443,7 @@ goodies-beacon/
 
 **Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages → `vitest` (unit tests, integration tests against a Postgres service, adapter tests against recorded HTTP fixtures, prompt evals against a fixture set of listings with expected verdicts, run against two providers so a prompt regression is caught) → Vite build of the web app, and a check that `docs/API.md` still matches the route table → a Playwright smoke test against the built API serving the built web app, on a Postgres service → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA; pushes to the integration branch push `dev` and the commit SHA, so a manual deploy always has a built image to pull. Renovate keeps dependencies current.
 
-**Release and deploy** (`.github/workflows/release.yml`, on a published GitHub Release tagged `vX.Y.Z`): build the image for amd64 and arm64, push to GHCR tagged with the version and `latest`, then — only if the deploy secrets exist, so forks skip this step — connect to the droplet over SSH as a restricted `deploy` user with a deploy key from the repository secrets and run `deploy.sh`: `pg_dump` to the backup volume, `docker compose pull`, `docker compose up -d` (migrations run on container start), then poll `/healthz` and fail the job if the app is not healthy within two minutes. The compose file on the droplet pins `image: ghcr.io/<you>/goodies-beacon:${GOODIES_BEACON_VERSION}` so what is running is always a known build.
+**Release and deploy** (`.github/workflows/release.yml`, on a published GitHub Release tagged `vX.Y.Z`): build the image for amd64 and arm64, push to GHCR tagged with the version and `latest`, then — only if the deploy secrets exist, so forks skip this step — connect to the droplet over SSH as a restricted `deploy` user with a deploy key from the repository secrets and run `deploy.sh`: `pg_dump` to `./backups`, `docker compose pull`, `docker compose up -d` (migrations run on container start), then poll `/healthz` and fail the job if the app is not healthy within two minutes. The compose file on the droplet pins `image: ghcr.io/<you>/goodies-beacon:${GOODIES_BEACON_VERSION}` so what is running is always a known build.
 
 **Deploying without a release** (`.github/workflows/deploy.yml`, `workflow_dispatch`): takes an image tag (defaulting to the integration branch's `dev`) and runs the same shared deploy job as the release workflow, so a build reaches the droplet exactly as a release would without creating a tag or a GitHub Release. There is one deploy path, reachable from two triggers; `deploy.sh` is never duplicated.
 

@@ -11,7 +11,7 @@ If a task conflicts with the architecture doc, or the code you find on disk conf
 
 ## How work is done
 
-- One task per branch, named after the task id (`p0-07-auth`). Squash-merge to `main` via pull request.
+- One task per branch, named after the task id (`feat/P0-07`, `fix/…` for a fix). Squash-merge via pull request into the integration branch `development/0.2.0` until the plan is complete; `main` receives a single merge at the end (`docs/DEVELOPMENT_PLAN.md`, ARCHITECTURE.md §16).
 - A task's *done when* list is its acceptance test. Every line must be true before the task is complete; tick the boxes in `docs/DEVELOPMENT_PLAN.md` in the same commit as the work.
 - Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`, `test:`).
 - Nothing merges with Biome errors, type errors or failing tests. Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` before declaring a task done.
