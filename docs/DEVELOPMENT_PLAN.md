@@ -19,6 +19,8 @@ Working conventions for the repo:
 - Secrets never enter the repo. `.env.example` lists every variable with a comment; real values live in `.env` locally and on the droplet.
 - Before a release, deploy the integration branch's `dev` image to the droplet with the *Deploy* workflow and walk the phase's exit test there. Phase 0's exit found nine defects that only a real deployment could show; the release should confirm a rehearsal, not be one.
 
+A pattern in `.gitignore` with no leading slash matches a directory of that name at every depth, not just the root — `media/` swallowed two source directories in P1-05, and because Biome reads the same file they went unlinted as well as uncommitted. Anchor anything root-only; `scripts/check-tracked-sources.sh` runs in CI and pre-commit and will say so if you forget.
+
 Global definition of done, in addition to each task's own list: CI green; Biome clean; new logic has unit tests; anything user-facing has a line in `CHANGELOG.md`; anything operational has a line in `docs/RUNNING.md`.
 
 ---

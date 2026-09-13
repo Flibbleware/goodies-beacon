@@ -4,6 +4,14 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: `.gitignore` had a bare `media/`, meant for the runtime media volume, and a bare pattern
+  matches a directory of that name at *any* depth — so `packages/core/src/media` and
+  `apps/api/src/media` were never committed. Everything built and tested locally and CI failed at
+  import. Biome reads `.gitignore` too (`vcs.useIgnoreFile`), so those files were also going
+  unlinted and unformatted: one mistake quietly disabled two gates. The root-only patterns are now
+  anchored with a leading slash, and `scripts/check-tracked-sources.sh` fails the lint job and the
+  pre-commit hook if a file under `src/`, `scripts/` or `fixtures/` is ignored.
+
 - P1-05 Media ingest. Listing and reference images are fetched behind an SSRF guard, size-capped
   at 15 MB, re-encoded to webp with a thumbnail, perceptually hashed and stored under `MEDIA_DIR`
   with a row; `POST /api/media` takes an upload and `GET /api/media/:id` serves it with an

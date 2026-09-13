@@ -5,8 +5,12 @@ dist-types/
 .env
 .env.*
 !.env.example
-media/
-backups/
+# Anchored with a leading slash, because these exist only at the repository root and a bare
+# pattern matches a directory of that name at *any* depth. `media/` silently swallowed
+# packages/core/src/media and apps/api/src/media, which built locally and failed in CI. The
+# entries below are build output whose names nobody would give a source directory.
+/media/
+/backups/
 coverage/
 test-results/
 playwright-report/
