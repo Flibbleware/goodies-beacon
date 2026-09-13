@@ -51,8 +51,8 @@ export default defineConfig({
             GOODIES_BEACON_HOST: `localhost:${PORT}`,
             // Only the settings encryption uses this, and the smoke test stores no secrets.
             GOODIES_BEACON_SECRET_KEY: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
-            GOODIES_BEACON_VERSION: 'e2e',
-            GOODIES_BEACON_SHA: 'e2e',
+            GOODIES_BEACON_BUILD_VERSION: 'e2e',
+            GOODIES_BEACON_BUILD_SHA: 'e2e',
             LOG_LEVEL: 'warn',
           },
         },

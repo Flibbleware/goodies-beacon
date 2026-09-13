@@ -19,7 +19,12 @@ const optionalSecret = z.string().min(1).optional();
 const schema = z.object({
   GOODIES_BEACON_HOST: z.string().min(1),
   GOODIES_BEACON_SECRET_KEY: z.string().regex(BASE64_32_BYTES, SECRET_KEY_HELP),
-  DATABASE_URL: z.string().refine(isPostgresUrl, 'must be a postgres:// connection URL'),
+  DATABASE_URL: z
+    .string()
+    .refine(
+      isPostgresUrl,
+      'must be a postgres:// connection URL — a password containing / ? # or @ has to be percent-encoded, or docker-compose.yml splices it in unencoded (use letters and digits only)',
+    ),
   ROLE: z.enum(ROLES).default('all'),
   WORKER_SOURCES: z
     .string()
@@ -37,8 +42,8 @@ const schema = z.object({
     .transform((ids) => ids as SourceId[]),
   LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  GOODIES_BEACON_VERSION: z.string().min(1).default('dev'),
-  GOODIES_BEACON_SHA: z.string().min(1).default('unknown'),
+  GOODIES_BEACON_BUILD_VERSION: z.string().min(1).default('dev'),
+  GOODIES_BEACON_BUILD_SHA: z.string().min(1).default('unknown'),
   MEDIA_DIR: z.string().min(1).default('/data/media'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   ANTHROPIC_API_KEY: optionalSecret,
@@ -48,8 +53,20 @@ const schema = z.object({
   OLLAMA_BASE_URL: optionalSecret,
 });
 
-/** Every variable the schema reads. Used to prove .env.example has not drifted. */
-export const CONFIG_VARIABLES: readonly string[] = Object.keys(schema.shape).sort();
+/**
+ * Set by the Dockerfile from build arguments, never by an operator: a value in .env would override
+ * what the image was built with, and /healthz would report a fiction. Kept out of .env.example
+ * for that reason, and `config.test.ts` checks they stay out.
+ */
+export const BAKED_VARIABLES: readonly string[] = [
+  'GOODIES_BEACON_BUILD_VERSION',
+  'GOODIES_BEACON_BUILD_SHA',
+];
+
+/** Every variable an operator may set. Used to prove .env.example has not drifted. */
+export const CONFIG_VARIABLES: readonly string[] = Object.keys(schema.shape)
+  .filter((name) => !BAKED_VARIABLES.includes(name))
+  .sort();
 
 export interface AiKeys {
   readonly anthropicApiKey: string | undefined;
@@ -108,8 +125,8 @@ export function parseConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
   return {
     host: v.GOODIES_BEACON_HOST,
-    version: v.GOODIES_BEACON_VERSION,
-    sha: v.GOODIES_BEACON_SHA,
+    version: v.GOODIES_BEACON_BUILD_VERSION,
+    sha: v.GOODIES_BEACON_BUILD_SHA,
     isProduction: v.NODE_ENV === 'production',
     databaseUrl: v.DATABASE_URL,
     secretKey: v.GOODIES_BEACON_SECRET_KEY,

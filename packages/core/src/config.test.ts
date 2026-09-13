@@ -1,6 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CONFIG_VARIABLES, ConfigError, loadConfigOrExit, parseConfig } from './config.js';
+import {
+  BAKED_VARIABLES,
+  CONFIG_VARIABLES,
+  ConfigError,
+  loadConfigOrExit,
+  parseConfig,
+} from './config.js';
 
 /** Shaped like `openssl rand -base64 32` output — 43 payload characters and one '='. */
 const VALID_KEY = `${'A'.repeat(43)}=`;
@@ -24,6 +30,17 @@ describe('parseConfig', () => {
     expect(config.mediaDir).toBe('/data/media');
     expect(config.port).toBe(3000);
     expect(config.workerSources).toEqual([]);
+  });
+
+  it('reports the version and commit the image was built with, under their BUILD_ names', () => {
+    const config = parseConfig({
+      ...VALID_ENV,
+      GOODIES_BEACON_BUILD_VERSION: 'v0.1.0',
+      GOODIES_BEACON_BUILD_SHA: '9f2c1ab',
+    });
+
+    expect(config.version).toBe('v0.1.0');
+    expect(config.sha).toBe('9f2c1ab');
   });
 
   it('treats an empty variable as unset, so `FOO=` in .env does not defeat the default', () => {
@@ -142,6 +159,13 @@ describe('.env.example', () => {
     const missing = CONFIG_VARIABLES.filter((name) => !documented.has(name));
 
     expect(missing).toEqual([]);
+  });
+
+  it('never assigns the baked build variables, which .env would override in the container', () => {
+    const assigned = new Set(assignments.map(({ line }) => line.split('=')[0]));
+    const leaked = BAKED_VARIABLES.filter((name) => assigned.has(name));
+
+    expect(leaked).toEqual([]);
   });
 
   it('gives every variable its own comment, not just a section heading', () => {
