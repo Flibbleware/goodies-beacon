@@ -39,13 +39,27 @@ nmap -Pn -p 22,80,443,5432 beacon.example.co.uk
 # 22, 80, 443 open · 5432 filtered
 ```
 
+Without `nmap` (macOS has none by default), `nc` says the same one port at a time:
+`nc -zv -w 3 beacon.example.co.uk 443` succeeds, and the same for 5432 times out.
+
 ### 2. Bootstrap it
 
-As root, over SSH:
+Over SSH, apply whatever updates the droplet was created with pending, and reboot if it asks —
+better now than in the middle of a deploy:
+
+```sh
+sudo apt-get update && sudo apt-get upgrade -y
+[ -f /var/run/reboot-required ] && sudo reboot
+```
+
+Then run the bootstrap:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Flibbleware/goodies-beacon/main/scripts/bootstrap-droplet.sh | sudo bash
 ```
+
+> Until the first release is merged to `main`, the files fetched in this guide live only on the
+> integration branch: replace `main` with `development/0.2.0` in each URL.
 
 That creates a `deploy` user that can use Docker without sudo, installs Docker Engine and Compose
 from Docker's apt repository, adds a 2 GB swap file (with an `/etc/fstab` entry so it survives a
@@ -88,11 +102,20 @@ Then edit `.env`. The four that matter on a first install:
 ```sh
 GOODIES_BEACON_HOST=beacon.example.co.uk        # the name you pointed at the droplet
 GOODIES_BEACON_SECRET_KEY=...                   # openssl rand -base64 32
-POSTGRES_PASSWORD=...                           # anything long; only read while the volume is empty
+POSTGRES_PASSWORD=...                           # openssl rand -hex 24; letters and digits only, see below
 GOODIES_BEACON_VERSION=latest                   # or a specific version tag
 ```
 
 `chmod 600 .env` — it holds the key that decrypts your SMTP password.
+
+If `nano` answers `Error opening terminal`, your terminal (Ghostty, kitty, and others) has told the
+droplet a name it has no entry for: `export TERM=xterm-256color` for the session and try again.
+
+The Postgres password must be letters and digits only: `docker-compose.yml` splices it into
+`DATABASE_URL` without encoding, so a `/`, `@`, `?` or `#` in it stops the app from starting with
+"DATABASE_URL must be a postgres:// connection URL". Hex from `openssl rand -hex 24` is safe; base64
+is not. Postgres reads the password only while its volume is empty, so if you have to change it
+after a first start, `docker compose down && docker volume rm goodies-beacon_pgdata` first.
 
 Tailnet-only instead of a public name? Set `GOODIES_BEACON_CADDYFILE=./Caddyfile.tailscale`,
 fetch that file too, and see [TLS](#tls).
@@ -111,6 +134,18 @@ a certificate. Wait for `goodies-beacon started`, then:
 curl https://beacon.example.co.uk/healthz
 # {"status":"ok","version":"v0.1.0","sha":"9f2c1ab","db":"ok"}
 ```
+
+To see the certificate as a browser will, from another machine:
+
+```sh
+echo | openssl s_client -connect beacon.example.co.uk:443 -servername beacon.example.co.uk 2>/dev/null \
+  | openssl x509 -noout -issuer -subject -dates
+# issuer=C=US, O=Let's Encrypt, ... · subject=CN=beacon.example.co.uk · ninety days of validity
+```
+
+Caddy writes its own log, including the certificate lines, to stderr, and `docker compose logs`
+keeps that stream separate — so it is `docker compose logs caddy 2>&1 | grep -i certificate`, with
+the `2>&1`, or grep finds nothing.
 
 ### 6. Claim it
 
@@ -158,9 +193,21 @@ failing, so a fork stays green:
 |---|---|
 | `DEPLOY_HOST` | The droplet's hostname or IP |
 | `DEPLOY_KEY` | The **private** half of a key whose public half is in `deploy`'s `authorized_keys` |
-| `DEPLOY_HOST_KEY` | The droplet's host key, from `ssh-keyscan -H <host>`. Optional, but without it the workflow trusts whatever answers |
+| `DEPLOY_HOST_KEY` | The droplet's host keys: the lines starting `\|1\|` from `ssh-keyscan -H <host> 2>/dev/null`. Optional, but without it the workflow trusts whatever answers |
 
-`DEPLOY_USER` is optional and defaults to `deploy`.
+`DEPLOY_USER` is optional and defaults to `deploy`. With the `gh` CLI the three are one line each:
+
+```sh
+gh secret set DEPLOY_HOST --body beacon.example.co.uk
+gh secret set DEPLOY_KEY < ~/.ssh/goodies-beacon-deploy
+ssh-keyscan -H beacon.example.co.uk 2>/dev/null | gh secret set DEPLOY_HOST_KEY
+```
+
+> GitHub lists a manually triggered workflow only when its file exists on the repository's
+> default branch. Until the first release is merged to `main`, that means either making
+> `development/0.2.0` the default branch for the time being or deploying by hand with
+> `./deploy.sh <tag>` on the droplet. Releases are unaffected: a release event runs the workflow
+> from the tag's own commit.
 
 ### Restricting the deploy key
 
@@ -217,7 +264,7 @@ docker compose logs backup
 # 2026-09-13T03:30:01Z  next dump in 23h 59m
 ```
 
-Take one now with `docker compose exec backup backup.sh --once`.
+Take one now with `docker compose exec -T backup backup.sh --once`.
 
 **Copy them somewhere else.** A dump on the same droplet as the database it came from survives a
 mistake, not a lost droplet. `scp deploy@beacon.example.co.uk:/opt/goodies-beacon/backups/*.sql.gz .`
@@ -285,6 +332,16 @@ need to.
 Pick with `GOODIES_BEACON_IMAGE` in `.env`, which holds the whole reference so a fork can point it at another registry. Both run as an unprivileged user and take the same
 configuration; the slim one simply cannot drive a browser, so a Vinted poll on it will fail rather
 than silently return nothing.
+
+Release tags (`v0.1.0`, `latest`) are built for `amd64` and `arm64`. The branch tags — `dev`,
+`edge` and `sha-<short sha>` — are `amd64` only, to keep pull requests quick, so an arm64 host (an
+Apple Silicon Mac, a Raspberry Pi, an Ampere droplet) can run only a release.
+
+Both packages are public, so the droplet pulls them with no `docker login` — there is no registry
+credential to store, rotate or have expire mid-deploy. A fork that keeps its packages private must
+log in once on the droplet as `deploy` (`docker login ghcr.io` with a token that has only
+`read:packages`) before the first `docker compose up` or `deploy.sh`; the login persists in
+`~deploy/.docker/config.json`.
 
 ## Development
 
@@ -357,8 +414,10 @@ docker compose exec db psql -U goodies_beacon -c 'select * from process_heartbea
 { "status": "ok", "version": "v0.1.0", "sha": "9f2c1ab", "db": "ok" }
 ```
 
-`version` and `sha` are baked into the image at build time, so they say what is *actually* running
-rather than what the compose file asks for. `version` is the image tag as published — a release's
+`version` and `sha` are baked into the image at build time as `GOODIES_BEACON_BUILD_VERSION` and
+`GOODIES_BEACON_BUILD_SHA`, so they say what is *actually* running rather than what the compose
+file asks for. Never put those two names in `.env`: compose loads the whole file into the
+container, and a value there overrides the image's. `version` is the image tag as published — a release's
 own tag name (`v0.1.0`), or `dev`, `edge` or `sha-<short sha>` for a branch build. A database that cannot be reached — or that accepts the
 connection and never answers — makes it `503` with `"db": "unreachable"` within about two seconds,
 so the deploy script and any monitor can act on the status code and never hang.
@@ -407,7 +466,15 @@ docker compose exec db psql -U goodies_beacon -c 'delete from auth_user'
 ## Email
 
 SMTP lives in Settings, not in `.env`: host, port, security, username, password, the from address
-and the notification address. The password is encrypted with `GOODIES_BEACON_SECRET_KEY` before it
+and the notification address.
+
+**Which provider.** Do not run your own relay on a droplet: its IP has no reputation and Gmail and
+Outlook will refuse or junk what it sends. The app sends a handful of messages a day to one
+address, which every transactional provider's free tier covers. Resend, Brevo and Postmark all
+work with the form as it is once your domain is verified with them — for Resend that is
+`smtp.resend.com`, username `resend`, an API key as the password, and a from address on the
+verified domain. A Gmail app password (`smtp.gmail.com`, 587, STARTTLS, your address as username)
+is the quickest if you have a Google account and no domain. The password is encrypted with `GOODIES_BEACON_SECRET_KEY` before it
 is stored, and the API never sends it back — the page is told only whether one is set, which is why
 saving the section without retyping it keeps it.
 
@@ -415,6 +482,12 @@ saving the section without retyping it keeps it.
 so a session cannot be used to make the instance mail a stranger. On success it says where it went.
 On failure it shows what the mail server actually said — `550 5.7.1 Relaying denied` rather than
 "sending failed" — which is usually enough to fix it.
+
+**"Connection timeout" on a droplet.** DigitalOcean blocks outbound SMTP on ports 25, 465 and
+587 for newer accounts, whatever the cloud firewall allows, so the usual ports never answer. Most
+providers listen on an alternative for this reason — Resend on 2587 (STARTTLS) and 2465 (TLS) —
+and switching the port is the whole fix; a support ticket to lift the block is the alternative.
+Check from the droplet with `nc -zv -w 5 smtp.example.com 587` and again with the alternative port.
 
 Changing `GOODIES_BEACON_SECRET_KEY` makes the stored SMTP password undecryptable. Nothing silently
 sends with the wrong credentials: the test send and every notification fail loudly instead. Enter

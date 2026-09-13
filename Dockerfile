@@ -43,12 +43,14 @@ RUN pnpm build
 
 FROM base AS runtime-slim
 # Baked in so /healthz reports what is actually running, not what someone believes is running.
+# Stored under BUILD_ names: compose loads .env into the container wholesale, and .env already
+# holds GOODIES_BEACON_VERSION as the tag to pull — the same name here would be overridden by it.
 ARG GOODIES_BEACON_VERSION=dev
 ARG GOODIES_BEACON_SHA=unknown
 ENV NODE_ENV=production \
     PORT=3000 \
-    GOODIES_BEACON_VERSION=$GOODIES_BEACON_VERSION \
-    GOODIES_BEACON_SHA=$GOODIES_BEACON_SHA
+    GOODIES_BEACON_BUILD_VERSION=$GOODIES_BEACON_VERSION \
+    GOODIES_BEACON_BUILD_SHA=$GOODIES_BEACON_SHA
 COPY --from=prod-deps /app ./
 # Every workspace package the entrypoint can reach needs its build output here, not just its
 # node_modules link. A missing one fails at import, on start, with ERR_MODULE_NOT_FOUND.

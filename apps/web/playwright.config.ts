@@ -26,7 +26,9 @@ export default defineConfig({
   workers: 1,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // No retries: the database is reset once per run in globalSetup, so a retry would start at
+  // "first run" against an instance whose password is already set and fail for the wrong reason.
+  retries: 0,
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL: external ?? `http://localhost:${PORT}`,
@@ -51,8 +53,8 @@ export default defineConfig({
             GOODIES_BEACON_HOST: `localhost:${PORT}`,
             // Only the settings encryption uses this, and the smoke test stores no secrets.
             GOODIES_BEACON_SECRET_KEY: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
-            GOODIES_BEACON_VERSION: 'e2e',
-            GOODIES_BEACON_SHA: 'e2e',
+            GOODIES_BEACON_BUILD_VERSION: 'e2e',
+            GOODIES_BEACON_BUILD_SHA: 'e2e',
             LOG_LEVEL: 'warn',
           },
         },

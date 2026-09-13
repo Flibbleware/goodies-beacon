@@ -122,7 +122,7 @@ test('first run, sign out, sign in, and deep links survive a refresh', async ({ 
   await test.step('saving the section again keeps the password that was not re-typed', async () => {
     await page.getByLabel('SMTP host').fill('127.0.0.1');
     await section('Email').getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByText('Stored encrypted. Leave it alone')).toBeVisible();
+    await expect(section('Email').getByRole('status')).toHaveText('Saved.');
 
     await page.reload();
     await expect(page.getByLabel('SMTP host')).toHaveValue('127.0.0.1');
@@ -156,6 +156,7 @@ test('first run, sign out, sign in, and deep links survive a refresh', async ({ 
 
     await page.getByLabel('Port').fill('1025');
     await section('Email').getByRole('button', { name: 'Save' }).click();
+    await expect(section('Email').getByRole('status').last()).toHaveText('Saved.');
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {

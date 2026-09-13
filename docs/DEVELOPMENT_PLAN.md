@@ -74,7 +74,7 @@ Done when:
 
 - [x] On a pull request: install (cached pnpm store) → `biome ci` → `pnpm typecheck` → `pnpm test` → `pnpm build` → `docker build` (no push). Each step is a named job or step so a failure is readable at a glance.
 - [x] On push to `main`: the same, plus the image is pushed to GHCR tagged `edge` and `sha-<short sha>`.
-- [ ] A pull request that introduces a type error or a Biome error fails CI (verified once by opening and closing such a PR).
+- [x] A pull request that introduces a type error or a Biome error fails CI (verified once by opening and closing such a PR). Verified 13 September 2026.
 - [x] Renovate (or Dependabot) is configured for weekly grouped updates.
 
 ### P0-04 Configuration and secrets — S
@@ -147,7 +147,7 @@ Settings page backed by `/api/settings`, which P0-08 mounted with the instance s
 Done when:
 
 - [x] SMTP password is stored encrypted and rendered masked; saving without changing it keeps the old value. The browser is never sent it at all — only `passwordSet` — so "unchanged" is enforced by the field being absent rather than by comparing against a mask.
-- [x] "Send test email" delivers to Mailpit in development and to your real inbox on the droplet, and reports success or the SMTP error verbatim. Verified against a real Mailpit at three levels: the transport, the endpoint, and the button in the Playwright run. **The droplet half is untested** — it needs real SMTP credentials on the droplet and belongs to the Phase 0 exit test (P0-15).
+- [x] "Send test email" delivers to Mailpit in development and to your real inbox on the droplet, and reports success or the SMTP error verbatim. Verified against a real Mailpit at three levels: the transport, the endpoint, and the button in the Playwright run. The droplet half was proven on 13 September 2026 during the Phase 0 exit test: Resend over STARTTLS from `beacon.flibbleware.app`, delivered to a Proton inbox and passing authentication. Two findings on the way there, both now in RUNNING.md: DigitalOcean blocks outbound 25, 465 and 587, so the provider's alternative port (2587) is needed, and the first attempt on 587 surfaced as a verbatim "Connection timeout" in the UI, which is the reporting this box asks for.
 - [x] Settings changes are validated with the same Zod schema on client and server, shared through `@goodies-beacon/core/schemas`.
 
 ### P0-11 Docker images and compose files — M
@@ -157,7 +157,7 @@ Extend the `Dockerfile` from P0-03 so it produces `goodies-beacon` (with Playwri
 Done when:
 
 - [x] `docker compose -f compose.dev.yml up -d && pnpm dev` gives a working local instance with Mailpit's inbox at `localhost:8025`. Verified end to end: first run, saving SMTP settings, and a test email arriving in Mailpit.
-- [ ] `docker compose up -d` on a machine with a DNS name pointing at it serves the app over HTTPS with a valid certificate and redirects HTTP. Proved locally as far as it can be: the stack comes up, HTTP answers 308 to HTTPS, and the app and API are served over TLS — but on `localhost` the certificate comes from Caddy's internal CA, so **a real Let's Encrypt certificate is unproven until the droplet exists** (P0-12).
+- [x] `docker compose up -d` on a machine with a DNS name pointing at it serves the app over HTTPS with a valid certificate and redirects HTTP. Proven on the droplet on 13 September 2026: first `docker compose up -d` with `beacon.flibbleware.app` pointing at it, `curl -I http://…` answered 308 to `https://`, and `openssl s_client` showed a Let's Encrypt certificate (issuer `C=US, O=Let's Encrypt, CN=YE2`) for the name, valid for ninety days. `/healthz` answered over TLS with `db: ok`.
 - [x] The full image is under 1.0 GB and the slim image under 400 MB (checked in CI and printed in the job summary). The full budget was 900 MB; §11 had estimated Playwright at ~500 MB and it costs ~620 MB, which put the full image at 960 MB on arm64. Mesa and LLVM look like 180 MB of dead weight for a headless shell but are not — remove them and Chromium will not start. Slim measured 343 MB.
 - [x] Container memory limits are set in compose (`app` 1.2 GB, `db` 512 MB, and `caddy` 128 MB) so a runaway process cannot take the droplet down.
 
@@ -167,7 +167,7 @@ Done when:
 
 Done when:
 
-- [ ] Following RUNNING.md from a fresh droplet to a running login page takes under thirty minutes without consulting anything else. Written and rehearsed as far as it can be without a droplet: the bootstrap script runs clean on a fresh Ubuntu 24.04, the `deploy` user reaches Docker without sudo, and every command the guide quotes was run — `pg_dump` produces a real dump of all four tables plus the `pgboss` and `drizzle` schemas, and the `sed` line was checked under GNU sed rather than the BSD sed on the author's Mac. **The walk-through itself is unproven** until there is a droplet, which is P0-15's exit test.
+- [ ] Following RUNNING.md from a fresh droplet to a running login page takes under thirty minutes without consulting anything else. **Run once on 13 September 2026 and not ticked**: bootstrap at 14:54 UTC, certificate at 15:40, `/healthz` at 15:44 — about fifty minutes, on an existing droplet, with an agent's help rather than the guide alone. Roughly half went on gaps the guide now closes: a base64 Postgres password that broke `DATABASE_URL`, download URLs pointing at a `main` that has nothing on it yet, pending apt updates, and DigitalOcean's outbound SMTP block. A timed re-run on a throwaway droplet, following the guide alone, is what ticks this. Written and rehearsed as far as it can be without a droplet: the bootstrap script runs clean on a fresh Ubuntu 24.04, the `deploy` user reaches Docker without sudo, and every command the guide quotes was run — `pg_dump` produces a real dump of all four tables plus the `pgboss` and `drizzle` schemas, and the `sed` line was checked under GNU sed rather than the BSD sed on the author's Mac. **The walk-through itself is unproven** until there is a droplet, which is P0-15's exit test.
 - [x] The bootstrap script is idempotent (running it twice is harmless). Run three times on a fresh Ubuntu 24.04 container: exit 0 each time, no duplicate `/etc/fstab` entry, one line in `docker.list`, and user, permissions and `~/.ssh` byte-identical afterwards.
 - [x] The Postgres port is not reachable from the internet (verified with a port scan from outside). Scanned the host with the production stack up: 80 and 443 open, 5432 and 3000 closed, while Postgres still answers inside the compose network. The scan is of the host rather than from the internet, but it is the host binding a remote scan would find, and there is none. The guide also says to use the cloud firewall rather than only `ufw`, because Docker writes its own iptables rules.
 
@@ -184,7 +184,7 @@ Done when:
 - [x] The deploy user's key is restricted in `authorized_keys` to running `deploy.sh` (forced command). Proven against a real sshd: `ssh … whoami` runs `deploy.sh` rather than `whoami`, `ssh … 'v1.0.0; id'` is refused as not a tag, there is no shell to drop into, and data will not flow through a `-L` forward.
 - [x] Release notes are generated from conventional commits since the previous tag, by `scripts/release-notes.sh`, grouped into breaking, added and changed, fixed, and documentation, with `chore` and `test` left out. Run against this repository's own history.
 - [x] `deploy.yml` deploys a chosen image tag on demand and shares its deploy job with `release.yml`, so `deploy.sh` has exactly one caller path in CI — `workflow_dispatch` and `workflow_call` on the same job. **Unrun**: neither workflow can be exercised without pushing to GitHub, so the YAML is checked by `actionlint` (clean) and every script it calls was run locally.
-- [x] Pushes to `development/**` publish `dev` and `sha-<short sha>` images, so there is always something for a manual deploy to pull. **Unrun** for the same reason: the trigger and tag rules are in `ci.yml` and pass `actionlint`, but the first push to the integration branch is what proves it.
+- [x] Pushes to `development/**` publish `dev` and `sha-<short sha>` images, so there is always something for a manual deploy to pull. Proven on 13 September 2026: both packages on GHCR carry `dev` and a `sha-` tag per integration-branch merge, and both list their tags to an anonymous request, so the droplet pulls without a login.
 
 ### P0-14 Nightly backup job — S
 
@@ -449,10 +449,45 @@ Done when:
 
 #### P1-18 Phase 1 exit — S
 
-Run the Phase 1 exit test on the droplet. Record the outcome, the month's real AI spend so far, and the spike recommendations in `CHANGELOG.md` under `v0.2.0`. Update ARCHITECTURE.md §2 with anything the spikes changed.
+Run the Phase 1 exit test on the droplet. Record the outcome, the month's real AI spend so far, and the spike recommendations in `CHANGELOG.md` under `v0.2.0`. Update ARCHITECTURE.md §2 with anything the spikes changed. When `development/0.2.0` is merged to `main`, make `main` the default branch again — it was switched to the integration branch during Phase 0 so manually triggered workflows and Renovate could see their files — and remove the "replace `main` with `development/0.2.0`" note from RUNNING.md.
 
 ---
 
 ## What comes next
 
 Phase 2 (interviewer and spec editing) and Phase 3 (notifications) will be planned once Phase 1's spikes are in, because the Vinted findings decide how much of Phase 4 exists as designed and the eBay findings decide the default marketplaces. The shape will be the same as this document: tasks with sizes, dependencies and done-when lists.
+
+### Carried forward from the Phase 0 exit test
+
+Found while running the exit test, sized and written up here so they are scheduled rather than forgotten. They belong to Phase 6 unless a later phase needs them sooner.
+
+#### P6-xx Bootstrap writes the instance, not just the host — S
+
+The exit test showed that steps 4 and 5 of RUNNING.md — download five files, generate two
+secrets, edit `.env` by hand — are where the time and the mistakes went (a base64 password that
+broke `DATABASE_URL`, a placeholder left in `authorized_keys`, an editor that could not open).
+Extend `scripts/bootstrap-droplet.sh` so that, given `GOODIES_BEACON_HOST`, it also fetches
+`docker-compose.yml`, `Caddyfile`, `backup.sh` and `deploy.sh` into `/opt/goodies-beacon`, writes a
+`.env` with the host, `GOODIES_BEACON_VERSION`, and freshly generated `GOODIES_BEACON_SECRET_KEY`
+and hex `POSTGRES_PASSWORD`, at mode 600; given `DEPLOY_PUBKEY`, writes `deploy`'s
+`authorized_keys` with the forced command and prints the fingerprint; and applies pending apt
+updates, saying whether a reboot is needed. Still idempotent: an existing `.env` or key line is
+left alone and reported. Depends on P0-12.
+
+Done when:
+
+- [ ] `GOODIES_BEACON_HOST=… curl … | sudo bash` on a fresh Ubuntu 24.04 leaves `/opt/goodies-beacon` ready for `docker compose up -d` with nothing to edit, and the same script pasted as DigitalOcean *User data* does the same before first login.
+- [ ] A second run changes nothing and says so for every step, including the two secrets.
+- [ ] `DEPLOY_PUBKEY` produces an `authorized_keys` line whose fingerprint `ssh-keygen -lf` prints, and the three `ssh` checks in RUNNING.md pass against it.
+- [ ] RUNNING.md's install section shrinks to: firewall, DNS, one bootstrap command, `docker compose up -d`, claim it — and the timed walk-through in P0-12 is re-run against it.
+
+#### P6-xx First-run setup token — S
+
+Between `docker compose up` and the owner setting a password, the instance belongs to whoever reaches it first (§12). Today that is mitigated by RUNNING.md saying to claim it immediately, which is fine for the developer and weak for a stranger who deploys and comes back tomorrow. On first start with no user, generate a random token, print it in the container log as a clearly marked line, and require it in the first-run form alongside the password. Depends on P0-07.
+
+Done when:
+
+- [ ] `POST /api/auth/first-run` refuses a request without the token, or with a wrong one, and the refusal is rate-limited like login.
+- [ ] The token is printed once on start when no user exists, is never printed once a user exists, and does not appear in the log at any other level.
+- [ ] The first-run page explains where to find the token (`docker compose logs app`), and the Playwright run reads it from the API process's output.
+- [ ] RUNNING.md's "Claim it" step describes the token instead of the race.

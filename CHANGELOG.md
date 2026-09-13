@@ -4,6 +4,25 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: the Playwright smoke test could fail on a slow CI runner by reloading the page while a
+  settings save was still in flight; it now waits for the section's "Saved." status. Retries are
+  off, because the database is reset once per run and a retry would start at first run against an
+  instance whose password is already set.
+
+- The window between first start and the owner setting a password, during which anyone reaching
+  the instance can claim it, is now stated in ARCHITECTURE.md §12 and a first-run setup token is
+  planned for Phase 6 (`docs/DEVELOPMENT_PLAN.md`, carried forward from the Phase 0 exit test).
+
+- Fixed: `/healthz` on the droplet reported `sha: unknown`, and would have reported `version:
+  latest`, because `.env.example` listed `GOODIES_BEACON_SHA` and `GOODIES_BEACON_VERSION` and
+  compose loads `.env` into the container over the values the image was built with. The baked
+  values now live under `GOODIES_BEACON_BUILD_VERSION` and `GOODIES_BEACON_BUILD_SHA`, which are
+  not operator settings and are kept out of `.env.example` by a test; `GOODIES_BEACON_VERSION` in
+  `.env` is now only the tag compose pulls. Found by the Phase 0 exit test.
+- The Postgres password must be letters and digits only, because `docker-compose.yml` splices it
+  into `DATABASE_URL` unencoded; `.env.example` and RUNNING.md now say so and suggest
+  `openssl rand -hex 24`, and the configuration error names the cause. Found by the exit test.
+
 - Fixed: a published release would have failed to deploy. The release workflow tagged images
   with the version number alone (`0.1.0`) while handing the deploy job the release's tag name
   (`v0.1.0`), so the pull on the droplet found nothing. Images are now tagged with the tag name

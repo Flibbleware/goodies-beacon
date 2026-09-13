@@ -36,6 +36,7 @@ export {
 } from './auth/user.js';
 export {
   type AiKeys,
+  BAKED_VARIABLES,
   type Config,
   ConfigError,
   LOG_LEVELS,
