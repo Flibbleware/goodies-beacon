@@ -13,8 +13,6 @@ import {
   runMigrations,
   settings,
 } from '@goodies-beacon/core';
-import type { Hono } from 'hono';
-import type { Pool } from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import { CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE } from '../auth/cookies.js';
@@ -35,9 +33,9 @@ const CONFIGURED = {
   notificationAddress: 'owner@example.com',
 };
 
-let pool: Pool | undefined;
+let pool: ReturnType<typeof createPool> | undefined;
 let db: Database;
-let app: Hono;
+let app: ReturnType<typeof createApp>;
 let cookie: string;
 let csrf: string;
 

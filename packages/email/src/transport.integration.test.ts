@@ -25,9 +25,11 @@ function settings(overrides: Partial<SmtpSettings> = {}): SmtpSettings {
   };
 }
 
-async function inbox(): Promise<{ To: { Address: string }[]; Subject: string }[]> {
+async function inbox(): Promise<{ ID: string; To: { Address: string }[]; Subject: string }[]> {
   const res = await fetch(`${mailpitUrl}/api/v1/messages`);
-  const body = (await res.json()) as { messages: { To: { Address: string }[]; Subject: string }[] };
+  const body = (await res.json()) as {
+    messages: { ID: string; To: { Address: string }[]; Subject: string }[];
+  };
   return body.messages;
 }
 
@@ -53,7 +55,7 @@ describe.skipIf(!smtpUrl)('sendMail against Mailpit', () => {
     await sendMail(settings(), { ...testMessage('beacon.example.co.uk'), to: TO });
 
     const [message] = await inbox();
-    const res = await fetch(`${mailpitUrl}/api/v1/message/${(message as { ID: string }).ID}`);
+    const res = await fetch(`${mailpitUrl}/api/v1/message/${message?.ID}`);
     const body = (await res.json()) as { Text: string };
 
     expect(body.Text).toContain('beacon.example.co.uk');

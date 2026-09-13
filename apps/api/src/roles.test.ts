@@ -1,14 +1,14 @@
-import type { Config, Database, Logger, Role } from '@goodies-beacon/core';
-import { assertUniqueQueues, SOURCE_IDS } from '@goodies-beacon/core';
+import type { Config, Database, Role } from '@goodies-beacon/core';
+import { assertUniqueQueues, createSilentLogger, SOURCE_IDS } from '@goodies-beacon/core';
 import { describe, expect, it } from 'vitest';
 import { processRegistrations } from './roles.js';
 
-const logger: Logger = { error() {}, warn() {}, info() {}, debug() {} };
+const logger = createSilentLogger();
 const POLL_QUEUES = SOURCE_IDS.map((id) => `poll.${id}`);
 
 async function names(role: Role, workerSources: string[] = []): Promise<string[]> {
   const registrations = await processRegistrations({
-    config: { role, workerSources } as Config,
+    config: { role, workerSources } as unknown as Config,
     db: {} as Database,
     logger,
   });

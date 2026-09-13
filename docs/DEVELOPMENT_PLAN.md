@@ -14,7 +14,7 @@ Working conventions for the repo:
 
 - One branch per task, named after the id (`p0-07-auth`). Squash-merge through a pull request so CI runs on every change, even solo. Until this document is complete the base is the integration branch `development/0.2.0`, not `main`; `main` receives a single merge at the end.
 - Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`), which also feed the release notes.
-- Nothing merges with Biome warnings, type errors or failing tests. There is no "fix it later" lane.
+- Nothing merges with Biome warnings, type errors or failing tests. There is no "fix it later" lane. `pnpm typecheck` covers test files as well as source: they are excluded from each package's build so they stay out of `dist/`, and `tsconfig.tests.json` checks them separately.
 - The integration branch is always deployable, and `main` after the final merge. Releases are tags (`v0.1.0`) created through GitHub Releases, cut from the integration branch until then; the release workflow deploys them. Between releases, `deploy.yml` puts any built image on the droplet on demand, so an exit test can be rehearsed without publishing a release.
 - Secrets never enter the repo. `.env.example` lists every variable with a comment; real values live in `.env` locally and on the droplet.
 - Before a release, deploy the integration branch's `dev` image to the droplet with the *Deploy* workflow and walk the phase's exit test there. Phase 0's exit found nine defects that only a real deployment could show; the release should confirm a rehearsal, not be one.

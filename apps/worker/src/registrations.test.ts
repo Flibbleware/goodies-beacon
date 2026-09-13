@@ -1,13 +1,13 @@
-import type { Config, Database, Logger, SourceId } from '@goodies-beacon/core';
-import { assertUniqueQueues, SOURCE_IDS } from '@goodies-beacon/core';
+import type { Config, Database, SourceId } from '@goodies-beacon/core';
+import { assertUniqueQueues, createSilentLogger, SOURCE_IDS } from '@goodies-beacon/core';
 import { describe, expect, it } from 'vitest';
 import { workerRegistrations } from './registrations.js';
 
-const logger: Logger = { error() {}, warn() {}, info() {}, debug() {} };
+const logger = createSilentLogger();
 const db = {} as Database;
 
 function deps(workerSources: readonly SourceId[]) {
-  return { config: { workerSources } as Config, db, logger };
+  return { config: { workerSources } as unknown as Config, db, logger };
 }
 
 function names(workerSources: readonly SourceId[]): string[] {
