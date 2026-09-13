@@ -69,6 +69,18 @@ checks for its own result first, so a second run changes nothing.
 It deliberately does **not** touch SSH configuration, the firewall or `authorized_keys`. Those are
 decisions rather than mechanics, and the deploy key belongs to the release workflow.
 
+**Lock SSH to keys.** DigitalOcean's image already refuses passwords when the droplet was created
+with an SSH key, but root can still log in by key, and there is no reason for it to once your own
+user has sudo. Check, then pin all three, keeping this session open and testing a fresh login
+before you close it:
+
+```sh
+sudo sshd -T | grep -E '^(passwordauthentication|permitrootlogin|kbdinteractiveauthentication) '
+printf 'PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\n' \
+  | sudo tee /etc/ssh/sshd_config.d/60-goodies-beacon.conf
+sudo sshd -t && sudo systemctl reload ssh
+```
+
 ### 3. Point DNS at it
 
 An `A` record for the name you intend to use — `beacon.example.co.uk` — at the droplet's IPv4
@@ -267,12 +279,16 @@ docker compose logs backup
 Take one now with `docker compose exec -T backup backup.sh --once`.
 
 **Copy them somewhere else.** A dump on the same droplet as the database it came from survives a
-mistake, not a lost droplet. `scp deploy@beacon.example.co.uk:/opt/goodies-beacon/backups/*.sql.gz .`
-on a schedule of your own is enough.
+mistake, not a lost droplet. Once a week from your own machine is enough:
 
-The nightly dumps are written by a root process in the container, so they belong to root and are
-world-readable — `scp` and `gzip -dc` work as `deploy`, but removing one by hand wants `sudo`. The
-pruning does that for you, so it rarely comes up.
+```sh
+ssh you@beacon.example.co.uk 'sudo tar -C /opt/goodies-beacon -cf - backups' | tar -xf -
+```
+
+Every dump is owner-only (mode 600), because it holds the password hash, the encrypted SMTP
+password and the session table. The nightly ones belong to root, since the backup container runs
+as root, and the pre-deploy ones to `deploy`; that is why copying them off goes through `sudo`
+rather than `scp` as `deploy`. Pruning is done by the same root process, so it never needs you.
 
 ### What is and is not in a dump
 
@@ -431,7 +447,9 @@ docker compose logs app | grep <request id>
 ```
 
 `LOG_LEVEL` takes pino's levels: `fatal`, `error`, `warn`, `info` (the default), `debug`, `trace`,
-`silent`.
+`silent`. Docker keeps five files of 10 MB per service (`x-logging` in `docker-compose.yml`), so
+`docker compose logs` reaches back roughly 50 MB per service and a chatty month cannot fill the
+disk.
 
 ## Signing in
 

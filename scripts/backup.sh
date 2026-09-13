@@ -12,6 +12,8 @@
 #   ./backup.sh --once                                        # one dump, then exit
 
 set -euo pipefail
+# Dumps hold the password hash, the encrypted SMTP password and the session table: owner-only.
+umask 077
 
 BACKUP_DIR="${BACKUP_DIR:-/backups}"
 BACKUP_AT="${BACKUP_AT:-03:30}"

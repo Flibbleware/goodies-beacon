@@ -5,10 +5,19 @@
 
 name: goodies-beacon
 
+# Docker's json-file log grows without limit unless told otherwise. Five files of 10 MB per
+# service is weeks of the app's request log and cannot fill the disk.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+
 services:
   db:
     image: postgres:18
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-goodies_beacon}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
@@ -28,6 +37,7 @@ services:
   app:
     image: ${GOODIES_BEACON_IMAGE:-ghcr.io/flibbleware/goodies-beacon}:${GOODIES_BEACON_VERSION:-latest}
     restart: unless-stopped
+    logging: *logging
     env_file: .env
     environment:
       ROLE: all
@@ -62,6 +72,7 @@ services:
     # The same image as the database, so pg_dump always matches the server's major version.
     image: postgres:18
     restart: unless-stopped
+    logging: *logging
     environment:
       PGHOST: db
       PGUSER: ${POSTGRES_USER:-goodies_beacon}
@@ -83,6 +94,7 @@ services:
   caddy:
     image: caddy:2.10
     restart: unless-stopped
+    logging: *logging
     ports:
       - '80:80'
       - '443:443'

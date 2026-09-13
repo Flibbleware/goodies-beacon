@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, lt, ne } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { type AuthSession, authSession } from '../db/schema.js';
@@ -14,23 +14,40 @@ export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
  */
 export const SESSION_REFRESH_AFTER_MS = 60 * 60 * 1000;
 
-export function createSessionId(): string {
+/** What the cookie carries. The table never holds it — see `hashSessionToken`. */
+export function createSessionToken(): string {
   return randomBytes(SESSION_ID_BYTES).toString('base64url');
+}
+
+/**
+ * The row's id is the SHA-256 of the token, so a copy of the table — a backup, a dump on a
+ * laptop — cannot be replayed as a session. The token has 256 bits of entropy, so a plain hash
+ * is enough; there is nothing to brute-force and no salt to keep.
+ */
+export function hashSessionToken(token: string): string {
+  return createHash('sha256').update(token).digest('base64url');
+}
+
+export interface IssuedSession {
+  /** Goes in the cookie, and nowhere else. */
+  readonly token: string;
+  readonly session: AuthSession;
 }
 
 export async function createSession(
   db: Database,
   userId: number,
   now = new Date(),
-): Promise<AuthSession> {
+): Promise<IssuedSession> {
   // A session that expires without ever being presented again is never deleted by loadSession,
   // so the table would grow by one row per sign-in for ever. A sign-in is rare enough to sweep on.
   await db.delete(authSession).where(lt(authSession.expiresAt, now));
 
+  const token = createSessionToken();
   const [created] = await db
     .insert(authSession)
     .values({
-      id: createSessionId(),
+      id: hashSessionToken(token),
       userId,
       createdAt: now,
       lastUsedAt: now,
@@ -40,23 +57,24 @@ export async function createSession(
 
   // The insert either returns its row or throws; this keeps the type honest.
   if (!created) throw new Error('session insert returned no row');
-  return created;
+  return { token, session: created };
 }
 
 /**
- * The session for this id, or undefined if there is none or it has expired. An expired row is
+ * The session for this token, or undefined if there is none or it has expired. An expired row is
  * deleted on the way past, so a cookie left behind by a closed laptop cleans itself up.
  */
 export async function loadSession(
   db: Database,
-  id: string,
+  token: string,
   now = new Date(),
 ): Promise<AuthSession | undefined> {
+  const id = hashSessionToken(token);
   const [session] = await db.select().from(authSession).where(eq(authSession.id, id));
   if (!session) return undefined;
 
   if (session.expiresAt.getTime() <= now.getTime()) {
-    await deleteSession(db, id);
+    await db.delete(authSession).where(eq(authSession.id, id));
     return undefined;
   }
 
@@ -71,17 +89,17 @@ export async function loadSession(
   return refreshed ?? session;
 }
 
-export async function deleteSession(db: Database, id: string): Promise<void> {
-  await db.delete(authSession).where(eq(authSession.id, id));
+export async function deleteSession(db: Database, token: string): Promise<void> {
+  await db.delete(authSession).where(eq(authSession.id, hashSessionToken(token)));
 }
 
 /** Used on a password change, so a session someone else still holds stops working. */
 export async function deleteOtherSessions(
   db: Database,
   userId: number,
-  keepId: string,
+  keepToken: string,
 ): Promise<void> {
   await db
     .delete(authSession)
-    .where(and(eq(authSession.userId, userId), ne(authSession.id, keepId)));
+    .where(and(eq(authSession.userId, userId), ne(authSession.id, hashSessionToken(keepToken))));
 }

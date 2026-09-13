@@ -6,9 +6,10 @@ import { runMigrations } from '../db/migrate.js';
 import { authSession, authUser } from '../db/schema.js';
 import {
   createSession,
-  createSessionId,
+  createSessionToken,
   deleteOtherSessions,
   deleteSession,
+  hashSessionToken,
   loadSession,
   SESSION_ID_BYTES,
   SESSION_REFRESH_AFTER_MS,
@@ -45,29 +46,39 @@ describe.skipIf(!databaseUrl)('sessions against a real Postgres', () => {
     await db.insert(authUser).values({ id: USER_ID, passwordHash: 'not-verified-here' });
   });
 
-  it('mints a 256-bit id and a thirty-day expiry', async () => {
-    const session = await createSession(db, USER_ID, NOW);
+  it('mints a 256-bit token and a thirty-day expiry', async () => {
+    const { token, session } = await createSession(db, USER_ID, NOW);
 
-    expect(Buffer.from(session.id, 'base64url')).toHaveLength(SESSION_ID_BYTES);
+    expect(Buffer.from(token, 'base64url')).toHaveLength(SESSION_ID_BYTES);
     expect(session.expiresAt.getTime()).toBe(NOW.getTime() + SESSION_TTL_MS);
   });
 
-  it('gives out ids that never repeat', () => {
-    expect(new Set(Array.from({ length: 100 }, createSessionId)).size).toBe(100);
+  it('gives out tokens that never repeat', () => {
+    expect(new Set(Array.from({ length: 100 }, createSessionToken)).size).toBe(100);
   });
 
-  it('does not resolve an id it never issued', async () => {
-    expect(await loadSession(db, createSessionId(), NOW)).toBeUndefined();
+  it('stores only a hash of the token, so a copy of the table cannot be replayed', async () => {
+    const { token, session } = await createSession(db, USER_ID, NOW);
+
+    expect(session.id).toBe(hashSessionToken(token));
+    expect(session.id).not.toBe(token);
+    // What the table holds is useless as a cookie value.
+    expect(await loadSession(db, session.id, NOW)).toBeUndefined();
+    expect(await loadSession(db, token, NOW)).toBeDefined();
+  });
+
+  it('does not resolve a token it never issued', async () => {
+    expect(await loadSession(db, createSessionToken(), NOW)).toBeUndefined();
   });
 
   it('slides the expiry forward on use, but no more than once an hour', async () => {
-    const { id, expiresAt } = await createSession(db, USER_ID, NOW);
+    const { token, session } = await createSession(db, USER_ID, NOW);
 
-    const soon = await loadSession(db, id, later(SESSION_REFRESH_AFTER_MS - 1000));
-    expect(soon?.expiresAt.getTime()).toBe(expiresAt.getTime());
+    const soon = await loadSession(db, token, later(SESSION_REFRESH_AFTER_MS - 1000));
+    expect(soon?.expiresAt.getTime()).toBe(session.expiresAt.getTime());
 
     const useAt = later(SESSION_REFRESH_AFTER_MS + 1000);
-    const refreshed = await loadSession(db, id, useAt);
+    const refreshed = await loadSession(db, token, useAt);
     expect(refreshed?.expiresAt.getTime()).toBe(useAt.getTime() + SESSION_TTL_MS);
     expect(refreshed?.lastUsedAt.getTime()).toBe(useAt.getTime());
   });
@@ -76,25 +87,26 @@ describe.skipIf(!databaseUrl)('sessions against a real Postgres', () => {
     const stale = await createSession(db, USER_ID, NOW);
     const fresh = await createSession(db, USER_ID, later(SESSION_TTL_MS + 1000));
 
-    expect(await db.select().from(authSession).where(eq(authSession.id, stale.id))).toEqual([]);
-    expect(await db.select().from(authSession).where(eq(authSession.id, fresh.id))).toHaveLength(1);
+    const rowsFor = (id: string) => db.select().from(authSession).where(eq(authSession.id, id));
+    expect(await rowsFor(stale.session.id)).toEqual([]);
+    expect(await rowsFor(fresh.session.id)).toHaveLength(1);
   });
 
   it('refuses an expired session and deletes the row on the way past', async () => {
-    const { id } = await createSession(db, USER_ID, NOW);
+    const { token, session } = await createSession(db, USER_ID, NOW);
 
-    expect(await loadSession(db, id, later(SESSION_TTL_MS))).toBeUndefined();
-    expect(await db.select().from(authSession).where(eq(authSession.id, id))).toEqual([]);
+    expect(await loadSession(db, token, later(SESSION_TTL_MS))).toBeUndefined();
+    expect(await db.select().from(authSession).where(eq(authSession.id, session.id))).toEqual([]);
   });
 
   it('never expires while it keeps being used', async () => {
-    const { id } = await createSession(db, USER_ID, NOW);
+    const { token } = await createSession(db, USER_ID, NOW);
     const week = 7 * 24 * 60 * 60 * 1000;
 
     let at = NOW;
     for (let n = 1; n <= 10; n += 1) {
       at = new Date(at.getTime() + week);
-      expect(await loadSession(db, id, at), `week ${n}`).toBeDefined();
+      expect(await loadSession(db, token, at), `week ${n}`).toBeDefined();
     }
   });
 
@@ -104,10 +116,10 @@ describe.skipIf(!databaseUrl)('sessions against a real Postgres', () => {
       createSession(db, USER_ID, NOW),
     ]);
 
-    await deleteSession(db, a.id);
+    await deleteSession(db, a.token);
 
-    expect(await loadSession(db, a.id, NOW)).toBeUndefined();
-    expect(await loadSession(db, b.id, NOW)).toBeDefined();
+    expect(await loadSession(db, a.token, NOW)).toBeUndefined();
+    expect(await loadSession(db, b.token, NOW)).toBeDefined();
   });
 
   it('drops every session but the one named, for a password change', async () => {
@@ -117,11 +129,11 @@ describe.skipIf(!databaseUrl)('sessions against a real Postgres', () => {
     ]);
     const keep = await createSession(db, USER_ID, NOW);
 
-    await deleteOtherSessions(db, USER_ID, keep.id);
+    await deleteOtherSessions(db, USER_ID, keep.token);
 
-    for (const session of doomed) {
-      expect(await loadSession(db, session.id, NOW)).toBeUndefined();
+    for (const { token } of doomed) {
+      expect(await loadSession(db, token, NOW)).toBeUndefined();
     }
-    expect(await loadSession(db, keep.id, NOW)).toBeDefined();
+    expect(await loadSession(db, keep.token, NOW)).toBeDefined();
   });
 });

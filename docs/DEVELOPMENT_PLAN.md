@@ -1,6 +1,6 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.20; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.22; section numbers below refer to it.*
 
 Version 1.1 — 5 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
@@ -17,6 +17,7 @@ Working conventions for the repo:
 - Nothing merges with Biome warnings, type errors or failing tests. There is no "fix it later" lane.
 - The integration branch is always deployable, and `main` after the final merge. Releases are tags (`v0.1.0`) created through GitHub Releases, cut from the integration branch until then; the release workflow deploys them. Between releases, `deploy.yml` puts any built image on the droplet on demand, so an exit test can be rehearsed without publishing a release.
 - Secrets never enter the repo. `.env.example` lists every variable with a comment; real values live in `.env` locally and on the droplet.
+- Before a release, deploy the integration branch's `dev` image to the droplet with the *Deploy* workflow and walk the phase's exit test there. Phase 0's exit found nine defects that only a real deployment could show; the release should confirm a rehearsal, not be one.
 
 Global definition of done, in addition to each task's own list: CI green; Biome clean; new logic has unit tests; anything user-facing has a line in `CHANGELOG.md`; anything operational has a line in `docs/RUNNING.md`.
 
@@ -207,9 +208,9 @@ Run on 13 September 2026; the record and deviations are in `CHANGELOG.md` under 
 
 **Goal.** Your Carmageddon search runs three times a day against eBay on the droplet, every new listing is judged by the pipeline, and you can read each verdict with its evidence in the web UI. In parallel, the scraped sources are proven or disproven from both your Mac and the droplet before any adapter is written for them.
 
-**Exit test.** With a manually entered spec for "Carmageddon big box, Macintosh preferred, PC acceptable" and search plans "carmageddon" on `EBAY_GB` and `EBAY_US`: a poll runs on schedule; a newly listed jewel-case Carmageddon is rejected at the pre-filter or the reviewer with a readable reason; a boxed Mac copy is matched; a listing whose photos don't show the box contents is uncertain with "contents not visible" as the unknown; the spend for the day is visible on the dashboard; `docs/SPIKES.md` states, for each of Vinted, Yahoo Auctions and Mercari, whether it works from the droplet, from home, and through the proxy.
+**Exit test.** With a manually entered spec for "Carmageddon big box, Macintosh preferred, PC acceptable" and search plans "carmageddon" on `EBAY_GB` and `EBAY_US`: a poll runs on schedule; a newly listed jewel-case Carmageddon is rejected at the pre-filter or the reviewer with a readable reason; a boxed Mac copy is matched; a listing whose photos don't show the box contents is uncertain with "contents not visible" as the unknown; the match and the uncertain each arrive as a plain email; the spend for the day is visible on the dashboard; `docs/SPIKES.md` states, for each of Vinted, Yahoo Auctions and Mercari, whether it works from the droplet, from home, and through the proxy.
 
-Two tracks. Track A is throwaway spike work; Track B is the product. They are independent until P1-18.
+Two tracks. Track A is throwaway spike work; Track B is the product. They are independent until P1-18, with one ordering rule: **S1-01 goes first**, before P1-01, because P1-04 depends on it and P1-03's harness wants the fixtures it records. The Vinted spike needs a residential proxy with a sticky GB session (§5); sign up for one in the first week so S1-02 is never waiting on a purchase. The droplet exists now, so the "from the droplet" half of every spike can be run at once.
 
 ### Track A — spikes
 
@@ -274,6 +275,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 
 | Id | Task | Size | Depends on |
 |---|---|---|---|
+| P1-00 | Hardening from the Phase 0 review | S | P0-15 |
 | P1-01 | Domain schema | M | P0-05 |
 | P1-02 | Core types and Zod schemas | M | P1-01 |
 | P1-03 | Adapter contract, context, template, test harness | L | P1-02, P0-06 |
@@ -286,12 +288,31 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-10 | Reviewer | L | P1-08, P1-05 |
 | P1-11 | Decision rules | M | P1-02 |
 | P1-12 | Review worker pipeline | L | P1-07, P1-09, P1-10, P1-11 |
-| P1-13 | Spec editor (manual) | L | P1-02, P0-09 |
+| P1-13 | Spec editor (manual) | M | P1-02, P0-09 |
 | P1-14 | Wanted items UI | M | P1-13 |
 | P1-15 | Candidates and verdicts UI | L | P1-12, P1-14 |
 | P1-16 | Dashboard | M | P1-12 |
 | P1-17 | Prompt eval suite in CI | M | P1-09, P1-10, P1-11 |
 | P1-18 | Phase 1 exit | S | all above, S1-05 |
+
+#### P1-00 Hardening from the Phase 0 review — S
+
+Six small items from the security pass at the end of Phase 0, taken before anything is built on
+top. Sessions: the table stores the SHA-256 of the cookie token rather than the token, so a
+database copy or a backup cannot be replayed (existing sessions are signed out once by the
+upgrade). Dumps: `backup.sh` and `deploy.sh` write owner-only files. Headers: HSTS, a same-origin
+CSP, `frame-ancestors 'none'`, `nosniff` and a strict referrer policy on every response, set in
+the API and tested there. Logs: rotated in compose. Plus two things only the operator can do,
+documented in RUNNING.md.
+
+Done when:
+
+- [x] `auth_session.id` is a hash; the cookie value looked up as if it were a stored id resolves nothing, and every existing session test still passes.
+- [x] A fresh nightly dump and a fresh pre-deploy dump are mode 600.
+- [x] Every response, the served page included, carries the headers above; a test asserts each, and the Playwright run passes under the CSP.
+- [x] `docker-compose.yml` caps each service's log at five files of 10 MB.
+- [ ] Dependabot alerts and secret scanning are enabled on the repository, and Renovate is reading the committed config (the default branch is `development/0.2.0` until the final merge).
+- [ ] `sshd -T` on the droplet answers `permitrootlogin no`, `passwordauthentication no` and `kbdinteractiveauthentication no`, per RUNNING.md step 2.
 
 #### P1-01 Domain schema — M
 
@@ -398,7 +419,9 @@ Done when: a table-driven unit test covers every rule branch, and the function i
 
 #### P1-12 Review worker pipeline — L
 
-The `review` job per §7: normalise → hard filters (price ceiling via P1-06, negative keywords) → pre-filter → enrich → media ingest → reviewer → decide → store verdict → (Phase 3 will add notify). Stage recorded on the candidate; each stage idempotent so a retried job doesn't double-spend.
+The `review` job per §7: normalise → hard filters (price ceiling via P1-06, negative keywords) → pre-filter → enrich → media ingest → reviewer → decide → store verdict → notify. Stage recorded on the candidate; each stage idempotent so a retried job doesn't double-spend.
+
+Notify is deliberately minimal here: for a `match` or `uncertain` on a realtime-mode item with `origin = poll`, write the `Notification` row and send one plain-text email through the P0-10 transport — title, price, verdict, the unknowns if uncertain, the listing link and the candidate link. No template, no digest, no batching of backfill results; those are the notifications phase. It is here because the transport already exists and an email is the product's actual output; without it the reviewer's work is only visible to someone refreshing a tab.
 
 Done when:
 
@@ -406,16 +429,17 @@ Done when:
 - [ ] A candidate rejected by hard filters has no AI cost.
 - [ ] Re-running the job for a completed candidate is a no-op.
 - [ ] Failures at any stage leave the candidate in a visible `failed` state with the error, and are retried three times with backoff.
+- [ ] A `match` on a realtime item sends one plain email and writes its `Notification` row first, so a retried job cannot send twice; a `reject`, a digest-mode item, and a backfill candidate send nothing.
 
-#### P1-13 Spec editor (manual) — L
+#### P1-13 Spec editor (manual) — M
 
-Item creation and editing without the interviewer: a form for `SpecSettings` (toggles, dropdowns, number fields exactly as §4 lists them), a criteria table (text, hard/soft, quantifiable, on-unknown), a search-plan table (source, region in the source's own terms, query, other source-specific options, enabled), reference image upload with labels, and a summary field. Saving creates a new spec version with a change note. Version history with a side-by-side diff.
+Item creation and editing without the interviewer, at the size §17 gives Phase 1: "a manually-written spec (JSON in the UI, no interviewer yet)". A page with a title field, a JSON editor for the spec validated live against the P1-02 schemas with errors shown at the offending path, the P1-02 linter's warnings listed beneath, reference image upload with labels (P1-05), and a change note. Saving creates a new immutable spec version. The typed form — toggles and dropdowns for `SpecSettings`, the criteria and search-plan tables — and the side-by-side version diff are the interviewer phase's direct-editing work per §17, not this task's; the version history here is a plain list.
 
 Done when:
 
-- [ ] The two example specs (Carmageddon, Power Mac 5500) can be entered end to end from the UI.
-- [ ] Linter warnings from P1-02 appear inline next to the offending criterion.
-- [ ] Each save creates a version; the diff view shows what changed between any two versions.
+- [ ] The two example specs (Carmageddon, Power Mac 5500) can be entered end to end by pasting or typing their JSON.
+- [ ] A spec that fails the schema cannot be saved, and the error names the path; linter warnings from P1-02 appear beneath the editor.
+- [ ] Each save creates a version, listed with its date and change note; the current version is what polling uses.
 
 #### P1-14 Wanted items UI — M
 
@@ -441,13 +465,14 @@ Done when: every figure links to the page that explains it, and an adapter failu
 
 #### P1-17 Prompt eval suite in CI — M
 
-A fixture set of about twenty listings (real, anonymised, from the spikes and your own eBay tabs) with expected pre-filter and reviewer outcomes for the two example specs. Runs in CI against two providers using repository secrets, with a small budget, and reports precision and recall in the job summary.
+A fixture set of about twenty listings (real, anonymised, from the spikes and your own eBay tabs) with expected pre-filter and reviewer outcomes for the two example specs. Runs in CI against two providers using repository secrets, with a small budget, and reports precision and recall in the job summary. It spends real money, so it runs only when something it judges has changed — a path filter on `packages/ai/prompts/**`, the fixtures and the eval code — plus a `workflow_dispatch` trigger for running it by hand; an unrelated pull request does not pay for it.
 
 Done when:
 
 - [ ] The suite passes on both configured providers.
 - [ ] A deliberate prompt regression (e.g. removing the quantifiable/soft instruction) fails the suite.
 - [ ] The suite is skipped with a notice when provider secrets are absent, so forks still get green CI.
+- [ ] A pull request that touches neither prompts, fixtures nor the eval code does not run it.
 
 #### P1-18 Phase 1 exit — S
 
@@ -457,7 +482,9 @@ Run the Phase 1 exit test on the droplet. Record the outcome, the month's real A
 
 ## What comes next
 
-Phase 2 (interviewer and spec editing) and Phase 3 (notifications) will be planned once Phase 1's spikes are in, because the Vinted findings decide how much of Phase 4 exists as designed and the eBay findings decide the default marketplaces. The shape will be the same as this document: tasks with sizes, dependencies and done-when lists.
+Phase 2 and Phase 3 will be planned once Phase 1's spikes are in, because the Vinted findings decide how much of Phase 4 exists as designed and the eBay findings decide the default marketplaces. The shape will be the same as this document: tasks with sizes, dependencies and done-when lists.
+
+Their order was swapped at the Phase 0 exit (ARCHITECTURE.md §17 v1.22): **Phase 2 is notifications** — the 08:00 digest, `Notification` idempotency for every channel, the backfill and scan summary email, English summaries in email, the proper templates, and the retention job from §13, which otherwise waits until Phase 5 while candidates and media accumulate from the first poll; **Phase 3 is the interviewer and spec editing** — the chat, `propose_spec`, backfill-before-agree, and the typed spec form and side-by-side version diff that P1-13 deliberately leaves out. Notifications come first because the SMTP transport has existed since P0-10, the manual editor gives a way to create specs, and §8 calls the interviewer a convenience rather than a gatekeeper; an email for a real match is the product's output, and it should not wait behind a chat UI.
 
 ### Carried forward from the Phase 0 exit test
 
@@ -482,6 +509,18 @@ Done when:
 - [ ] A second run changes nothing and says so for every step, including the two secrets.
 - [ ] `DEPLOY_PUBKEY` produces an `authorized_keys` line whose fingerprint `ssh-keygen -lf` prints, and the three `ssh` checks in RUNNING.md pass against it.
 - [ ] RUNNING.md's install section shrinks to: firewall, DNS, one bootstrap command, `docker compose up -d`, claim it — and the timed walk-through in P0-12 is re-run against it.
+
+#### Later hardening, not blocking — S each
+
+From the same review, worth doing but not before Phase 1. Each is small; take them when a task
+touches the area, or together as one chore.
+
+- [ ] `__Host-` prefix on the session cookie, so a browser refuses one set by a subdomain or over HTTP. Renames the cookie in `docs/API.md`, RUNNING.md and the tests.
+- [ ] An absolute session lifetime (ninety days) alongside the sliding thirty, so a stolen cookie that is used regularly still dies.
+- [ ] Cap and sanitise an inbound `X-Request-Id` before it reaches the log — length and character set.
+- [ ] Off-site copies of the dumps: RUNNING.md gives the `tar` over `ssh` one-liner; a scheduled version, or DigitalOcean Spaces, once there is data worth keeping.
+- [ ] Chromium sandboxing for the browser-driven adapters, when the Vinted adapter lands in Phase 4.
+- [ ] TOTP as an optional second factor (§12's "small later addition").
 
 #### P6-xx First-run setup token — S
 

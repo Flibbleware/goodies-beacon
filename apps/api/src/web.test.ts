@@ -41,6 +41,13 @@ afterAll(() => {
 });
 
 describe('serving the built web app', () => {
+  it('sends the security headers with the page itself, which is where a CSP matters', async () => {
+    const res = await app.request('/settings');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-security-policy')).toContain("default-src 'self'");
+    expect(res.headers.get('strict-transport-security')).toContain('max-age=');
+  });
+
   it('serves the app at the root', async () => {
     const res = await app.request('/');
 
