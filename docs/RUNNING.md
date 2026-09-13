@@ -304,7 +304,21 @@ and the poll schedules are recreated from the wanted items.
 
 Downscaled listing images in the `media` volume are not backed up either — they can be fetched
 again. And keep a copy of `.env` somewhere safe: without `GOODIES_BEACON_SECRET_KEY` a restored
-dump cannot decrypt the SMTP password.
+dump cannot decrypt the SMTP password or the seller salt.
+
+### Rotating the secret key
+
+`GOODIES_BEACON_SECRET_KEY` encrypts two things: the SMTP password, which you can simply retype,
+and the **seller salt** in the `instance_secret` table, which you cannot — it is random, it exists
+only there, and every `listings.seller_hash` written so far was computed with it. Losing it does
+not lose any listing data, but relist detection (ARCHITECTURE.md §7 step 2) stops recognising
+sellers it saw before that point, so old listings start looking like new ones from a new seller.
+
+So a rotation is: stop the app, take a dump, decrypt the salt with the old key and re-encrypt it
+with the new one, then start with the new key and re-enter the SMTP password. If you have already
+rotated and lost the old key, the recovery is to delete the `instance_secret` row — a fresh salt
+is generated on the next poll, and relist detection simply starts again from that day. It is a
+degradation, not a corruption; nothing else in the database depends on the old value.
 
 ### Restoring
 
@@ -514,7 +528,8 @@ Check from the droplet with `nc -zv -w 5 smtp.example.com 587` and again with th
 
 Changing `GOODIES_BEACON_SECRET_KEY` makes the stored SMTP password undecryptable. Nothing silently
 sends with the wrong credentials: the test send and every notification fail loudly instead. Enter
-the password again to recover.
+the password again to recover. The same key also wraps the seller salt — see *Rotating the secret
+key* below, which is the one thing a rotation cannot simply re-enter.
 
 In development, mail goes to [Mailpit](https://mailpit.axllent.org) with its inbox at
 `localhost:8025`, started by `compose.dev.yml`.

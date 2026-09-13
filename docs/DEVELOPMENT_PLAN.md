@@ -338,10 +338,10 @@ Tables from §4: `wanted_items`, `spec_versions` (with `settings`, `criteria`, `
 
 Done when:
 
-- [ ] Migrations apply on a fresh database and on top of Phase 0's.
-- [ ] Unique constraints: `seen (source, external_id)`, `listings (source, external_id)`, `candidates (wanted_item_id, listing_id)`, `notifications (candidate_id, channel)`.
-- [ ] Indexes for the queries the UI will make: candidates by item and verdict; listings by first seen.
-- [ ] `listings` has `seller_hash` and no column that could hold a seller name, per the decision above; the hash helper is unit-tested, including that two instances with different secrets hash one seller id differently.
+- [x] Migrations apply on a fresh database and on top of Phase 0's. Both run: `0002` applied to the dev database carrying Phase 0's four tables, and to an empty `gb_fresh`, giving the same seventeen tables and twenty-four check constraints; running it twice more is a no-op.
+- [x] Unique constraints: `seen (source, external_id)`, `listings (source, external_id)`, `candidates (wanted_item_id, listing_id)`, `notifications (candidate_id, channel)`. All four present in the database, verified by query rather than by reading the migration.
+- [x] Indexes for the queries the UI will make: candidates by item and verdict; listings by first seen. `candidates (wanted_item_id, created_at)` and `(wanted_item_id, stage)`, `verdicts (candidate_id, created_at)` and `(decision)`, `listings (first_seen_at)`. The verdict filter is served through the join rather than by denormalising a decision onto `candidates`; if P1-15 finds that slow, that is the moment to denormalise, not before.
+- [x] `listings` has `seller_hash` and no column that could hold a seller name, per the decision above; the hash helper is unit-tested, including that two instances with different secrets hash one seller id differently. Fourteen tests, eight of them against a real Postgres. The salt is a row encrypted under the master key rather than derived from it, so rotating that key re-wraps one value instead of silently orphaning every hash — there is a test that rotates it and asserts the hashes still match.
 
 #### P1-02 Core types and Zod schemas — M
 

@@ -17,7 +17,7 @@ afterAll(async () => {
 });
 
 describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
-  it('creates the Phase 0 tables and is idempotent when run twice', async () => {
+  it('creates every table and is idempotent when run twice', async () => {
     const url = databaseUrl as string;
     await runMigrations(url);
     await runMigrations(url);
@@ -25,11 +25,25 @@ describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
     const tables = await pool?.query<{ tablename: string }>(
       "select tablename from pg_tables where schemaname = 'public' order by tablename",
     );
+    // Spelled out rather than counted, so adding a table is a deliberate edit here too.
     expect(tables?.rows.map((row) => row.tablename)).toEqual([
       'auth_session',
       'auth_user',
+      'candidates',
+      'cost_ledger',
+      'feedback',
+      'grading_scales',
+      'instance_secret',
+      'listings',
+      'media',
+      'notifications',
       'process_heartbeat',
+      'search_plan_state',
+      'seen',
       'settings',
+      'spec_versions',
+      'verdicts',
+      'wanted_items',
     ]);
 
     const applied = await pool?.query<{ count: string }>(

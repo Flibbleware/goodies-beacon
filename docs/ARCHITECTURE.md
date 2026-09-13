@@ -171,11 +171,17 @@ type SearchPlan = {
 **Listing** — One row per (source, externalId). `id, source, externalId, url, title, titleEn?, description, descriptionEn?, priceAmount, priceCurrency, priceGbp, buyingType (auction|fixed), sellerHash, itemLocationCountry, shipsToUk (yes|no|unknown), images[], listedAt, firstSeenAt, lastSeenAt, raw (jsonb)`.
 
 **No marketplace user data is stored, anywhere.** `sellerHash` is `HMAC-SHA256(seller id, instance
-salt)` — a per-instance salt derived from `GOODIES_BEACON_SECRET_KEY`, so hashes are meaningless
-outside the instance that made them and cannot be reversed to a username by anyone who obtains a
-database copy. Relist detection (§7 step 2) only ever asks "is this the same seller as that
-earlier candidate", which is an equality test, so a hash serves it exactly as well as the name
-would. Nothing in the UI (§14) or in an email (§10) displays a seller, so nothing is lost.
+salt)`. The salt is generated once per instance and held in a single `instance_secret` row,
+encrypted under `GOODIES_BEACON_SECRET_KEY` like every other secret (§12) — **not derived from
+it**. Deriving it would tie the hashes to the master key, so rotating that key, which is the
+documented remedy if it leaks, would change every future hash, orphan every one already written,
+and break relist detection with nothing to raise an error. Rotation instead re-wraps that one
+row and the hashes keep matching. Encrypting it rather than storing it plainly matters because
+seller ids are guessable: with the salt in hand, anyone holding a database copy could hash a
+wordlist of usernames and match them, which is exactly what the hash exists to prevent.
+
+Relist detection (§7 step 2) only ever asks "is this the same seller as that earlier candidate",
+which is an equality test, so a hash serves it exactly as well as the name would. Nothing in the UI (§14) or in an email (§10) displays a seller, so nothing is lost.
 
 **The whole `seller` object is dropped before `raw` is persisted**, and that is a harder
 requirement than the hash. A marketplace response carries more than a pseudonym: eBay's `getItem`

@@ -4,6 +4,15 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-01 Domain schema. The tables from ARCHITECTURE.md §4 — wanted items, immutable spec versions,
+  per-plan search state, listings, `seen`, candidates, verdicts, the cost ledger and media, plus
+  stubs for grading scales, feedback and notifications. `listings` carries a `seller_hash` and no
+  column that could hold a seller name. The salt behind that hash lives in a new `instance_secret`
+  row, encrypted under `GOODIES_BEACON_SECRET_KEY` rather than derived from it, so rotating that
+  key re-wraps a single value instead of silently orphaning every hash already written and
+  breaking relist detection with nothing to notice. `docs/RUNNING.md` gains a *Rotating the secret
+  key* section, since the salt is the one thing a rotation cannot simply re-enter.
+
 - **Goodies Beacon stores no marketplace user data.** `Listing` keeps a `sellerHash` —
   `HMAC-SHA256(seller id, instance salt)` — instead of the seller's id and username, and the
   entire `seller` object is dropped before the raw response is stored, so nothing about a seller
