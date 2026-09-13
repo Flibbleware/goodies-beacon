@@ -1,5 +1,5 @@
 {
-  "itemId": "v1|237063388283|0",
+  "itemId": "v1|900000000005|0",
   "title": "Carmageddon 2: Carpocalypse Now ( PC, 1998 )",
   "price": {
     "value": "15.99",
@@ -12,22 +12,21 @@
   "condition": "Very Good",
   "conditionId": "4000",
   "itemLocation": {
-    "city": "Blainville",
     "country": "CA"
   },
   "image": {
-    "imageUrl": "https://i.ebayimg.com/images/g/rawAAeSwiHtqpFDa/s-l1600.jpg",
+    "imageUrl": "https://i.ebayimg.com/images/g/Fixture017xxxxxx/s-l1600.jpg",
     "width": 1600,
     "height": 1600
   },
   "additionalImages": [
     {
-      "imageUrl": "https://i.ebayimg.com/images/g/DLMAAeSwR2JqpFDa/s-l1600.jpg",
+      "imageUrl": "https://i.ebayimg.com/images/g/Fixture018xxxxxx/s-l1600.jpg",
       "width": 1600,
       "height": 1600
     },
     {
-      "imageUrl": "https://i.ebayimg.com/images/g/AqYAAeSwvoBqpFDa/s-l1600.jpg",
+      "imageUrl": "https://i.ebayimg.com/images/g/Fixture019xxxxxx/s-l1600.jpg",
       "width": 1599,
       "height": 1199
     }
@@ -35,8 +34,6 @@
   "itemCreationDate": "2026-09-11T19:05:49.000Z",
   "seller": {
     "username": "seller_004",
-    "feedbackPercentage": "100.0",
-    "feedbackScore": 1298,
     "sellerAccountType": "BUSINESS",
     "sellerLegalInfo": {
       "name": "Example Trading Ltd",
@@ -955,8 +952,8 @@
   "buyingOptions": [
     "FIXED_PRICE"
   ],
-  "itemWebUrl": "https://www.ebay.co.uk/itm/237063388283?amdata=enc%3AAQALAAAAoCHNgUiiE%2FjQhlDTaMiAde9ET%2BGWegAKzMvFxaArrv3m%2FFpxJP02cOUM%2FJqs4E4LuLj9iTe%2FysfDnppwwyeU2qDCoDeG98yDet1YgLBgyQ9BTWbsSRC9Rg5PjqwTPCnxPY2qHzH5pVUIkjMqlvDlkEjG3klnZQf3uSxRxK%2FxLbFKz8KIhIlzZOZblNEc7IylJ3F40tlH0QBGwWUjhp4ffUY%3D",
-  "description": "Carmageddon 2: Carpocalypse Now ( PC, 1998 ). Condition is Very Good. Shipped with Canada Post Lettermail. ",
+  "itemWebUrl": "https://www.ebay.co.uk/itm/900000000005",
+  "description": "<p>[description replaced for the fixture]</p><p>Boxed PC game. Disc, manual and inserts present. Light shelf wear to the box.</p>",
   "paymentMethods": [
     {
       "paymentMethodType": "WALLET",
@@ -988,7 +985,7 @@
   "enabledForGuestCheckout": true,
   "eligibleForInlineCheckout": true,
   "lotSize": 0,
-  "legacyItemId": "237063388283",
+  "legacyItemId": "900000000005",
   "priorityListing": true,
   "adultOnly": false,
   "categoryId": "139973",

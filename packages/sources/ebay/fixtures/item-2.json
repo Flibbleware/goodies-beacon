@@ -1,8 +1,8 @@
 {
-  "itemId": "v1|168655820458|468010854040",
+  "itemId": "v1|900000000001|900000000002",
   "sellerItemRevision": "2",
   "title": "Games - C - List 1 - A3 Premium Poster Prints",
-  "shortDescription": "Premium A3 Art Print. Every order is produced, quality checked and dispatched directly by us. We use high-resolution artwork wherever possible, avoiding unnecessary compression to help preserve clarity, colour and fine detail.",
+  "shortDescription": "Boxed PC game, disc and manual included.",
   "price": {
     "value": "10.80",
     "currency": "GBP"
@@ -12,7 +12,6 @@
   "condition": "Used",
   "conditionId": "3000",
   "itemLocation": {
-    "city": "Wakefield",
     "country": "GB"
   },
   "image": {
@@ -21,8 +20,6 @@
   "itemCreationDate": "2026-09-12T21:36:58.000Z",
   "seller": {
     "username": "seller_001",
-    "feedbackPercentage": "100.0",
-    "feedbackScore": 378,
     "sellerAccountType": "INDIVIDUAL"
   },
   "estimatedAvailabilities": [
@@ -629,8 +626,8 @@
   "buyingOptions": [
     "FIXED_PRICE"
   ],
-  "itemWebUrl": "https://www.ebay.co.uk/itm/168655820458?var=468010854040",
-  "description": "<p><strong>OPENLAIR STORE - OFFICIAL EBAY OUTLET</strong></p>\n\n<p>Welcome to the official eBay outlet of <strong>OpenLair Store</strong>. This is one of our official sales channels, giving eBay customers direct access to a selection of our extensive poster art range. Every order is produced, quality checked and dispatched directly by us.</p>\n\n<p><strong>Looking for something specific?</strong> We have thousands of posters covering games, movies, television, music and more. <a href=\"https://www.ebay.co.uk/usr/openlair\"><strong>Visit our eBay page</strong></a> and search our listings for your favourite games, movies and shows.</p>\n\n<hr>\n\n<p><strong>Premium A3 Art Print</strong></p>\n\n<p>Printed using high-quality inks on carefully selected paper stock for a sharp, vibrant finish with excellent detail. We use high-resolution artwork wherever possible, avoiding unnecessary compression to help preserve clarity, colour and fine detail.</p>\n\n<p>Perfect for displaying at home, in an office, gaming room, studio or as a gift.</p>\n\n<p><strong>Size:</strong></p>\n<ul>\n<li><strong>A3:</strong> 297 × 420 mm / 29.7 × 42 cm / 11.7 × 16.5 inches</li>\n</ul>\n\n<p><strong>Print Quality:</strong></p>\n<ul>\n<li>High-resolution artwork</li>\n<li>Vibrant, detailed print quality</li>\n<li>High-quality inks</li>\n<li>Carefully selected paper stock</li>\n<li>Printed and quality checked in the United Kingdom</li></ul>\n\n<p><strong>Packaging &amp; Shipping:</strong></p>\n<ul>\n<li>A3 prints are carefully rolled and shipped in a protective cardboard postal tube</li>\n<li>Produced and dispatched from the United Kingdom</li>\n<li>Dispatched within 2 working days</li>\n<li>International shipping available</li>\n</ul>\n\n<p><strong>Please Note:</strong></p>\n<ul>\n<li>Product images are for illustrative purposes. Colours may vary slightly depending on your screen, display settings and lighting conditions.</li>\n<li>Minor differences in positioning or cropping may occur where necessary to accommodate the advertised print size.</li>\n</ul>\n\n<hr>\n\n<p><strong>OpenLair Store</strong><br>\nPremium poster art, professionally printed and carefully packaged.</p>",
+  "itemWebUrl": "https://www.ebay.co.uk/itm/900000000001",
+  "description": "<p>[description replaced for the fixture]</p><p>Boxed PC game. Disc, manual and inserts present. Light shelf wear to the box.</p>",
   "paymentMethods": [
     {
       "paymentMethodType": "OTHER"
@@ -663,14 +660,14 @@
   ],
   "immediatePay": true,
   "primaryItemGroup": {
-    "itemGroupId": "168655820458",
+    "itemGroupId": "900000000001",
     "itemGroupType": "SELLER_DEFINED_VARIATIONS",
-    "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group?item_group_id=168655820458",
-    "itemGroupTitle": "Games - C - List 1 - A3 Premium Poster Prints"
+    "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group",
+    "itemGroupTitle": "Example listing group"
   },
   "enabledForGuestCheckout": true,
   "eligibleForInlineCheckout": true,
-  "legacyItemId": "168655820458",
+  "legacyItemId": "900000000001",
   "priorityListing": false,
   "adultOnly": false,
   "categoryId": "360",

@@ -1,12 +1,12 @@
 {
   "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&sort=newlyListed&offset=0",
-  "total": 452,
+  "total": 451,
   "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=carmageddon&limit=10&sort=newlyListed&offset=10",
   "limit": 10,
   "offset": 0,
   "itemSummaries": [
     {
-      "itemId": "v1|820120421341|0",
+      "itemId": "v1|900000000012|0",
       "title": "Carmageddon 64 (Nintendo 64 N64) Authentic - Game Only ",
       "leafCategoryIds": [
         "139973"
@@ -22,23 +22,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/7SoAAeSwJVJqpg6i/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture050xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "134.99",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C820120421341%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000012%7C0",
       "seller": {
-        "username": "seller_011",
-        "feedbackPercentage": "0.0",
-        "feedbackScore": 0
+        "username": "seller_011"
       },
       "condition": "Good",
       "conditionId": "5000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/7SoAAeSwJVJqpg6i/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture050xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -50,32 +48,32 @@
         "FIXED_PRICE",
         "BEST_OFFER"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/820120421341?_skw=carmageddon&hash=itembef2fc83dd:g:7SoAAeSwJVJqpg6i",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000012",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/6OEAAeSwPphqpg6i/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture051xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/yGgAAeSwcFNqpg6j/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture052xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/y1oAAeSwYHRqpg6j/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture053xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/90MAAeSwGb1qpg6k/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture054xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/ynUAAeSwmuxqpg6k/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture055xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/8s4AAeSwNsRqpg6r/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture056xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "820120421341",
+      "legacyItemId": "900000000012",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-13T02:48:15.000Z",
       "itemCreationDate": "2026-09-13T02:48:15.000Z",
@@ -84,9 +82,9 @@
       "listingMarketplaceId": "EBAY_US"
     },
     {
-      "itemId": "v1|168655820458|468010854040",
+      "itemId": "v1|900000000001|900000000002",
       "title": "Games - C - List 1 - A3 Premium Poster Prints",
-      "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group?item_group_id=168655820458",
+      "itemGroupHref": "https://api.ebay.com/buy/browse/v1/item/get_items_by_item_group",
       "leafCategoryIds": [
         "360"
       ],
@@ -101,7 +99,7 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/U-gAAeSwS5hqpcZB/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture001xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "13.52",
@@ -110,28 +108,26 @@
         "convertedFromCurrency": "GBP"
       },
       "itemGroupType": "SELLER_DEFINED_VARIATIONS",
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C168655820458%7C468010854040",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000001%7C900000000002",
       "seller": {
-        "username": "seller_001",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 378
+        "username": "seller_001"
       },
       "condition": "Used",
       "conditionId": "3000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/U-gAAeSwS5hqpcZB/s-l1200.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture001xxxxxx/s-l1200.jpg"
         }
       ],
       "buyingOptions": [
         "FIXED_PRICE"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/168655820458?_skw=carmageddon&hash=item2744ab96aa:g:U-gAAeSwS5hqpcZB",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000001",
       "itemLocation": {
         "country": "GB"
       },
       "adultOnly": false,
-      "legacyItemId": "168655820458",
+      "legacyItemId": "900000000001",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-12T21:36:58.000Z",
       "itemCreationDate": "2026-09-12T21:36:58.000Z",
@@ -140,7 +136,7 @@
       "listingMarketplaceId": "EBAY_GB"
     },
     {
-      "itemId": "v1|278367340901|0",
+      "itemId": "v1|900000000013|0",
       "title": "CARMAGEDDON 64 Authentic 2000 Nintendo N64 Clean Pins Tested",
       "leafCategoryIds": [
         "139973"
@@ -156,23 +152,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/UxAAAeSw0BhqpQCT/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture057xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "144.95",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278367340901%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000013%7C0",
       "seller": {
-        "username": "seller_012",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 20968
+        "username": "seller_012"
       },
       "condition": "Good",
       "conditionId": "5000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/UxAAAeSw0BhqpQCT/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture057xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -183,35 +177,35 @@
       "buyingOptions": [
         "FIXED_PRICE"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/278367340901?_skw=carmageddon&hash=item40cffc8965:g:UxAAAeSw0BhqpQCT",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000013",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/zbUAAeSw-M1qpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture058xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/mz8AAeSwdWlqpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture059xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/A-QAAeSwkOJqpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture060xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/D6cAAeSwd3NqpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture061xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/GZYAAeSwqR1qpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture062xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/CncAAeSwKexqpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture063xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/D1MAAeSwpr5qpQCT/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture064xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "278367340901",
+      "legacyItemId": "900000000013",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-12T08:21:46.000Z",
       "itemCreationDate": "2026-09-12T08:21:46.000Z",
@@ -220,7 +214,7 @@
       "listingMarketplaceId": "EBAY_US"
     },
     {
-      "itemId": "v1|257738141223|0",
+      "itemId": "v1|900000000014|0",
       "title": "PC BIG BOX CARMAGEDDON 2 CARPOCALYPSE NOW NEW ORIGINAL EU RARE ",
       "leafCategoryIds": [
         "139973"
@@ -236,7 +230,7 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/c7kAAeSw-M1qpPqf/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture065xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "81.08",
@@ -244,17 +238,15 @@
         "convertedFromValue": "69.90",
         "convertedFromCurrency": "EUR"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C257738141223%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000014%7C0",
       "seller": {
-        "username": "seller_013",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 18899
+        "username": "seller_013"
       },
       "condition": "Ottime condizioni",
       "conditionId": "4000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/c7kAAeSw-M1qpPqf/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture065xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -271,32 +263,32 @@
       "buyingOptions": [
         "FIXED_PRICE"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/257738141223?_skw=carmageddon&hash=item3c0263ee27:g:c7kAAeSw-M1qpPqf",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000014",
       "itemLocation": {
         "country": "IT"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/6OwAAeSw-hBqpPqm/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture066xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/pxcAAeSwRMlqpPqt/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture067xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/lmsAAeSwp1dqpPqy/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture068xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/sY4AAeSwZBRqpPq4/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture069xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/8FsAAeSwh9BqpPrC/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture070xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/phEAAeSwCMlqpPrM/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture071xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "257738141223",
+      "legacyItemId": "900000000014",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-12T07:11:04.000Z",
       "itemCreationDate": "2026-09-12T07:11:04.000Z",
@@ -305,7 +297,7 @@
       "listingMarketplaceId": "EBAY_IT"
     },
     {
-      "itemId": "v1|366663879418|0",
+      "itemId": "v1|900000000015|0",
       "title": "2 Games,  Carmageddon 2 Carpocalypse Now,  Carmageddon 3 TDR 2000.  READ DESC!!",
       "leafCategoryIds": [
         "139973"
@@ -321,23 +313,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/w0QAAeSwE6lqpOQI/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture072xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "120.00",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C366663879418%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000015%7C0",
       "seller": {
-        "username": "seller_014",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 21
+        "username": "seller_014"
       },
       "condition": "Very Good",
       "conditionId": "4000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/w0QAAeSwE6lqpOQI/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture072xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -350,71 +340,71 @@
         "BEST_OFFER"
       ],
       "epid": "7152",
-      "itemWebUrl": "https://www.ebay.com/itm/366663879418?_skw=carmageddon&hash=item555edecafa:g:w0QAAeSwE6lqpOQI",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000015",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/gbkAAeSwpwVqpOQJ/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture073xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/fWMAAeSwCMlqpOQK/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture074xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/1tkAAeSwWXNqpOQK/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture075xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/iUMAAeSwR25qpOQK/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture076xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/KncAAeSw6pdqpOQL/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture077xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/ixAAAeSwx6lqpOQL/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture078xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/wuQAAeSwAkhqpOQM/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture079xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/gDYAAeSwnnJqpOQM/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture080xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/viQAAeSw7k9qpOQN/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture081xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/y7QAAeSw~H9qpOQN/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture082xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/lccAAeSwXz1qpOQN/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture083xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/lUEAAeSw~n5qpOQO/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture084xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/gEsAAeSwnnJqpOQP/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture085xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/w20AAeSwSyBqpOQP/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture086xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/fusAAeSwFqxqpOQP/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture087xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/fjkAAeSw1XpqpOQQ/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture088xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/uZAAAeSwFXdqpOQQ/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture089xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/oPUAAeSw90JqpOQR/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture090xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/jlYAAeSwfUpqpOQk/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture091xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "366663879418",
+      "legacyItemId": "900000000015",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-12T05:44:31.000Z",
       "itemCreationDate": "2026-09-12T05:44:31.000Z",
@@ -423,7 +413,7 @@
       "listingMarketplaceId": "EBAY_US"
     },
     {
-      "itemId": "v1|287581322739|0",
+      "itemId": "v1|900000000016|0",
       "title": "Carmageddon 2: Carpocalypse Now (PC, 1998) Big Box with Official Graphics Pack!",
       "leafCategoryIds": [
         "139973"
@@ -439,23 +429,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/FkQAAeSwj~ZqpLBK/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture092xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "59.99",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C287581322739%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000016%7C0",
       "seller": {
-        "username": "seller_015",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 2604
+        "username": "seller_015"
       },
       "condition": "Good",
       "conditionId": "5000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/FkQAAeSwj~ZqpLBK/s-l1200.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture092xxxxxx/s-l1200.jpg"
         }
       ],
       "shippingOptions": [
@@ -468,29 +456,29 @@
         "BEST_OFFER"
       ],
       "epid": "7152",
-      "itemWebUrl": "https://www.ebay.com/itm/287581322739?_skw=carmageddon&hash=item42f52ebdf3:g:FkQAAeSwj~ZqpLBK",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000016",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/vBYAAeSwCJxqpLBB/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture093xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/iJEAAeSw03ZqpLBB/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture094xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/1nsAAeSw4OBqpLBB/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture095xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/v5oAAeSwi8lqpLBB/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture096xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/r6gAAeSwFqxqpLBB/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture097xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "287581322739",
+      "legacyItemId": "900000000016",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-12T01:58:25.000Z",
       "itemCreationDate": "2026-09-12T01:58:25.000Z",
@@ -499,7 +487,7 @@
       "listingMarketplaceId": "EBAY_US"
     },
     {
-      "itemId": "v1|237063388283|0",
+      "itemId": "v1|900000000005|0",
       "title": "Carmageddon 2: Carpocalypse Now ( PC, 1998 )",
       "leafCategoryIds": [
         "139973"
@@ -515,7 +503,7 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/rawAAeSwiHtqpFDa/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture017xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "18.02",
@@ -523,36 +511,34 @@
         "convertedFromValue": "25.00",
         "convertedFromCurrency": "CAD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C237063388283%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000005%7C0",
       "seller": {
-        "username": "seller_004",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 1298
+        "username": "seller_004"
       },
       "condition": "Very Good",
       "conditionId": "4000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/rawAAeSwiHtqpFDa/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture017xxxxxx/s-l1600.jpg"
         }
       ],
       "buyingOptions": [
         "FIXED_PRICE"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/237063388283?_skw=carmageddon&hash=item3732143c7b:g:rawAAeSwiHtqpFDa",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000005",
       "itemLocation": {
         "country": "CA"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/DLMAAeSwR2JqpFDa/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture018xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/AqYAAeSwvoBqpFDa/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture019xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "237063388283",
+      "legacyItemId": "900000000005",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-11T19:05:49.000Z",
       "itemCreationDate": "2026-09-11T19:05:49.000Z",
@@ -561,7 +547,7 @@
       "listingMarketplaceId": "EBAY_CA"
     },
     {
-      "itemId": "v1|278364053946|0",
+      "itemId": "v1|900000000017|0",
       "title": "Carmageddon (PC, 1997) Complete in box with Splat Pack Italian Language Ver.",
       "leafCategoryIds": [
         "139973"
@@ -577,23 +563,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/~iYAAeSw7mFqo1WN/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture098xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "99.99",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278364053946%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000017%7C0",
       "seller": {
-        "username": "seller_015",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 2604
+        "username": "seller_015"
       },
       "condition": "Very Good",
       "conditionId": "4000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/~iYAAeSw7mFqo1WN/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture098xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -605,20 +589,20 @@
         "FIXED_PRICE",
         "BEST_OFFER"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/278364053946?_skw=carmageddon&hash=item40cfca61ba:g:~iYAAeSw7mFqo1WN",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000017",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/vtEAAeSwxtlqo1WN/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture099xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/OFMAAeSw2VRqo1WN/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture100xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "278364053946",
+      "legacyItemId": "900000000017",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-11T01:13:51.000Z",
       "itemCreationDate": "2026-09-11T05:44:47.000Z",
@@ -627,7 +611,7 @@
       "listingMarketplaceId": "EBAY_US"
     },
     {
-      "itemId": "v1|278364053876|0",
+      "itemId": "v1|900000000018|0",
       "title": "Carmageddon 2: Carpocalypse Now & Crime Killer - Dual Jewel (PC, 1999) Brand new",
       "leafCategoryIds": [
         "139973"
@@ -643,23 +627,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/QLAAAeSw2u5qo1U2/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture101xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "19.99",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C278364053876%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000018%7C0",
       "seller": {
-        "username": "seller_015",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 2604
+        "username": "seller_015"
       },
       "condition": "Brand New",
       "conditionId": "1000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/QLAAAeSw2u5qo1U2/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture101xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -678,20 +660,20 @@
         "BEST_OFFER"
       ],
       "epid": "6232",
-      "itemWebUrl": "https://www.ebay.com/itm/278364053876?_skw=carmageddon&hash=item40cfca6174:g:QLAAAeSw2u5qo1U2",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000018",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/72cAAeSwNiVqo1Uw/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture102xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/6RgAAeSwzjRqo1Uw/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture103xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "278364053876",
+      "legacyItemId": "900000000018",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-11T01:11:43.000Z",
       "itemCreationDate": "2026-09-11T05:44:43.000Z",
@@ -700,7 +682,7 @@
       "listingMarketplaceId": "EBAY_US"
     },
     {
-      "itemId": "v1|287579571707|0",
+      "itemId": "v1|900000000019|0",
       "title": "Carmageddon Max Pack PC Multi-player 3D Racing Interplay Discs in Case",
       "leafCategoryIds": [
         "139973"
@@ -716,23 +698,21 @@
         }
       ],
       "image": {
-        "imageUrl": "https://i.ebayimg.com/images/g/OSUAAeSwEytqo1Rp/s-l225.jpg"
+        "imageUrl": "https://i.ebayimg.com/images/g/Fixture104xxxxxx/s-l225.jpg"
       },
       "price": {
         "value": "9.99",
         "currency": "USD"
       },
-      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C287579571707%7C0",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C900000000019%7C0",
       "seller": {
-        "username": "seller_015",
-        "feedbackPercentage": "100.0",
-        "feedbackScore": 2604
+        "username": "seller_015"
       },
       "condition": "Good",
       "conditionId": "5000",
       "thumbnailImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/OSUAAeSwEytqo1Rp/s-l1600.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture104xxxxxx/s-l1600.jpg"
         }
       ],
       "shippingOptions": [
@@ -750,20 +730,20 @@
         "FIXED_PRICE",
         "BEST_OFFER"
       ],
-      "itemWebUrl": "https://www.ebay.com/itm/287579571707?_skw=carmageddon&hash=item42f51405fb:g:OSUAAeSwEytqo1Rp",
+      "itemWebUrl": "https://www.ebay.com/itm/900000000019",
       "itemLocation": {
         "country": "US"
       },
       "additionalImages": [
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/90wAAeSwFw5qo1Rp/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture105xxxxxx/s-l225.jpg"
         },
         {
-          "imageUrl": "https://i.ebayimg.com/images/g/5qgAAeSwlOlqo1Rp/s-l225.jpg"
+          "imageUrl": "https://i.ebayimg.com/images/g/Fixture106xxxxxx/s-l225.jpg"
         }
       ],
       "adultOnly": false,
-      "legacyItemId": "287579571707",
+      "legacyItemId": "900000000019",
       "availableCoupons": false,
       "itemOriginDate": "2026-09-11T01:08:13.000Z",
       "itemCreationDate": "2026-09-11T05:44:44.000Z",

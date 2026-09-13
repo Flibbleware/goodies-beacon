@@ -177,6 +177,16 @@ data — it contains rather more than a username.
 The spike's own anonymiser replaces the block with a synthetic one of the same shape rather than
 deleting it, so the adapter test in P1-04 has something realistic to prove it strips.
 
+**6. The same listing appears on more than one marketplace.** Four of the ten `EBAY_GB` results
+came back identically from `EBAY_DE`, same `itemId`. So a wanted item with a plan on each
+marketplace — which is the shape §4 recommends, and which point 2 above now *forces* for
+multi-country coverage — will see the same listing several times in one polling round. The design
+already absorbs this: `seen (source, external_id)` is unique per §4 and P1-01, and `externalId` is
+the `itemId`, so the second plan finds it in `Seen` and skips it. Worth knowing that overlapping
+plans are expected and cost one wasted comparison rather than a duplicate candidate or a second
+review — and worth a test in P1-07, since the saving only holds if `seen` is checked before the
+candidate is created rather than after.
+
 **Two gotchas for P1-04 and P1-06.**
 
 - **An auction's `price` is `null`.** The value lives in `currentBidPrice`, alongside `bidCount`.
