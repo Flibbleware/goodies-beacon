@@ -183,6 +183,11 @@ the same way — pulls the new image, switches `GOODIES_BEACON_VERSION`, restart
 and if the new image does not come up healthy it puts the old version back and restarts it — so a
 failed deploy leaves the previous image running rather than a broken one.
 
+`deploy.sh` moves the image and nothing else. `docker-compose.yml`, the `Caddyfile`, `backup.sh`
+and `deploy.sh` itself are files in `/opt/goodies-beacon`, so when a release changes one of them
+the release notes say so and you fetch it again as in step 4, then `docker compose up -d` to
+apply it.
+
 Rolling back is deploying the previous tag. Note that a release which migrated the database may
 not be reversible by changing the image alone, which is why the dump comes first.
 

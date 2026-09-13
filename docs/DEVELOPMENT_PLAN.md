@@ -501,7 +501,9 @@ Extend `scripts/bootstrap-droplet.sh` so that, given `GOODIES_BEACON_HOST`, it a
 and hex `POSTGRES_PASSWORD`, at mode 600; given `DEPLOY_PUBKEY`, writes `deploy`'s
 `authorized_keys` with the forced command and prints the fingerprint; and applies pending apt
 updates, saying whether a reboot is needed. Still idempotent: an existing `.env` or key line is
-left alone and reported. Depends on P0-12.
+left alone and reported — but `docker-compose.yml`, `Caddyfile`, `backup.sh` and `deploy.sh` are
+refreshed on every run, because they live outside the image and a deploy never updates them; today
+that is a by-hand `curl` step after any merge that touches them. Depends on P0-12.
 
 Done when:
 
@@ -521,6 +523,24 @@ touches the area, or together as one chore.
 - [ ] Off-site copies of the dumps: RUNNING.md gives the `tar` over `ssh` one-liner; a scheduled version, or DigitalOcean Spaces, once there is data worth keeping.
 - [ ] Chromium sandboxing for the browser-driven adapters, when the Vinted adapter lands in Phase 4.
 - [ ] TOTP as an optional second factor (§12's "small later addition").
+
+#### P1-xx Deploy carries the on-droplet files — S
+
+`deploy.sh` moves the image and nothing else, so `docker-compose.yml`, the two Caddyfiles,
+`backup.sh` and `deploy.sh` itself are refreshed by hand after any merge that touches them, and
+the release workflow cannot do it: its key can only run `deploy.sh`. Ship the five files inside
+the image (a `/app/deploy` directory in the Dockerfile; `.dockerignore` currently excludes them)
+and have `deploy.sh`, after the pull, copy them out of the image it just pulled — writing its own
+replacement to a temporary name and moving it into place — then `docker compose up -d` for every
+service rather than `app` alone, so a compose change is applied. The files are then versioned
+with the tag they belong to, and `dev` and `sha-` tags work the same way. Take it before
+`v0.2.0`, since Phase 1 will change the compose file. Depends on P0-13.
+
+Done when:
+
+- [ ] Deploying a tag whose compose file differs from the droplet's applies the change; deploying one whose files are identical changes nothing and says so.
+- [ ] `deploy.sh` replacing itself mid-run is proven safe: the running copy finishes, and the next run is the new one.
+- [ ] RUNNING.md's install step fetches only `.env.example`, `docker-compose.yml` and `deploy.sh` to bootstrap, and its upgrade section no longer has a by-hand refresh.
 
 #### P6-xx First-run setup token — S
 
