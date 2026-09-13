@@ -2,6 +2,9 @@ import { type Database, type Logger, PING_TIMEOUT_MS } from '@goodies-beacon/cor
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
 
+/** The media routes only touch it when an image is served; nothing here serves one. */
+const MEDIA_DIR = '/tmp/goodies-beacon-test-media';
+
 const logger: Logger = { error() {}, warn() {}, info() {}, debug() {}, child: () => logger };
 
 function appWith(execute: () => Promise<unknown>) {
@@ -13,6 +16,7 @@ function appWith(execute: () => Promise<unknown>) {
       secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
       version: '1.2.3',
       sha: 'abc1234',
+      mediaDir: MEDIA_DIR,
     },
   });
 }

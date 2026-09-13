@@ -387,9 +387,9 @@ Fetch listing and reference images through the adapter HTTP client with an SSRF 
 
 Done when:
 
-- [ ] Tests cover the SSRF guard, the size cap, a non-image response, and a corrupt image.
-- [ ] Two identical images uploaded twice produce one stored file (hash-based dedupe).
-- [ ] Reference image upload from the UI works and shows the running "images per review" count.
+- [x] Tests cover the SSRF guard, the size cap, a non-image response, and a corrupt image. Sixty-one tests. The guard blocks on the resolved *address*, not the hostname, because `evil.example.com` can resolve to 127.0.0.1 as easily as `localhost` can; it refuses when **any** answer is private rather than picking the public one, which is what a DNS rebinding attempt wants; it sees through IPv4-mapped IPv6 (`::ffff:127.0.0.1` reaches loopback just as well); and it re-checks at every redirect hop, since the trick is a public host answering 302 to `169.254.169.254`. The size cap is checked twice — once against `content-length` to save the download, once against the bytes actually read, because `content-length` is a claim.
+- [x] Two identical images uploaded twice produce one stored file (hash-based dedupe). Keyed on a SHA-256 of the *original* bytes, so the second arrival is recognised before any re-encoding is done. Four concurrent ingests of one photo settle on one row: the unique index decides and the losers read back what the winner wrote, rather than failing the poll.
+- [ ] Reference image upload from the UI works and shows the running "images per review" count. **Half done, and the remainder belongs to P1-13.** `POST /api/media` accepts an upload with a label, re-encodes it and returns the row, and `GET /api/media/:id` and `/:id/thumb` serve it with an immutable cache and an ETag. There is no page to put the control on: §7's running count lives on the item page, and P1-13's own description carries "reference image upload with labels (P1-05)". Building an unmounted component now would be guessing at what that task needs.
 
 #### P1-06 Currency conversion — S
 

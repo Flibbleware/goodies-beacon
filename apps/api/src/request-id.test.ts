@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
 import { REQUEST_ID_HEADER } from './request-id.js';
 
+/** The media routes only touch it when an image is served; nothing here serves one. */
+const MEDIA_DIR = '/tmp/goodies-beacon-test-media';
+
 interface Line {
   message: string;
   fields: Record<string, unknown> | undefined;
@@ -37,6 +40,7 @@ function appWith(logger: Logger, db: Database = workingDb()) {
       secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
       version: 'dev',
       sha: 'unknown',
+      mediaDir: MEDIA_DIR,
     },
   });
 }

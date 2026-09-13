@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.24 — 13 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.25 — 14 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -437,7 +437,7 @@ React + Vite, TanStack Router and Query, Tailwind. Pages:
 | Validation | Zod | Shared schemas between API, UI and adapters |
 | UI | React 19, Vite, TanStack Router/Query, Tailwind | Familiar, fast to build |
 | Email | Nodemailer + React Email templates | Templates in the same language |
-| Images | sharp (resize), blockhash (perceptual hash) | Ingest pipeline |
+| Images | sharp (resize, re-encode, and a difference hash) | Ingest pipeline. `blockhash` was named here until v1.25 and is not used: its only release is from 2019, it has no type definitions, and it needs raw pixels — which means sharp regardless. A dHash against sharp is twenty lines with no supply-chain surface, and P1-05 measured it separating a resized copy (5–7 bits of 64) from a different photograph (18–46) |
 | Lint + format | Biome, with lefthook pre-commit | One fast tool instead of ESLint + Prettier; `biome ci` in Actions |
 | Testing | Vitest 4.1; Playwright for UI smoke tests; recorded HTTP fixtures per adapter; prompt eval fixtures | Adapter and prompt tests run offline without credentials |
 | Packaging | pnpm 11 workspaces, single multi-stage Dockerfile on `node:24-trixie-slim`, GitHub Actions → GHCR image | One `docker compose up` for users |

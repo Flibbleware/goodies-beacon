@@ -14,6 +14,9 @@ import { createApp } from '../app.js';
 import { CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE } from './cookies.js';
 import { createLoginRateLimiter, MAX_ATTEMPTS, WINDOW_MS } from './rate-limit.js';
 
+/** The media routes only touch it when an image is served; nothing here serves one. */
+const MEDIA_DIR = '/tmp/goodies-beacon-test-media';
+
 /**
  * The whole sign-in flow over real HTTP requests against the Hono app, against a real Postgres
  * (TEST_DATABASE_URL; CI's Tests job provides one). Cookies, session rows and lockout all have to
@@ -123,6 +126,7 @@ describe.skipIf(!databaseUrl)('the auth routes', () => {
         secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
         version: 'dev',
         sha: 'unknown',
+        mediaDir: MEDIA_DIR,
       },
     });
   });
