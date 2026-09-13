@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { isSourceId, SOURCE_IDS, type SourceId } from './sources.js';
+import { isMarketplaceSourceId, MARKETPLACE_SOURCE_IDS, type SourceId } from './sources.js';
 
 export const ROLES = ['api', 'worker', 'all'] as const;
 export type Role = (typeof ROLES)[number];
@@ -31,11 +31,11 @@ const schema = z.object({
     .default('')
     .transform(splitList)
     .superRefine((ids, ctx) => {
-      const unknown = ids.filter((id) => !isSourceId(id));
+      const unknown = ids.filter((id) => !isMarketplaceSourceId(id));
       if (unknown.length > 0) {
         ctx.addIssue({
           code: 'custom',
-          message: `unknown source(s): ${unknown.join(', ')}. Known sources: ${SOURCE_IDS.join(', ')}`,
+          message: `unknown source(s): ${unknown.join(', ')}. Known sources: ${MARKETPLACE_SOURCE_IDS.join(', ')}`,
         });
       }
     })

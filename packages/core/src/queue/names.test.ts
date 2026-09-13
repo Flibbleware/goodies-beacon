@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SOURCE_IDS } from '../sources.js';
+import { MARKETPLACE_SOURCE_IDS } from '../sources.js';
 import {
   HEARTBEAT_ROLES,
   heartbeatQueueName,
@@ -28,7 +28,7 @@ describe('heartbeatRolesFor', () => {
 
 describe('pollSourcesFor', () => {
   it('treats an empty WORKER_SOURCES as every source', () => {
-    expect(pollSourcesFor([])).toEqual(SOURCE_IDS);
+    expect(pollSourcesFor([])).toEqual(MARKETPLACE_SOURCE_IDS);
     expect(pollSourcesFor(['ebay'])).toEqual(['ebay']);
   });
 });

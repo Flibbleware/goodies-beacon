@@ -47,3 +47,17 @@ export const normalisedListingSchema = z.object({
 
 export type ListingImage = z.infer<typeof listingImageSchema>;
 export type NormalisedListing = z.infer<typeof normalisedListingSchema>;
+
+/**
+ * What a `SourceAdapter.search` returns: the normalised listing plus the source's own payload.
+ *
+ * `raw` is kept for debugging a parse that went wrong, and is stripped of the seller object by
+ * the adapter before it reaches here — a marketplace response can carry a trader's legal name and
+ * street address (§4, found by S1-01). The fixture harness validates against this, so an adapter
+ * that returns something the pipeline cannot store fails in its own tests rather than in a poll.
+ */
+export const rawListingSchema = normalisedListingSchema.extend({
+  raw: z.record(z.string(), z.unknown()).default({}),
+});
+
+export type RawListingShape = z.infer<typeof rawListingSchema>;

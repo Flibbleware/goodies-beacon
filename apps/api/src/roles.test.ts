@@ -1,10 +1,14 @@
 import type { Config, Database, Role } from '@goodies-beacon/core';
-import { assertUniqueQueues, createSilentLogger, SOURCE_IDS } from '@goodies-beacon/core';
+import {
+  assertUniqueQueues,
+  createSilentLogger,
+  MARKETPLACE_SOURCE_IDS,
+} from '@goodies-beacon/core';
 import { describe, expect, it } from 'vitest';
 import { processRegistrations } from './roles.js';
 
 const logger = createSilentLogger();
-const POLL_QUEUES = SOURCE_IDS.map((id) => `poll.${id}`);
+const POLL_QUEUES = MARKETPLACE_SOURCE_IDS.map((id) => `poll.${id}`);
 
 async function names(role: Role, workerSources: string[] = []): Promise<string[]> {
   const registrations = await processRegistrations({

@@ -90,6 +90,12 @@ jobs:
       - name: Build workspace packages
         run: pnpm -r --filter './packages/**' --filter @goodies-beacon/worker build
 
+      # The browser factory's tests drive a real Chromium — one browser at a time, blocked
+      # images, and the proxy actually applied. Without it they skip themselves, which would
+      # quietly leave P1-03's proxy guarantee untested on every run.
+      - name: Install Chromium
+        run: pnpm --filter @goodies-beacon/web exec playwright install --with-deps chromium
+
       - name: Vitest
         run: pnpm test
 

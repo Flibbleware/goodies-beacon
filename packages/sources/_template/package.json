@@ -14,13 +14,15 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "fixtures"
   ],
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run --root ../../.. --project @goodies-beacon/source-template"
   },
   "dependencies": {
-    "@goodies-beacon/core": "workspace:*"
+    "@goodies-beacon/core": "workspace:*",
+    "zod": "4.4.3"
   }
 }
