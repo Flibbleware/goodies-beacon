@@ -1,0 +1,23 @@
+{
+  // Test files are excluded from every package's tsconfig so they never reach dist/, which had
+  // the side effect that `tsc -b` checked none of them — a third of the TypeScript in the repo
+  // went unchecked, and Vitest does not typecheck either (esbuild strips types without reading
+  // them). This project exists only to check them: it emits nothing and is run by `pnpm typecheck`
+  // after the build, so the workspace .d.ts files the tests import already exist.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "types": ["node"]
+  },
+  "include": [
+    "packages/*/src/**/*.test.ts",
+    "packages/sources/*/src/**/*.test.ts",
+    "apps/*/src/**/*.test.ts",
+    "apps/web/e2e/**/*.ts",
+    "apps/web/playwright.config.ts"
+  ]
+}
