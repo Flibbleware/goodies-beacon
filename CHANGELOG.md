@@ -4,6 +4,11 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: the Playwright smoke test could fail on a slow CI runner by reloading the page while a
+  settings save was still in flight; it now waits for the section's "Saved." status. Retries are
+  off, because the database is reset once per run and a retry would start at first run against an
+  instance whose password is already set.
+
 - The window between first start and the owner setting a password, during which anyone reaching
   the instance can claim it, is now stated in ARCHITECTURE.md §12 and a first-run setup token is
   planned for Phase 6 (`docs/DEVELOPMENT_PLAN.md`, carried forward from the Phase 0 exit test).

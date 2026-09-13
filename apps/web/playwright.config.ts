@@ -26,7 +26,9 @@ export default defineConfig({
   workers: 1,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // No retries: the database is reset once per run in globalSetup, so a retry would start at
+  // "first run" against an instance whose password is already set and fail for the wrong reason.
+  retries: 0,
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   use: {
     baseURL: external ?? `http://localhost:${PORT}`,
