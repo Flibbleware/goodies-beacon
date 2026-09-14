@@ -4,6 +4,32 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-07 Poll scheduler and candidate ingestion. Every active wanted item's search plans now get a
+  pg-boss cron schedule at the item's interval — three times a day by default, staggered by a hash
+  of the plan id so a hundred plans do not all fire in the same second — and the poll job stores
+  what the adapter returns as listings, candidates and review jobs. Schedules are reconciled from
+  the database every minute rather than written once at startup, so pausing an item or changing its
+  interval takes effect without a restart. Settings gains polling defaults: the global interval and
+  the two caps.
+- Two corrections to ARCHITECTURE.md fell out of building it, both now in v1.26. §6 said a listing
+  already in `seen` is ignored, but `seen` is keyed on `(source, externalId)` and so is global,
+  while a candidate is per wanted item — two items searching the same marketplace would have
+  starved each other, silently, with the first to poll taking the listing. The per-item test is the
+  `candidates` unique index instead. And §6's "carries on from where it stopped" could not be true
+  as written: sources page newest-first, so a run that stops at the cap takes the newest N and
+  leaves an unreachable gap behind it. `SearchRequest` now carries an optional `until` beside
+  `since`, and a capped run records the window it still owes so the next runs walk it backwards
+  until it is empty. A plan's *first* run is exempt, since its window is the whole history of the
+  query and sweeping that is what the backfill setting is for.
+- A failed poll is recorded against the plan — the error and the run time, with the last success
+  left standing so the dashboard can say "failing since" rather than only "failed" — and retried
+  with a widening gap rather than immediately, because the usual causes fix themselves given a
+  pause and hammering them is what turns a blip into a block.
+- An item's poll interval is snapped up to a period cron can actually express. A cron step runs
+  within its field, so `*/7` on the hour fires at 0, 7, 14, 21 and then 0 again — a three-hour gap
+  in what was asked to be a seven-hour cycle. It is also clamped to the source's own
+  `recommendedMinInterval`, whatever the item asks for.
+
 - P1-06 Currency conversion. Daily ECB rates from frankfurter.dev cached in a new `fx_rates`
   table, and `toGbp(amount, currency)` returning both the converted price and the publication date
   of the rate it used, which is recorded on the listing. Rates are kept per date rather than

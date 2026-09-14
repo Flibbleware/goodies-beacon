@@ -4,7 +4,10 @@ import {
   createDb,
   createPool,
   type Database,
+  DEFAULT_BACKFILL_CAP,
   DEFAULT_DIGEST_TIME,
+  DEFAULT_POLL_CAP,
+  DEFAULT_POLL_INTERVAL,
   DEFAULT_SMTP_PORT,
   DEFAULT_TIMEZONE,
   isEncrypted,
@@ -122,6 +125,11 @@ describe.skipIf(!databaseUrl)('the settings routes', () => {
       expect(await res.json()).toEqual({
         settings: {
           instance: { timezone: DEFAULT_TIMEZONE, digestTime: DEFAULT_DIGEST_TIME },
+          polling: {
+            defaultInterval: DEFAULT_POLL_INTERVAL,
+            pollCap: DEFAULT_POLL_CAP,
+            backfillCap: DEFAULT_BACKFILL_CAP,
+          },
           email: {
             host: '',
             port: DEFAULT_SMTP_PORT,

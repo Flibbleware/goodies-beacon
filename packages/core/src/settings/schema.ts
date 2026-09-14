@@ -1,8 +1,23 @@
 import { z } from 'zod';
+import { durationSchema } from '../domain/spec.js';
 
 export const DEFAULT_TIMEZONE = 'Europe/London';
 export const DEFAULT_DIGEST_TIME = '08:00';
 export const DEFAULT_SMTP_PORT = 587;
+
+/** Three times a day (§6), used by any item whose own `pollEvery` is null. */
+export const DEFAULT_POLL_INTERVAL = 'PT8H';
+
+/**
+ * The §6 safety valves, as counts of new listings one run may take.
+ *
+ * A routine poll stops at 50 so a query like "game" cannot queue hundreds of reviews from a
+ * single run; a backfill or a "Scan current listings" is a deliberate, one-off sweep and is
+ * allowed 200. Neither loses the remainder: a run that stops at the cap records where it got to
+ * and the next one carries on from there.
+ */
+export const DEFAULT_POLL_CAP = 50;
+export const DEFAULT_BACKFILL_CAP = 200;
 
 /** How the SMTP connection is protected (§10): implicit TLS, STARTTLS, or neither. */
 export const SMTP_SECURITIES = ['none', 'starttls', 'tls'] as const;
@@ -33,6 +48,13 @@ export const instanceSettingsSchema = z.object({
   digestTime: digestTime.default(DEFAULT_DIGEST_TIME),
 });
 
+export const pollingSettingsSchema = z.object({
+  /** ISO 8601; the scheduler still refuses to run faster than a source's own minimum (§5). */
+  defaultInterval: durationSchema.default(DEFAULT_POLL_INTERVAL),
+  pollCap: z.coerce.number().int().min(1).max(1000).default(DEFAULT_POLL_CAP),
+  backfillCap: z.coerce.number().int().min(1).max(1000).default(DEFAULT_BACKFILL_CAP),
+});
+
 export const emailSettingsSchema = z.object({
   host: z.string().default(''),
   port: port.default(DEFAULT_SMTP_PORT),
@@ -47,12 +69,6 @@ export const emailSettingsSchema = z.object({
   notificationAddress: optionalEmailAddress.default(''),
 });
 
-/**
- * The whole settings document, stored as one JSONB row. Every field has a default, so an empty
- * row parses into a complete set of settings and a new section needs no migration.
- *
- * Later tasks add sources, AI roles, polling defaults, retention and the budget cap (§14).
- */
 /**
  * Per-source credentials and proxy (§5). Both secrets are stored as `enc:v1:` like the SMTP
  * password and never sent to the browser — a proxy URL carries `user:pass@host` and is as much a
@@ -70,8 +86,15 @@ export const sourcesSettingsSchema = z.object({
   ebay: ebaySourceSchema.prefault({}),
 });
 
+/**
+ * The whole settings document, stored as one JSONB row. Every field has a default, so an empty
+ * row parses into a complete set of settings and a new section needs no migration.
+ *
+ * Later tasks add AI roles, retention and the budget cap (§14).
+ */
 export const settingsSchema = z.object({
   instance: instanceSettingsSchema.prefault({}),
+  polling: pollingSettingsSchema.prefault({}),
   email: emailSettingsSchema.prefault({}),
   sources: sourcesSettingsSchema.prefault({}),
 });
@@ -84,6 +107,12 @@ export const settingsSchema = z.object({
 const instancePatchSchema = z.object({
   timezone: timezone.optional(),
   digestTime: digestTime.optional(),
+});
+
+const pollingPatchSchema = z.object({
+  defaultInterval: durationSchema.optional(),
+  pollCap: z.coerce.number().int().min(1).max(1000).optional(),
+  backfillCap: z.coerce.number().int().min(1).max(1000).optional(),
 });
 
 const emailPatchSchema = z.object({
@@ -107,6 +136,7 @@ const ebaySourcePatchSchema = z.object({
 /** What a PUT may carry: any subset, so the UI can save one section without sending the rest. */
 export const settingsPatchSchema = z.object({
   instance: instancePatchSchema.optional(),
+  polling: pollingPatchSchema.optional(),
   email: emailPatchSchema.optional(),
   sources: z.object({ ebay: ebaySourcePatchSchema.optional() }).optional(),
 });
@@ -114,12 +144,14 @@ export const settingsPatchSchema = z.object({
 export type Settings = z.infer<typeof settingsSchema>;
 export type SettingsPatch = z.infer<typeof settingsPatchSchema>;
 export type EmailSettings = z.infer<typeof emailSettingsSchema>;
+export type PollingSettings = z.infer<typeof pollingSettingsSchema>;
 export type SourcesSettings = z.infer<typeof sourcesSettingsSchema>;
 export type EbaySourceSettings = z.infer<typeof ebaySourceSchema>;
 
 /** Settings as the browser may see them: every secret is replaced by whether there is one. */
 export interface PublicSettings {
   instance: Settings['instance'];
+  polling: Settings['polling'];
   email: Omit<EmailSettings, 'password'> & { passwordSet: boolean };
   sources: {
     ebay: Omit<EbaySourceSettings, 'clientSecret' | 'proxyUrl'> & {
@@ -134,6 +166,7 @@ export function toPublicSettings(settings: Settings): PublicSettings {
   const { clientSecret, proxyUrl, ...ebay } = settings.sources.ebay;
   return {
     instance: settings.instance,
+    polling: settings.polling,
     email: { ...email, passwordSet: password !== '' },
     sources: {
       ebay: { ...ebay, clientSecretSet: clientSecret !== '', proxySet: proxyUrl !== '' },

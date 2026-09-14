@@ -276,6 +276,25 @@ describe('buildFilter', () => {
     expect(filter).toContain('price:[..150]');
     expect(filter).toContain('priceCurrency:GBP');
   });
+
+  /**
+   * The ceiling a capped poll leaves behind (P1-07). Results are newest-first, so without a range
+   * the next run would fetch the same newest page again and the gap would never be reached.
+   */
+  it('turns a watermark and a ceiling into an itemStartDate range', () => {
+    const since = new Date('2026-09-01T00:00:00.000Z');
+    const until = new Date('2026-09-02T00:00:00.000Z');
+
+    expect(buildFilter(plan(), since, until)).toBe(
+      'itemStartDate:[2026-09-01T00:00:00.000Z..2026-09-02T00:00:00.000Z]',
+    );
+  });
+
+  it('sends a ceiling on its own as an open lower bound', () => {
+    const until = new Date('2026-09-02T00:00:00.000Z');
+
+    expect(buildFilter(plan(), null, until)).toBe('itemStartDate:[..2026-09-02T00:00:00.000Z]');
+  });
 });
 
 describe('healthCheck', () => {

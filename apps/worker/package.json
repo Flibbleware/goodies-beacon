@@ -22,9 +22,15 @@
   },
   "dependencies": {
     "@goodies-beacon/core": "workspace:*",
+    "@goodies-beacon/source-ebay": "workspace:*",
+    "pg-boss": "12.31.0",
     "playwright": "1.63.0"
   },
   "devDependencies": {
-    "@types/node": "24.13.3"
+    "@goodies-beacon/source-template": "workspace:*",
+    "@types/node": "24.13.3",
+    "@types/pg": "8.21.0",
+    "drizzle-orm": "0.45.2",
+    "pg": "8.23.0"
   }
 }

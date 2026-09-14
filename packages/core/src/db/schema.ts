@@ -135,7 +135,13 @@ export const wantedItems = pgTable(
       .$type<(typeof NOTIFICATION_MODES)[number]>()
       .notNull()
       .default('digest'),
-    /** Postgres interval; null means "use the global default" (§4). */
+    /**
+     * ISO 8601 duration (PT8H); null means "use the global default" (§4).
+     *
+     * §4 wrote this as a Postgres interval. It holds the same vocabulary the spec settings use
+     * instead, because the two are edited as one field in the UI and a value that parsed one way
+     * in JSONB and another in a column is a bug waiting for whoever writes the second editor.
+     */
     pollEvery: text('poll_every'),
     gradingScaleId: uuid('grading_scale_id').references(() => gradingScales.id, {
       onDelete: 'set null',
@@ -202,6 +208,18 @@ export const searchPlanState = pgTable(
     source: text('source').$type<(typeof SOURCE_IDS)[number]>().notNull(),
     /** Newest listing actually processed. Never advanced past what was handled (§6). */
     watermark: timestamp('watermark', { withTimezone: true }),
+    /**
+     * The older window a poll that hit the cap still owes, or null when it owes none.
+     *
+     * Sources page newest-first, so a run that stops at the cap takes the newest N and leaves
+     * everything between the old watermark and that batch unreached. The watermark still advances
+     * — those newest N really were processed — and this records what was skipped, so the next run
+     * searches [backlogFrom..backlogUntil) instead of the fresh window and walks the gap backwards
+     * until it is empty. Without it the next run would fetch the same newest N again and the gap
+     * would never be reached at all (§6).
+     */
+    backlogFrom: timestamp('backlog_from', { withTimezone: true }),
+    backlogUntil: timestamp('backlog_until', { withTimezone: true }),
     lastRunAt: timestamp('last_run_at', { withTimezone: true }),
     lastSuccessAt: timestamp('last_success_at', { withTimezone: true }),
     lastError: text('last_error'),

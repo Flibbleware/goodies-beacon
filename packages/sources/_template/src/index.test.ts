@@ -72,6 +72,24 @@ describe('the template adapter', () => {
     expect(listings).toHaveLength(2);
   });
 
+  /**
+   * The ceiling a capped poll leaves behind (P1-07). The harness replays one fixture whatever the
+   * URL asks for, so the adapter's own filtering is what is under test here, not the fixture's.
+   */
+  it('skips anything at or above the ceiling a capped run left behind', async () => {
+    const until = new Date('2026-09-12T11:40:00.000Z');
+    const test = harness();
+    const listings = await test.search(PLAN, {
+      since: new Date('2026-09-11T00:00:00.000Z'),
+      until,
+    });
+
+    expect(listings.map((listing) => listing.externalId)).toEqual(['tmpl-1001', 'tmpl-1003']);
+    expect(new URL(test.requests[0] as string).searchParams.get('before')).toBe(
+      '2026-09-12T11:40:00.000Z',
+    );
+  });
+
   it('copes with an empty result', async () => {
     const listings = await harness([{ match: '/search', fixture: 'search-empty.json' }]).search(
       PLAN,

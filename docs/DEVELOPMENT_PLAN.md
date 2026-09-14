@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.24; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.26; section numbers below refer to it.*
 
-Version 1.2 — 13 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.3 — 14 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -406,14 +406,39 @@ Done when:
 
 #### P1-07 Poll scheduler and candidate ingestion — L
 
-Per §6. For every active item and enabled plan, a pg-boss cron schedule at the item's interval (default three times a day), staggered by a hash of the plan id. The poll job: load plan and watermark → adapter `search` → for each result, skip if in `seen`, else insert `listing`, `seen`, `candidate (origin=poll)` and enqueue `review` → advance the watermark to the newest processed listing → record per-plan counters and adapter health. Per-poll cap (default 200) that stops paging without advancing the watermark past what was processed.
+Per §6. For every active item and enabled plan, a pg-boss cron schedule at the item's interval (default three times a day), staggered by a hash of the plan id. The poll job: load plan and watermark → adapter `search` → for each result, insert `listing`, `seen` and `candidate (origin=poll)`, and enqueue `review` for each candidate that was actually new to this item → advance the watermark to the newest processed listing → record per-plan counters and adapter health. Per-poll cap that stops paging without advancing the watermark past what was processed.
+
+Two lines of that were amended while it was built, and both are in the decision below: **the skip test is per item, not a `seen` lookup**, and **the cap is 50 for a routine poll and 200 for a backfill**, which is what §6 says once its two numbers are read as the two different runs they describe.
 
 Done when:
 
-- [ ] Integration test with the template adapter: two consecutive polls with overlapping results create each candidate once and advance the watermark correctly.
-- [ ] A poll that hits the cap resumes exactly where it stopped on the next run.
-- [ ] Adapter failures are recorded as health events and retried with backoff, not silently dropped.
-- [ ] Changing an item's interval or pausing it updates the schedule without a restart.
+- [x] Integration test with the template adapter: two consecutive polls with overlapping results create each candidate once and advance the watermark correctly. Twenty-three tests in `apps/worker`, eleven of them against a real Postgres — it lives there rather than in core because core cannot depend on a source package without a cycle. It also covers the correction below: two wanted items each get their own candidate for one listing, where §6 as written would have given it to whichever polled first.
+- [x] A poll that hits the cap resumes exactly where it stopped on the next run. **Not achievable as §6 was written, and §6 is corrected in v1.26.** Sources page newest-first, so a capped run takes the newest N and leaves a gap behind it that a `since`-only watermark cannot name; the next run would fetch the same newest N for ever. `SearchRequest` now carries an optional `until`, and `search_plan_state` records the window still owed — a capped run advances the watermark and records the gap, and the next runs walk it backwards until it is empty. The test proves it over twenty-five listings and a cap of ten: three runs, every listing reached exactly once, the backlog closed. eBay's `itemStartDate` takes a range, so the adapter cost one field. A plan's *first* run is deliberately exempt: its window is the whole history of the query and sweeping that is what `settings.backfill` is for.
+- [x] Adapter failures are recorded as health events and retried with backoff, not silently dropped. The error and the run time land on the plan, with `last_success_at` left standing so the dashboard can say "failing since" rather than only "failed", and pg-boss retries three times with a widening gap. Two cases are tested: a failing marketplace records and rethrows, and a later success clears the error. The ingest records what it finished even when a listing throws half way, so a batch with one bad listing makes progress instead of repeating from the start for ever.
+- [x] Changing an item's interval or pausing it updates the schedule without a restart. A `schedules.reconcile` job runs every minute on the core worker and diffs the desired schedules against pg-boss's, keyed by plan id; both cases are tested against a real database, and the whole path was run against a real pg-boss on 14 September 2026 — a `ROLE=all` process picked up an item seeded while it was running and installed `poll.ebay`/`smoke-plan` as `13 1/2 * * *` (the item's PT2H, staggered), and pausing the item removed it within the minute, neither needing a restart. The same run proved `review.candidate` is created without being consumed. Intervals are snapped up to a period cron can express — a step runs within its field, so `*/7` on the hour fires at 0, 7, 14, 21 and then 0 again — and clamped to the adapter's `recommendedMinInterval`, whatever the item asks for.
+
+#### Decision — the candidate gate is per item, and the cap leaves a backlog (from P1-07, 14 September 2026)
+
+Two things in §6 did not survive contact with the code, and ARCHITECTURE.md v1.26 corrects both.
+
+**"New `(source, externalId)` pairs not in `Seen` become Listings and Candidates."** `Seen` is
+keyed on `(source, externalId)` and is therefore global, while a Candidate is per wanted item. Two
+items searching the same marketplace meet the same listing, so gating on `Seen` gives it to
+whichever polled first and starves the other with nothing to notice. The per-item test is the
+`candidates (wantedItemId, listingId)` unique index, which the poll inserts against rather than
+checking first. `Seen` keeps its other jobs: what is genuinely new to the instance, relist
+detection, and the one case the index cannot cover — retention deletes a candidate and the listing
+behind it, so a "Scan current listings" sweep can meet a listing whose candidate was pruned.
+Closing that completely means a wanted item id on `Seen` and a migration; it was judged not worth
+one for a case bounded to a button the owner presses, whose results §6 already routes to a summary
+email rather than a real-time one.
+
+**The per-poll cap.** §6 gave two numbers — 50 for a routine poll's new candidates, 200 for a
+backfill — and P1-07's own description said 200 for both. Both of §6's numbers are kept and are
+settings fields: a poll that runs three times a day is capped at 50, a deliberate one-off sweep at
+200.
+
+
 
 #### P1-08 AI layer: roles, providers, cost ledger, budget cap — L
 
