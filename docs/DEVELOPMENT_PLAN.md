@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.27; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.28; section numbers below refer to it.*
 
-Version 1.4 — 14 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.5 — 15 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -474,8 +474,18 @@ Prompt and structured output `{ plausible, reason }` per §7 step 3, including t
 
 Done when:
 
-- [ ] Fixture tests: obvious misses are rejected and plausible or ambiguous listings pass, on the configured cheap model.
-- [ ] The prompt is a versioned file in `packages/ai/prompts/` with a changelog header.
+- [ ] Fixture tests: obvious misses are rejected and plausible or ambiguous listings pass, on the configured cheap model. **Everything but the model run is built; the run needs a key and has not happened.** Eighteen cases in `packages/ai/fixtures/prefilter-cases.json` cover both example specs in both directions, including four deliberately near the line (a job lot in which the item is named, an iMac G3 against the Power Mac spec), and `pnpm --filter @goodies-beacon/ai prefilter-check` runs them against whichever model the `prefilter` role is set to, reporting wrong discards and wrong keeps apart and failing on the first. Twenty-nine offline tests cover the bounding, the prompt assembly and the fail-open path. This box ticks when the script is run against a real cheap model; P1-17 then turns the same fixtures into a CI gate across two providers.
+- [x] The prompt is a versioned file in `packages/ai/prompts/` with a changelog header. In `packages/ai/src/prompts/` rather than `packages/ai/prompts/`, and a `.ts` module rather than Markdown — see the decision below. P1-17's path filter is therefore `packages/ai/src/prompts/**`.
+
+#### Decision — a prompt is a module under `src/` (from P1-09, 15 September 2026)
+
+The obvious shape for a prompt is a Markdown file read at runtime. It is the wrong one here:
+`tsc` emits only what is under `src`, so a Markdown prompt — or a `.ts` one at the package root —
+needs its own line in the Dockerfile's hand-maintained copy list, and forgetting a line in that
+list has already broken the image twice (P1-04, P1-08). A prompt that is a module under `src` is
+built and shipped by the same mechanism as the code that uses it, cannot drift from it, and is
+type-checked. The cost is that the text is a template literal rather than prose in a file, which
+is small: the file is still nothing but the prompt and its changelog.
 
 #### P1-10 Reviewer — L
 
@@ -541,7 +551,7 @@ Done when: every figure links to the page that explains it, and an adapter failu
 
 #### P1-17 Prompt eval suite in CI — M
 
-A fixture set of about twenty listings (real, anonymised, from the spikes and your own eBay tabs) with expected pre-filter and reviewer outcomes for the two example specs. Runs in CI against two providers using repository secrets, with a small budget, and reports precision and recall in the job summary. It spends real money, so it runs only when something it judges has changed — a path filter on `packages/ai/prompts/**`, the fixtures and the eval code — plus a `workflow_dispatch` trigger for running it by hand; an unrelated pull request does not pay for it.
+A fixture set of about twenty listings (real, anonymised, from the spikes and your own eBay tabs) with expected pre-filter and reviewer outcomes for the two example specs. Runs in CI against two providers using repository secrets, with a small budget, and reports precision and recall in the job summary. It spends real money, so it runs only when something it judges has changed — a path filter on `packages/ai/src/prompts/**`, the fixtures and the eval code — plus a `workflow_dispatch` trigger for running it by hand; an unrelated pull request does not pay for it.
 
 Done when:
 

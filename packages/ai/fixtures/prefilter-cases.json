@@ -1,0 +1,149 @@
+{
+  "about": "Pre-filter cases for the two example specs (P1-09). Each is a listing the pre-filter must keep or discard, with the reason it is here. Titles and descriptions are written in the style of real marketplace listings rather than copied from them, so nothing resolves to a live listing or a real seller. P1-17 grows this set with recorded ones and turns it into a CI gate; until then `pnpm --filter @goodies-beacon/ai prefilter-check` runs it against the configured model.",
+  "cases": [
+    {
+      "id": "carmageddon-big-box",
+      "spec": "carmageddon",
+      "expect": "plausible",
+      "why": "The thing itself, titled plainly.",
+      "title": "Carmageddon PC CD-ROM Big Box Original 1997 Sales Curve Interactive",
+      "description": "Original big box release from 1997. Box, manual and disc all present. Box has some shelf wear to the corners but no water damage. Disc plays fine."
+    },
+    {
+      "id": "carmageddon-vague",
+      "spec": "carmageddon",
+      "expect": "plausible",
+      "why": "Too little information to tell the edition. §7: anything unclear continues.",
+      "title": "Carmageddon",
+      "description": "Old PC game, see photos."
+    },
+    {
+      "id": "carmageddon-mac-no-platform",
+      "spec": "carmageddon",
+      "expect": "plausible",
+      "why": "The plausibility note says sellers omit the platform; absence is not evidence against.",
+      "title": "Carmageddon big box complete",
+      "description": ""
+    },
+    {
+      "id": "carmageddon-damaged",
+      "spec": "carmageddon",
+      "expect": "plausible",
+      "why": "Condition is the reviewer's judgement, not the pre-filter's — and the collector may want it anyway.",
+      "title": "Carmageddon PC big box - water damaged, discs only playable",
+      "description": "Box is water stained and the manual is missing. Disc still reads. Sold as seen."
+    },
+    {
+      "id": "carmageddon-tshirt",
+      "spec": "carmageddon",
+      "expect": "reject",
+      "why": "§7's own example of an obvious miss: merchandise about the item, not the item.",
+      "title": "Carmageddon T-Shirt Retro Gaming Tee Size L Black",
+      "description": "Official Carmageddon design on a black cotton t-shirt. Size large. New with tags."
+    },
+    {
+      "id": "carmageddon-soundtrack",
+      "spec": "carmageddon",
+      "expect": "reject",
+      "why": "Media about the item rather than the item.",
+      "title": "Carmageddon Original Soundtrack CD Fear Factory",
+      "description": "Soundtrack album on CD. Jewel case, booklet included."
+    },
+    {
+      "id": "carmageddon-sequel",
+      "spec": "carmageddon",
+      "expect": "reject",
+      "why": "A different product in the same series, and the spec is explicit about it.",
+      "title": "Carmageddon II Carpocalypse Now PC CD-ROM Big Box",
+      "description": "Carmageddon 2 big box for PC. Complete with manual."
+    },
+    {
+      "id": "carmageddon-n64",
+      "spec": "carmageddon",
+      "expect": "reject",
+      "why": "The same title on a platform the spec excludes; also a negative keyword, but the pre-filter should not need that.",
+      "title": "Carmageddon 64 Nintendo 64 N64 Cartridge PAL",
+      "description": "Carmageddon for the Nintendo 64. Cartridge only, no box."
+    },
+    {
+      "id": "carmageddon-manual-only",
+      "spec": "carmageddon",
+      "expect": "reject",
+      "why": "A part of the item when the collector wants the complete thing.",
+      "title": "Carmageddon PC - MANUAL ONLY - no disc no box",
+      "description": "Replacement manual only. No disc, no box, no inserts."
+    },
+    {
+      "id": "carmageddon-in-bundle",
+      "spec": "carmageddon",
+      "expect": "plausible",
+      "why": "A bundle where it is a named part is worth a look; the reviewer decides. Deliberately near the line.",
+      "title": "Joblot 6 x PC Big Box Games inc Carmageddon Quake Doom",
+      "description": "Six big box PC games including Carmageddon, Quake and Doom. All complete with manuals."
+    },
+    {
+      "id": "powermac-vintage-apple",
+      "spec": "power-mac-5500",
+      "expect": "plausible",
+      "why": "The exact case the plausibility note is written for: no model number anywhere.",
+      "title": "Vintage Apple Macintosh All In One Computer Retro",
+      "description": "Old beige Apple computer with the screen built in. Powers on, see photos. Collection only."
+    },
+    {
+      "id": "powermac-performa",
+      "spec": "power-mac-5500",
+      "expect": "plausible",
+      "why": "The note says Japanese listings say Performa; the spec accepts the 5xxx all-in-ones.",
+      "title": "Apple Performa 5260 デスクトップ 一体型 Macintosh",
+      "description": "Performa 5260. Powers on to a chime. Untested beyond that."
+    },
+    {
+      "id": "powermac-5500-named",
+      "spec": "power-mac-5500",
+      "expect": "plausible",
+      "why": "The thing itself, named.",
+      "title": "Apple Power Macintosh 5500/225 All-In-One Mac OS 8",
+      "description": "Power Mac 5500/225 in working order. Some yellowing to the case. Keyboard and mouse included."
+    },
+    {
+      "id": "powermac-logic-board",
+      "spec": "power-mac-5500",
+      "expect": "reject",
+      "why": "A bare part, which the spec's summary excludes outright.",
+      "title": "Apple Power Macintosh 5500 Logic Board Motherboard ONLY Spares",
+      "description": "Logic board removed from a 5500. Untested, sold for spares or repair. Board only, nothing else included."
+    },
+    {
+      "id": "powermac-monitor-only",
+      "spec": "power-mac-5500",
+      "expect": "reject",
+      "why": "A monitor on its own, named in the summary as not wanted.",
+      "title": "Apple AppleVision 1710 Display Monitor Vintage Mac CRT",
+      "description": "Standalone Apple CRT monitor. Not a computer, monitor only."
+    },
+    {
+      "id": "powermac-tower",
+      "spec": "power-mac-5500",
+      "expect": "reject",
+      "why": "A Power Mac, but a tower rather than the all-in-one shape the spec asks for.",
+      "title": "Apple Power Macintosh 8600/300 Tower Desktop",
+      "description": "Power Macintosh 8600 tower. No monitor included. Powers on."
+    },
+    {
+      "id": "powermac-imac",
+      "spec": "power-mac-5500",
+      "expect": "plausible",
+      "why": "An all-in-one Mac of roughly the right era, wrong model. Near the line on purpose: the reviewer reads the model from the photographs, so the pre-filter should not decide it.",
+      "title": "Apple iMac G3 Bondi Blue All In One 1998",
+      "description": "Original bondi blue iMac G3. All in one with the screen built in. Powers on."
+    },
+    {
+      "id": "powermac-empty-case",
+      "spec": "power-mac-5500",
+      "expect": "reject",
+      "why": "A stripped shell, excluded by both the summary and a criterion.",
+      "title": "Apple Macintosh Performa 5200 EMPTY CASE shell only no internals",
+      "description": "Empty case only. All internals removed. No board, no drive, no CRT. For a project or display."
+    }
+  ]
+}

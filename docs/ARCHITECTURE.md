@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.27 — 14 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.28 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -291,6 +291,8 @@ Runs per Candidate in the review worker. Each stage can stop the pipeline early,
 1. **Normalise.** Currency to GBP (daily ECB rates, cached), text cleaned, images deduped by perceptual hash.
 2. **Hard filters (no AI).** Price above ceiling → reject with reason `over_budget` (still visible in the UI). Negative keywords in title → reject `negative_keyword`. Relist detection: same `sellerHash` + high title similarity, or a matching image hash, against a previous candidate → flag `relistOf`, continue (v1 shows relists; a later setting suppresses them).
 3. **Text pre-filter (cheap model).** Title + first ~1,500 characters of description + the spec summary, criteria and a per-item *plausibility note* written by the interviewer ("sellers often omit the model number; all-in-one Performa and Power Mac 5xxx listings are plausible") → `{ plausible: boolean, reason }`. Discards obvious misses ("Carmageddon t-shirt", "Game Boy game only"). Anything plausible or unclear continues. Target: rejects 60–70% of candidates from a targeted query and 90%+ from a broad one, for a few hundredths of a cent each.
+
+   **The two mistakes here are not symmetrical, and everything about this stage follows from that.** A listing wrongly kept costs a fraction of a penny and the reviewer catches it a moment later. A listing wrongly discarded is never reviewed, never emailed and never noticed — the one outcome §1 exists to prevent. So the prompt is written to be reluctant to reject and says so explicitly (uncertain is plausible; missing information is not evidence against; condition and price are somebody else's job), the criteria are passed as context labelled *do not apply these yourself*, and the stage **fails open**: a model that cannot be reached, or that answers something the schema rejects, keeps the listing and records that nothing was asked. P1-09's own check fails on a wrong discard and merely reports a wrong keep.
 4. **Enrich.** Adapter fetches full description and all images; images downscaled to ~1024px longest edge and stored.
 5. **Vision review (mid-tier model).** Inputs: spec summary, every criterion with its `kind/quantifiable/onUnknown`, reference images (with their labels, so the model knows which variant each shows), the listing's description and images, the grading scale's example images if attached, and up to five recent Feedback examples for this item. Each reference or grading image costs roughly 1,000–1,500 input tokens per review, so images are downscaled on upload, the item page shows a running "images per review" count, and the UI nudges at six. Output is structured (JSON schema enforced): a result and one-line evidence per criterion, an overall grade if a scale is attached, an English summary of the listing (this is also the translation), and `shipsToUk` if the model can read it from the description.
 6. **Decide.** Deterministic, not left to the model:

@@ -4,6 +4,25 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-09 Pre-filter. The cheap text pass from ARCHITECTURE.md §7 step 3: a listing's title and the
+  first 1,500 characters of its description, with the item's summary, criteria and the
+  interviewer's plausibility note, judged as `{ plausible, reason }` by whichever model the
+  `prefilter` role is set to. Its job is to stop obvious rubbish — a t-shirt, a soundtrack, a
+  sequel, a manual on its own — reaching the vision model, which is where the money goes.
+- It is built around the fact that its two mistakes are not symmetrical. A listing wrongly kept
+  costs a fraction of a penny and the reviewer catches it; one wrongly discarded is never
+  reviewed, never emailed and never noticed. So the prompt is explicitly reluctant to reject,
+  the criteria are passed as context labelled "do not apply these yourself", and the stage
+  **fails open** — a model that cannot be reached, or that answers something unparseable, keeps
+  the listing and records that nothing was asked rather than silently dropping it.
+- The prompt is a versioned module in `packages/ai/src/prompts/` with a changelog header saying
+  what each version tried and why, because a verdict records which prompt produced it.
+- Eighteen fixture cases for the two example specs, and
+  `pnpm --filter @goodies-beacon/ai prefilter-check` to run them against a real cheap model. It
+  reports wrong discards and wrong keeps separately and fails on the first; it also fails when a
+  case could not be run at all, since a check whose subject fails open would otherwise report a
+  green run with no API key configured.
+
 - P1-08 AI layer. `packages/ai` is now the only place a model is called: three roles
   (interviewer, pre-filter, reviewer) each configured as `provider:model`, reached through the
   Vercel AI SDK over Anthropic, OpenAI, Google, OpenRouter and Ollama. A caller names a role and a

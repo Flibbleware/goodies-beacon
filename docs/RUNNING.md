@@ -634,6 +634,36 @@ Ollama is a base URL rather than a key. Its OpenAI-compatible endpoint lives und
 appended if you leave it off. A local model is free, and is recorded as costing nothing rather
 than as costing an unknown amount.
 
+### The pre-filter
+
+Every new listing meets the pre-filter before anything expensive happens: a text-only pass on the
+cheapest configured model that decides whether the listing could plausibly be the thing at all. It
+is meant to discard most of a broad query's results for a few hundredths of a cent each.
+
+It is deliberately reluctant to discard, and it **fails open** — if the model cannot be reached, or
+answers something that will not parse, the listing is kept and the log says so:
+
+```sh
+docker compose logs app | grep 'keeping the listing for review'
+```
+
+A run of those means reviews are costing more than they should and a provider needs looking at; it
+does not mean anything has been lost. The reverse — a listing wrongly discarded — is the failure
+worth worrying about, because nothing reports it. If you find the pre-filter throwing away things
+it should not, the fix is the item's **plausibility note**: a sentence about how sellers actually
+title the thing does more than any change to the criteria. The Carmageddon example spec has one.
+
+To check a model before pointing the instance at it:
+
+```sh
+pnpm --filter @goodies-beacon/ai prefilter-check
+pnpm --filter @goodies-beacon/ai prefilter-check -- --model openai:gpt-5-nano
+```
+
+That runs the fixture cases against a real model and reports wrong discards and wrong keeps
+separately. A full run is roughly 15,000 input tokens: about a tenth of a penny on a
+cheapest-tier model, and under 1.5p on anything you would sensibly put in this role.
+
 ### What a call costs, and the monthly cap
 
 Every call is recorded in `cost_ledger` with its role, model, tokens and cost. Prices come from a
