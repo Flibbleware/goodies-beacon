@@ -76,6 +76,31 @@ export const AI_ROLES = ['interviewer', 'prefilter', 'reviewer'] as const;
 export type AiRole = (typeof AI_ROLES)[number];
 
 /**
+ * How reference and example images are laid out in a review prompt (§9).
+ *
+ * `separate` sends each image on its own with its label as a caption, and is the default
+ * everywhere. `contact_sheet` tiles several small examples onto one image, which suits Google's
+ * per-tile pricing and is a net loss elsewhere — a composite is downscaled to the provider's
+ * per-image cap and loses the detail the reviewer needs. Phase 5 builds the second one; the
+ * value exists here so the setting it is stored in does not have to change shape later.
+ */
+export const IMAGE_STRATEGIES = ['separate', 'contact_sheet'] as const;
+export type ImageStrategy = (typeof IMAGE_STRATEGIES)[number];
+
+/**
+ * Instance-level events worth surfacing outside a log (§9's budget cap, §14's dashboard).
+ *
+ * Distinct from `notifications`, which is per candidate and guarantees at-most-once delivery of
+ * a match. These are about the instance itself, and the one that exists so far is the budget cap
+ * announcing that it has paused reviews.
+ */
+export const EVENT_KINDS = ['budget_exceeded'] as const;
+export type EventKind = (typeof EVENT_KINDS)[number];
+
+export const EVENT_LEVELS = ['info', 'warning', 'error'] as const;
+export type EventLevel = (typeof EVENT_LEVELS)[number];
+
+/**
  * What the item does about listings that will not ship to the UK (§4 `SpecSettings`). Distinct
  * from SHIPS_TO_UK above, which is what a listing turned out to be: this is the policy, that is
  * the observation. v1 defaults to `show_all` with the flag displayed.

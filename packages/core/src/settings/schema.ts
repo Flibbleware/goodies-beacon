@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { durationSchema } from '../domain/spec.js';
+import { type AI_ROLES, IMAGE_STRATEGIES } from '../domain/constants.js';
+import { durationSchema, priceCeilingSchema } from '../domain/spec.js';
 
 export const DEFAULT_TIMEZONE = 'Europe/London';
 export const DEFAULT_DIGEST_TIME = '08:00';
@@ -70,6 +71,60 @@ export const emailSettingsSchema = z.object({
 });
 
 /**
+ * The providers Goodies Beacon can reach (§9). Anthropic, OpenAI and Google are first party;
+ * OpenRouter reaches many providers through one account and Ollama runs a model locally, and
+ * both speak the OpenAI wire format, so one compatible client serves them.
+ */
+export const AI_PROVIDERS = ['anthropic', 'openai', 'google', 'openrouter', 'ollama'] as const;
+export type AiProvider = (typeof AI_PROVIDERS)[number];
+
+/**
+ * `provider:model`, split on the *first* colon only — an Ollama model is itself `name:tag`
+ * (`llama3.1:8b`), so splitting on every colon would lose the tag.
+ */
+const MODEL_REF = new RegExp(`^(${AI_PROVIDERS.join('|')}):.+$`);
+
+export const modelRefSchema = z
+  .string()
+  .regex(MODEL_REF, `must be provider:model, where provider is one of ${AI_PROVIDERS.join(', ')}`);
+
+/**
+ * Defaults chosen per §9's tiers from the September 2026 price table: the interviewer is a
+ * conversation with tool use and is worth a strong model, the pre-filter runs on everything and
+ * must be the cheapest thing that can read, and the reviewer needs vision and structured output
+ * in the middle. Every one is a Settings change away from something else.
+ */
+export const DEFAULT_AI_ROLES: Record<(typeof AI_ROLES)[number], string> = {
+  interviewer: 'anthropic:claude-opus-5',
+  prefilter: 'openai:gpt-5-nano',
+  reviewer: 'openai:gpt-5-mini',
+};
+
+const providerKeySchema = z.object({
+  /** `enc:v1:` at rest like every other secret (§12); never sent to the browser. */
+  apiKey: z.string().default(''),
+});
+
+export const aiSettingsSchema = z.object({
+  roles: z
+    .object({
+      interviewer: modelRefSchema.default(DEFAULT_AI_ROLES.interviewer),
+      prefilter: modelRefSchema.default(DEFAULT_AI_ROLES.prefilter),
+      reviewer: modelRefSchema.default(DEFAULT_AI_ROLES.reviewer),
+    })
+    .prefault({}),
+  anthropic: providerKeySchema.prefault({}),
+  openai: providerKeySchema.prefault({}),
+  google: providerKeySchema.prefault({}),
+  openrouter: providerKeySchema.prefault({}),
+  /** Ollama is a local server rather than a key: a base URL, and no secret to hide. */
+  ollama: z.object({ baseUrl: z.string().default('') }).prefault({}),
+  /** Null means no cap. GBP, like every other money field the user types (§4). */
+  monthlyBudget: priceCeilingSchema.nullable().default(null),
+  imageStrategy: z.enum(IMAGE_STRATEGIES).default('separate'),
+});
+
+/**
  * Per-source credentials and proxy (§5). Both secrets are stored as `enc:v1:` like the SMTP
  * password and never sent to the browser — a proxy URL carries `user:pass@host` and is as much a
  * credential as the keyset is.
@@ -95,6 +150,7 @@ export const sourcesSettingsSchema = z.object({
 export const settingsSchema = z.object({
   instance: instanceSettingsSchema.prefault({}),
   polling: pollingSettingsSchema.prefault({}),
+  ai: aiSettingsSchema.prefault({}),
   email: emailSettingsSchema.prefault({}),
   sources: sourcesSettingsSchema.prefault({}),
 });
@@ -113,6 +169,24 @@ const pollingPatchSchema = z.object({
   defaultInterval: durationSchema.optional(),
   pollCap: z.coerce.number().int().min(1).max(1000).optional(),
   backfillCap: z.coerce.number().int().min(1).max(1000).optional(),
+});
+
+const aiPatchSchema = z.object({
+  roles: z
+    .object({
+      interviewer: modelRefSchema.optional(),
+      prefilter: modelRefSchema.optional(),
+      reviewer: modelRefSchema.optional(),
+    })
+    .optional(),
+  // Each follows the SMTP password's rule: absent keeps what is stored, empty clears it.
+  anthropic: z.object({ apiKey: z.string().optional() }).optional(),
+  openai: z.object({ apiKey: z.string().optional() }).optional(),
+  google: z.object({ apiKey: z.string().optional() }).optional(),
+  openrouter: z.object({ apiKey: z.string().optional() }).optional(),
+  ollama: z.object({ baseUrl: z.string().optional() }).optional(),
+  monthlyBudget: priceCeilingSchema.nullable().optional(),
+  imageStrategy: z.enum(IMAGE_STRATEGIES).optional(),
 });
 
 const emailPatchSchema = z.object({
@@ -137,6 +211,7 @@ const ebaySourcePatchSchema = z.object({
 export const settingsPatchSchema = z.object({
   instance: instancePatchSchema.optional(),
   polling: pollingPatchSchema.optional(),
+  ai: aiPatchSchema.optional(),
   email: emailPatchSchema.optional(),
   sources: z.object({ ebay: ebaySourcePatchSchema.optional() }).optional(),
 });
@@ -145,13 +220,26 @@ export type Settings = z.infer<typeof settingsSchema>;
 export type SettingsPatch = z.infer<typeof settingsPatchSchema>;
 export type EmailSettings = z.infer<typeof emailSettingsSchema>;
 export type PollingSettings = z.infer<typeof pollingSettingsSchema>;
+export type AiSettings = z.infer<typeof aiSettingsSchema>;
 export type SourcesSettings = z.infer<typeof sourcesSettingsSchema>;
 export type EbaySourceSettings = z.infer<typeof ebaySourceSchema>;
 
 /** Settings as the browser may see them: every secret is replaced by whether there is one. */
+/** One provider as the browser may see it: whether there is a key, never the key. */
+export interface PublicProvider {
+  configured: boolean;
+}
+
 export interface PublicSettings {
   instance: Settings['instance'];
   polling: Settings['polling'];
+  ai: {
+    roles: AiSettings['roles'];
+    monthlyBudget: AiSettings['monthlyBudget'];
+    imageStrategy: AiSettings['imageStrategy'];
+    /** Includes keys supplied through .env, which Settings can override but never displays. */
+    providers: Record<AiProvider, PublicProvider>;
+  };
   email: Omit<EmailSettings, 'password'> & { passwordSet: boolean };
   sources: {
     ebay: Omit<EbaySourceSettings, 'clientSecret' | 'proxyUrl'> & {
@@ -161,17 +249,56 @@ export interface PublicSettings {
   };
 }
 
-export function toPublicSettings(settings: Settings): PublicSettings {
+/**
+ * `fromEnv` says which providers `.env` already supplies a key for, so the UI can show "set in
+ * the environment" rather than an empty box beside a provider that is, in fact, working (§12
+ * allows either source). It is a set of names; no value from it reaches the browser.
+ */
+export function toPublicSettings(
+  settings: Settings,
+  fromEnv: ReadonlySet<AiProvider> = new Set(),
+): PublicSettings {
   const { password, ...email } = settings.email;
   const { clientSecret, proxyUrl, ...ebay } = settings.sources.ebay;
+
+  const providers = Object.fromEntries(
+    AI_PROVIDERS.map((provider) => [
+      provider,
+      { configured: providerCredential(settings.ai, provider) !== '' || fromEnv.has(provider) },
+    ]),
+  ) as Record<AiProvider, PublicProvider>;
+
   return {
     instance: settings.instance,
     polling: settings.polling,
+    ai: {
+      roles: settings.ai.roles,
+      monthlyBudget: settings.ai.monthlyBudget,
+      imageStrategy: settings.ai.imageStrategy,
+      providers,
+    },
     email: { ...email, passwordSet: password !== '' },
     sources: {
       ebay: { ...ebay, clientSecretSet: clientSecret !== '', proxySet: proxyUrl !== '' },
     },
   };
+}
+
+/** The stored credential for a provider, still encrypted. Ollama's is a URL, not a secret. */
+export function providerCredential(ai: AiSettings, provider: AiProvider): string {
+  return provider === 'ollama' ? ai.ollama.baseUrl : ai[provider].apiKey;
+}
+
+/** Splits `provider:model` on the first colon only, so an Ollama `name:tag` survives. */
+export function parseModelRef(ref: string): { provider: AiProvider; model: string } | undefined {
+  const separator = ref.indexOf(':');
+  if (separator < 1) return undefined;
+
+  const provider = ref.slice(0, separator);
+  const model = ref.slice(separator + 1);
+  if (model === '' || !(AI_PROVIDERS as readonly string[]).includes(provider)) return undefined;
+
+  return { provider: provider as AiProvider, model };
 }
 
 /** Both halves of the keyset are present, so a Test is worth attempting. */

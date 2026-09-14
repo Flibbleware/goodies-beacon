@@ -21,6 +21,7 @@ Errors always take the shape `{ error: { code, message } }`. Every response carr
 | `GET` | `/api/media/:id/thumb` | session | — |
 | `GET` | `/api/settings` | session | — |
 | `PUT` | `/api/settings` | session | required |
+| `POST` | `/api/settings/ai/:provider/test` | session | required |
 | `POST` | `/api/settings/email/test` | session | required |
 | `POST` | `/api/settings/sources/ebay/test` | session | required |
 | `GET` | `/healthz` | public | — |

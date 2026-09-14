@@ -30,6 +30,14 @@ export function testEbay(): Promise<EbayTestResponse> {
   return api('/api/settings/sources/ebay/test', { method: 'POST' });
 }
 
+export interface AiTestResponse {
+  health: { status: string; message: string; details?: { model?: string } };
+}
+
+export function testAiProvider(provider: string): Promise<AiTestResponse> {
+  return api(`/api/settings/ai/${provider}/test`, { method: 'POST' });
+}
+
 export function changePassword(currentPassword: string, newPassword: string): Promise<unknown> {
   return api('/api/auth/password', {
     method: 'POST',

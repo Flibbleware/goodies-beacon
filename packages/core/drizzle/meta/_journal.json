@@ -43,6 +43,13 @@
       "when": 1789419928998,
       "tag": "0005_sour_bruce_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789422327800,
+      "tag": "0006_lucky_maggott",
+      "breakpoints": true
     }
   ]
 }

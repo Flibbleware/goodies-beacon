@@ -613,11 +613,63 @@ warning appears in the log — a price at last week's rate is more useful than n
 sustained outage shows up as `using an exchange rate that has not been refreshed recently` rather
 than as a failed poll.
 
+## AI
+
+Three roles are configured independently, each as `provider:model` in Settings:
+
+| Role | What it does | Default |
+|---|---|---|
+| `interviewer` | Builds and amends specs in chat | `anthropic:claude-opus-5` |
+| `prefilter` | Reads every new listing, cheaply | `openai:gpt-5-nano` |
+| `reviewer` | Looks at the photos and judges | `openai:gpt-5-mini` |
+
+Providers are Anthropic, OpenAI, Google, OpenRouter and Ollama. A key goes in Settings, where it
+is stored encrypted and never sent back to the browser, or in `.env` — Settings wins when both are
+set, and a provider with a key in `.env` shows as configured with an empty box. The Test button
+beside each makes the smallest real call the provider will take, using the model a role is
+actually set to: a key can be valid and still have no access to the model someone typed, and that
+is the failure worth catching before the first review rather than during it.
+
+Ollama is a base URL rather than a key. Its OpenAI-compatible endpoint lives under `/v1`, which is
+appended if you leave it off. A local model is free, and is recorded as costing nothing rather
+than as costing an unknown amount.
+
+### What a call costs, and the monthly cap
+
+Every call is recorded in `cost_ledger` with its role, model, tokens and cost. Prices come from a
+table in the repo (`packages/ai/src/pricing.ts`) carrying the date it was last checked — **check
+that date before trusting a figure**, because providers move their rates and nothing here notices.
+A model that is not in the table records its cost as unknown rather than zero and logs
+`no price for this model` once per model per process; add it to the table to fix that. OpenRouter
+is permanently in that state, because it reprices per underlying model — its own dashboard is the
+authority for what you spent there.
+
+```sh
+docker compose exec db psql -U goodies_beacon -c \
+  "select role, model, sum(cost_usd)::numeric(12,4) as usd, count(*)
+     from cost_ledger where created_at >= date_trunc('month', now())
+     group by role, model order by usd desc"
+```
+
+The **monthly budget** in Settings is in pounds and covers the calendar month in UTC. Reaching it
+pauses reviews rather than failing them: each review job is deferred to the first of next month,
+so nothing is lost and raising the cap releases them. One `budget_exceeded` event is written for
+the month however many jobs meet it:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c 'select kind, message, created_at from events'
+```
+
+A cap with no exchange rate stored is not enforced — the ledger is in dollars and the cap is in
+pounds — and reviews continue with a warning rather than stopping, because a rates outage should
+not take the product down. Leave the cap empty for no limit.
+
 ## The web app
 
 The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand
 navigation is there but disabled, labelled with the task that brings it. Settings holds account
-(change your password), email (SMTP) and instance (time zone, digest time) sections. Dark and light follow the
+(change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles, provider
+keys and the budget cap) and instance (time zone, digest time) sections. Dark and light follow the
 operating system — there is no toggle, and so no stored preference to get out of step with it.
 
 ## What serves what

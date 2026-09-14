@@ -57,15 +57,20 @@ COPY --from=prod-deps /app ./
 # node_modules link. A missing one fails at import, on start, with ERR_MODULE_NOT_FOUND.
 COPY --from=build /app/packages/core/dist packages/core/dist
 COPY --from=build /app/packages/email/dist packages/email/dist
-# apps/api imports the eBay adapter for the Settings "Test" button, so it is reachable from the
-# entrypoint even in a deployment that never polls.
+# apps/api imports the eBay adapter and the AI package for the Settings "Test" buttons, so both are
+# reachable from the entrypoint even in a deployment that never polls and never reviews.
 COPY --from=build /app/packages/sources/ebay/dist packages/sources/ebay/dist
+COPY --from=build /app/packages/ai/dist packages/ai/dist
 # SQL migrations are data, not build output, but the API applies them on start.
 COPY --from=build /app/packages/core/drizzle packages/core/drizzle
 COPY --from=build /app/apps/api/dist apps/api/dist
 # apps/api/dist/main.js is the entrypoint for every ROLE and imports the worker subscribers.
 COPY --from=build /app/apps/worker/dist apps/worker/dist
 COPY --from=build /app/apps/web/dist apps/web/dist
+# Forgetting one of the lines above builds a working-looking image that dies on start, and only
+# CI's slowest job notices. Twice was enough; the build now says so itself.
+COPY scripts/check-workspace-dists.mjs /tmp/check-workspace-dists.mjs
+RUN node /tmp/check-workspace-dists.mjs && rm /tmp/check-workspace-dists.mjs
 # The media volume is a mount point in production, but an unmounted run should still work.
 RUN mkdir -p /data/media && chown -R node:node /data
 USER node

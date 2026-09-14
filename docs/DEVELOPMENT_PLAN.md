@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.26; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.27; section numbers below refer to it.*
 
-Version 1.3 — 14 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.4 — 14 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -442,13 +442,31 @@ settings fields: a poll that runs three times a day is capped at 50, a deliberat
 
 #### P1-08 AI layer: roles, providers, cost ledger, budget cap — L
 
-`packages/ai` per §9: three roles configured as `provider:model`; provider factory over the Vercel AI SDK for Anthropic, OpenAI, Google, OpenRouter and Ollama; `generateObject` wrapper that records input/output tokens and computed cost to `cost_ledger` with role, item and candidate; a monthly budget cap that pauses review jobs and records a `budget_exceeded` event; image handling with the `separate` packing strategy (contact sheet deferred to Phase 5) and the cached-prefix ordering; provider keys in Settings with a Test button per provider.
+`packages/ai` per §9: three roles configured as `provider:model`; provider factory over the Vercel AI SDK for Anthropic, OpenAI, Google, OpenRouter and Ollama (the last two through one OpenAI-compatible client, since both speak that wire format); `generateObject` wrapper that records input/output tokens and computed cost to `cost_ledger` with role, item and candidate; a monthly budget cap that pauses review jobs and records a `budget_exceeded` event; image handling with the `separate` packing strategy (contact sheet deferred to Phase 5) and the cached-prefix ordering; provider keys in Settings with a Test button per provider.
 
 Done when:
 
-- [ ] Swapping the reviewer between two providers is a Settings change and the eval suite (P1-17) passes on both.
-- [ ] Cost is computed from a price table in the repo with the date it was last checked, and unknown models log a warning rather than zero.
-- [ ] The budget cap is tested: with a £1 cap and a fake ledger at £1.01, review jobs are deferred and one notification event is written.
+- [ ] Swapping the reviewer between two providers is a Settings change and the eval suite (P1-17) passes on both. **First half done, second half belongs to P1-17.** A caller names a *role* and a Zod schema and never a provider, and a test writes two different `provider:model` values into Settings and asserts that a byte-identical call reaches each in turn and is priced correctly against both. There is no eval suite to run yet; this box ticks when P1-17 runs its suite against two providers, which is a change to that task rather than to this code.
+- [x] Cost is computed from a price table in the repo with the date it was last checked, and unknown models log a warning rather than zero. `packages/ai/src/pricing.ts`, checked 14 September 2026 against each provider's own pricing page. An unpriced model records `costKnown: false` and warns once per model per process rather than once per listing — a zero would read as "this was free" on the costs page and let the budget cap run past its limit. OpenRouter is permanently in that state by design, since it reprices per underlying model; Ollama's zero is a fact rather than a gap, and does not warn.
+- [x] The budget cap is tested: with a £1 cap and a fake ledger at £1.01, review jobs are deferred and one notification event is written. Exactly that, against a real Postgres, plus forty-nine more jobs arriving in the same month to prove the "one event" half — the unique index on (kind, dedupe_key) is what enforces it rather than a convention. Twelve tests in all, covering the month boundary, the year rollover, a second event for a second month, and the case where no dollar rate is stored: reviews continue, because the cap is a guardrail rather than a credit limit and stopping every review over a rates outage is the worse failure.
+
+#### Decision — cached tokens are counted apart, and prompt images are never URLs (from P1-08, 14 September 2026)
+
+Two things surfaced while building it, both now in ARCHITECTURE.md v1.27.
+
+**Cached input is its own column.** The AI SDK reports `usage.inputTokens` as the *total* input
+including everything read from or written to the cache, while the three are charged at three
+different rates. Recording the total as `inputTokens` and the cache figures beside it bills the
+same tokens twice — a cached review would look several times dearer than it was and the monthly
+cap would fire early. `cost_ledger` gains `cache_read_tokens`, `cache_write_tokens` and
+`cost_known`, and `splitUsage` has the tests that pin the arithmetic.
+
+**A prompt image is bytes, never a remote URL.** The SDK resolves a URL by fetching it itself,
+which would send a marketplace-supplied address out of the worker with none of §12's protections —
+no private-address block list, no size cap, no content-type check — while P1-05 was built to do
+that fetch under guard. Found by a test that passed `https://example.invalid/…` and watched the
+SDK try to resolve the hostname. The prompt builder now refuses an `http(s)` URL rather than
+trusting its caller, because the failure is silent and the input is attacker-controlled.
 
 #### P1-09 Pre-filter — M
 

@@ -13,13 +13,14 @@
     "docs:api": "tsx scripts/generate-api-docs.ts"
   },
   "dependencies": {
+    "@goodies-beacon/ai": "workspace:*",
     "@goodies-beacon/core": "workspace:*",
     "@goodies-beacon/email": "workspace:*",
+    "@goodies-beacon/source-ebay": "workspace:*",
     "@goodies-beacon/worker": "workspace:*",
     "@hono/node-server": "2.1.1",
     "hono": "4.13.7",
-    "zod": "4.4.3",
-    "@goodies-beacon/source-ebay": "workspace:*"
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "tsx": "4.23.13"
