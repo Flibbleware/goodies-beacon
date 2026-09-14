@@ -22,6 +22,13 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   month, or as soon as the cap is raised, where a failed one would exhaust its retries against a
   condition no retry can fix and dead-letter a candidate. Reaching it writes one event for the
   month however many jobs meet it, enforced by a unique index rather than by convention.
+- Fixed: the container would not start. `apps/api` gained a dependency on the AI package for the
+  Settings Test buttons, and the Dockerfile copies workspace build output package by package, so
+  the image shipped a `node_modules` link to `@goodies-beacon/ai` with no `dist` behind it and
+  died at import with `ERR_MODULE_NOT_FOUND`. This is the second time — P1-04 did the same thing
+  with the eBay adapter — and the comment asking the next person to remember did not prevent it,
+  so `scripts/check-workspace-dists.mjs` now runs inside the image build and fails it, naming the
+  package and the line to add. Verified by removing the COPY again and watching the build stop.
 - Fixed before it shipped: a prompt image given as a URL would have been fetched by the AI SDK
   itself, sending a marketplace-supplied address out of the worker with none of the protections
   P1-05 built — no private-address block list, no size cap, no content-type check. Prompts now
