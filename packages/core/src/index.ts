@@ -260,6 +260,29 @@ export {
   isBlockedAddress,
   type Resolver,
 } from './media/ssrf.js';
+export {
+  CACHE_TTL_MS,
+  type Converted,
+  type Converter,
+  createConverter,
+} from './money/convert.js';
+export { RATES_CRON, RATES_QUEUE, ratesRefreshRegistration } from './money/job.js';
+export {
+  BASE_CURRENCY,
+  convert,
+  daysBetween,
+  type EcbResponse,
+  type FetchRatesOptions,
+  fetchEcbRates,
+  latestRate,
+  RATES_URL,
+  RatesUnavailableError,
+  REQUIRED_CURRENCIES,
+  type RefreshResult,
+  rateOn,
+  refreshRates,
+  STALE_AFTER_DAYS,
+} from './money/rates.js';
 export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
 export {
   HEARTBEAT_CRON,

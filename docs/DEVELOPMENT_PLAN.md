@@ -397,7 +397,12 @@ Done when:
 
 Daily ECB rates (frankfurter.app or equivalent) cached in the database; `toGbp(amount, currency)` with the rate date recorded on the listing.
 
-Done when: rates refresh daily, a missing rate falls back to the last known one with a warning, and conversion is unit-tested.
+Done when:
+
+- [x] Rates refresh daily. A `rates.refresh` cron job runs twice — just after the ECB's usual publication time in London, and again in the evening in case the first attempt met a network that was down — and the second is a no-op once the day's rates are stored. A worker narrowed by `WORKER_SOURCES` does not take the job: a satellite polls, and the core keeps the shared work.
+- [x] A missing rate falls back to the last known one with a warning. A price converted at Friday's rate is far more useful than no price, so the newest stored rate is used however old it is, and the warning fires once per currency per process rather than once per listing. A currency that has never had a rate converts to null, which §7's hard filter must read as "price unknown" rather than "free".
+- [x] Conversion is unit-tested. Twenty-nine tests, fifteen of them pure. Rates are stored as units per GBP, one row per currency per **publication** date — the ECB publishes on working days only, so "latest" on a Monday is Friday's, and old rows are kept rather than overwritten so a verdict from July stays explainable. Verified against the live service: $40 → £29.61 and ¥15,000 → £72.09 at the rates published 2026-09-11.
+- [x] A zero, negative or non-numeric rate is dropped at the boundary, and an answer in a base other than GBP is refused — both would divide wrongly rather than fail, producing a confidently wrong price.
 
 #### P1-07 Poll scheduler and candidate ingestion — L
 

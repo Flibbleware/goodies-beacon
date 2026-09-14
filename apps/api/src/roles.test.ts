@@ -22,12 +22,17 @@ async function names(role: Role, workerSources: string[] = []): Promise<string[]
 
 describe('processRegistrations', () => {
   it('runs the api and the workers in one process for ROLE=all', async () => {
-    expect(await names('all')).toEqual(['heartbeat.api', ...POLL_QUEUES, 'heartbeat.worker']);
+    expect(await names('all')).toEqual([
+      'heartbeat.api',
+      ...POLL_QUEUES,
+      'heartbeat.worker',
+      'rates.refresh',
+    ]);
   });
 
   it('splits the two roles across processes that each take only their own queues', async () => {
     expect(await names('api')).toEqual(['heartbeat.api']);
-    expect(await names('worker')).toEqual([...POLL_QUEUES, 'heartbeat.worker']);
+    expect(await names('worker')).toEqual([...POLL_QUEUES, 'heartbeat.worker', 'rates.refresh']);
   });
 
   it('narrows a sources-only worker to the queues in WORKER_SOURCES', async () => {
