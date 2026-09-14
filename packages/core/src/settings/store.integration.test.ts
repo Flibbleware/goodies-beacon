@@ -6,7 +6,10 @@ import { createDb, createPool, type Database } from '../db/client.js';
 import { runMigrations } from '../db/migrate.js';
 import { settings } from '../db/schema.js';
 import {
+  DEFAULT_BACKFILL_CAP,
   DEFAULT_DIGEST_TIME,
+  DEFAULT_POLL_CAP,
+  DEFAULT_POLL_INTERVAL,
   DEFAULT_SMTP_PORT,
   DEFAULT_TIMEZONE,
   toPublicSettings,
@@ -46,6 +49,11 @@ describe.skipIf(!databaseUrl)('the settings store against a real Postgres', () =
   it('reads defaults out of an empty database', async () => {
     expect(await readSettings(db)).toEqual({
       instance: { timezone: DEFAULT_TIMEZONE, digestTime: DEFAULT_DIGEST_TIME },
+      polling: {
+        defaultInterval: DEFAULT_POLL_INTERVAL,
+        pollCap: DEFAULT_POLL_CAP,
+        backfillCap: DEFAULT_BACKFILL_CAP,
+      },
       email: {
         host: '',
         port: DEFAULT_SMTP_PORT,

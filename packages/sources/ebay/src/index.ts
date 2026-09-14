@@ -180,9 +180,16 @@ function toRawListing(item: EbaySummary, salt: string): RawListing {
  * found eBay answers 200 to the `{GB|US}` set form, returns the *unfiltered* total and a listing
  * from neither country — it parses the syntax and then ignores it. Two countries is two plans.
  */
-export function buildFilter(plan: SearchPlan, since: Date | null): string {
+export function buildFilter(plan: SearchPlan, since: Date | null, until?: Date): string {
   const parts: string[] = [];
-  if (since) parts.push(`itemStartDate:[${since.toISOString()}]`);
+  /**
+   * `itemStartDate` takes a range as well as an open lower bound, which is what lets a poll that
+   * stopped at the cap come back for the window it skipped: results are newest-first, so without
+   * a ceiling the next run would fetch the same newest page again (§6).
+   */
+  if (since && until) parts.push(`itemStartDate:[${since.toISOString()}..${until.toISOString()}]`);
+  else if (since) parts.push(`itemStartDate:[${since.toISOString()}]`);
+  else if (until) parts.push(`itemStartDate:[..${until.toISOString()}]`);
 
   const options = plan.options as {
     buyingOptions?: string[];
@@ -284,12 +291,13 @@ export const ebayAdapter: SourceAdapter = {
     const collected: RawListing[] = [];
     // A backfill deliberately has no watermark: it asks what is listed right now (§6).
     const since = request.mode === 'poll' ? request.since : null;
+    const until = request.mode === 'poll' ? request.until : undefined;
 
     const first = new URL(`${EBAY_API_BASE}/buy/browse/v1/item_summary/search`);
     first.searchParams.set('q', plan.query);
     first.searchParams.set('sort', 'newlyListed');
     first.searchParams.set('limit', String(Math.min(PAGE_SIZE, request.cap)));
-    const filter = buildFilter(plan, since);
+    const filter = buildFilter(plan, since, until);
     if (filter) first.searchParams.set('filter', filter);
 
     let url: string | null = first.toString();
@@ -309,6 +317,10 @@ export const ebayAdapter: SourceAdapter = {
          * broad query spending requests on listings it will throw away.
          */
         if (since && listing.listedAt && listing.listedAt <= since) return collected;
+        // The ceiling is exclusive and eBay's range filter is inclusive at both ends, so the one
+        // listing that sits exactly on it — the last run's oldest — is dropped here rather than
+        // ingested a second time.
+        if (until && listing.listedAt && listing.listedAt >= until) continue;
         collected.push(listing);
         if (collected.length >= request.cap) return collected;
       }

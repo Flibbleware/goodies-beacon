@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.25 — 14 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.26 — 14 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -116,7 +116,7 @@ Components:
 
 Names below are the tables/entities; types are illustrative.
 
-**WantedItem** — `id, title, status (draft|active|paused|found|archived), notificationMode (realtime|digest), pollEvery (interval, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`.
+**WantedItem** — `id, title, status (draft|active|paused|found|archived), notificationMode (realtime|digest), pollEvery (ISO 8601 duration, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`. This field was a Postgres interval until v1.26; it holds the same ISO 8601 vocabulary `SpecSettings.pollEvery` uses, because the two are one field in the UI and a value that parsed one way in JSONB and another in a column is a bug waiting for whoever writes the second editor.
 
 **WantedSpecVersion** — Immutable. `id, wantedItemId, version, createdBy (interview|amendment|challenge|manual_edit|image_added), summary, settings, criteria[], searchPlans[], referenceImages[], changeNote`. Every change — a chat amendment, a direct edit in the form, or adding an image — creates a new version; a verdict records which version judged it, so "why did it reject this in July" is always answerable, and any two versions can be diffed in the UI.
 
@@ -199,7 +199,11 @@ filtering it later. Assume the same of every source until its spike proves other
 This is what lets an instance claim eBay's "not persisting eBay user data" exemption truthfully
 (§2), and it is the right default for the scraped sources too.
 
-**Seen** — `(source, externalId, firstSeenAt)`. Never pruned. Prevents an old fixed-price listing from being re-notified after its Listing row is retained-then-deleted.
+**Seen** — `(source, externalId, firstSeenAt)`. Never pruned. The instance's memory of every listing it has ever pulled, from any plan.
+
+**It is not the test for creating a Candidate**, and v1.26 corrects §6, which said it was. `Seen` is keyed on `(source, externalId)` and so is global, while a Candidate is per wanted item: two items searching the same marketplace will meet the same listing, and gating on `Seen` would give it to whichever item polled first and starve the other silently. The per-item test is the `candidates (wantedItemId, listingId)` unique index, which P1-07 relies on rather than checking first — a poll inserts and lets the index decide, so two plans racing on one listing cannot both create a candidate.
+
+What `Seen` is for is the count of what is genuinely new to the instance, relist detection (§7 step 2), and the one case the per-item test cannot cover: retention (§13) deletes a Candidate after thirty days and the Listing behind it, so the row that remembers it is gone. A routine poll cannot re-surface such a listing — the watermark is newer than it — but a "Scan current listings" sweep can, and `Seen` is what lets that sweep report it as seen before. Closing it completely would mean a wanted item id on `Seen`; that is a migration, and P1-07 judged it not worth one for a case bounded to a button the owner presses, whose results §6 routes to a summary email rather than a real-time one.
 
 **Candidate** — Links a Listing to a WantedItem. `id, wantedItemId, listingId, specVersionId, origin (poll|backfill|scan), stage (new|prefiltered|enriched|reviewed), retain (bool), relistOf? (candidateId), createdAt`. Pruned after 30 days unless `retain`. `origin` decides notification routing (§10).
 
@@ -211,7 +215,7 @@ This is what lets an instance claim eBay's "not persisting eBay user data" exemp
 
 **InterviewSession / Message** — The chat transcript for creating or amending a spec.
 
-**Settings** — Single row: global poll interval, digest time + timezone, currency base, retention days, AI role config, per-source credentials (see §12 on secrets).
+**Settings** — Single row: polling defaults (global interval, the poll and backfill caps), digest time + timezone, currency base, retention days, AI role config, per-source credentials (see §12 on secrets).
 
 **CostLedger** — Per-call AI usage, for the costs page and the monthly budget guardrail.
 
@@ -250,7 +254,7 @@ export interface SourceAdapter {
 
 Per-source notes for the v1 adapters:
 
-*eBay* — One `search` call per plan, on the plan's marketplace (`EBAY_GB`, `EBAY_US`, …; the interviewer offers a "major sites" preset that creates one plan per marketplace), `sort=newlyListed`, `filter=itemStartDate:[since..]` plus optional `itemLocationCountry`, `buyingOptions`, `price`. `enrich` calls `getItem` for the description and full images. `shipsToUk` derived from `shipToLocations`. Application token cached and refreshed.
+*eBay* — One `search` call per plan, on the plan's marketplace (`EBAY_GB`, `EBAY_US`, …; the interviewer offers a "major sites" preset that creates one plan per marketplace), `sort=newlyListed`, `filter=itemStartDate:[since..]` — or `[since..until]` when a capped run left a backlog window to drain (§6) — plus optional `itemLocationCountry`, `buyingOptions`, `price`. `enrich` calls `getItem` for the description and full images. `shipsToUk` derived from `shipToLocations`. Application token cached and refreshed.
 
 *Vinted* — For each configured domain, obtain/refresh a session, call the catalog JSON endpoint with `order=newest_first`, page until `since` is reached. 0.8–2.5 s jittered spacing, low concurrency. If the JSON route is blocked, fall back to Playwright rendering the search page with images and fonts blocked. Surfaces a clear "blocked — run this worker from a residential connection or configure a proxy" health status rather than failing silently. **Proxy support:** each source can be given a proxy URL in Settings (`http://user:pass@host:port`, HTTP or SOCKS5), applied to both the HTTP client and Playwright; a Test button reports the exit IP and country. For Vinted this should be a *residential* proxy with a **sticky session** (same IP for the whole poll, so the DataDome cookie stays valid) and **country targeting** matching the domain (GB for `vinted.co.uk`). Traffic is a few MB per day, so a pay-as-you-go per-GB plan with no minimum is the right shape; no proxy is used for eBay, Yahoo or Mercari.
 
@@ -264,11 +268,17 @@ Per-source notes for the v1 adapters:
 
 `pg-boss` provides cron-style scheduling and job queues in Postgres. Each active WantedItem × SearchPlan gets a recurring poll job at the item's interval (default 3×/day, staggered so all eBay calls don't land in the same second). Queue names include the source (`poll.vinted`) so a remote worker can subscribe only to the sources it should handle (`WORKER_SOURCES=vinted`). The separator is a period because pg-boss validates queue names against `/^[\w.\-/]+$/` and rejects a colon.
 
-Each plan keeps its own watermark, advanced only to the newest listing actually processed in that poll, so a missed run — or a poll that hits the candidate cap on a broad query like "macintosh" — carries on from where it stopped rather than skipping. Broad queries are expected and cheap: several hundred new listings a day cost well under £1 a month in pre-filter calls; only survivors reach the vision model. New `(source, externalId)` pairs not in `Seen` become Listings and Candidates. Everything else is ignored, except that `lastSeenAt` is updated for Listings we already hold.
+Each plan keeps its own watermark, advanced only to the newest listing actually processed in that poll. Results are processed oldest-first and the watermark is written once at the end, so a run killed half way — SIGTERM, a database blip — leaves it at the last listing that finished and the next run picks up exactly there rather than skipping the remainder or redoing the lot. Broad queries are expected and cheap: several hundred new listings a day cost well under £1 a month in pre-filter calls; only survivors reach the vision model. Listings become Listings and Candidates; everything else is ignored, except that `lastSeenAt` is updated for Listings we already hold. **Which of them become Candidates is a per-item question, not a `Seen` lookup** — see `Seen` in §4, which v1.26 corrects.
+
+**The backlog window.** A watermark alone cannot express "I did the newest fifty and still owe the fifty before them". Sources page newest-first, so a run that stops at the cap takes the newest N and leaves the rest of its window unreached; without a ceiling the next run would fetch the same newest N again and the gap would never be reached at all. So `SearchRequest` carries an optional `until` beside `since`, and `search_plan_state` records the window still owed as `backlogFrom`/`backlogUntil`. A capped run advances the watermark — those newest N really were processed — and records the gap; the next runs search `[backlogFrom..backlogUntil)` and walk it backwards until it is empty, at which point both columns clear and the fresh window is polled again. eBay's `itemStartDate` filter takes a range, so this costs an adapter nothing but honouring one more field.
+
+A plan's *first* run is the exception and is deliberately left alone: it has no watermark, so its window is the whole history of the query, and walking backwards through that fifty at a time until the marketplace runs out is what `settings.backfill` is for — which is off by default. A cold run takes the newest page, sets the watermark and stops.
 
 **Existing listings (backfill and scan).** A backfill is a poll with no `since` watermark and a page cap, run once when a spec is agreed if `settings.backfill.enabled`, and on demand from the item page's "Scan current listings" button (rate-limited to once per hour per item). Adapters receive `{ mode: 'backfill', depth }` and fetch up to the cap (default 200 listings per source) at their normal jittered pacing, so for the scraped sources it is one slightly longer poll rather than a different kind of traffic. Candidates created this way carry `origin = backfill|scan`, are reviewed by the same pipeline, and are routed to the item page plus a single summary email — never to real-time emails. Indicative cost: 200 listings → ~70 vision reviews after pre-filtering → 15–45 cents one-off on a mid-tier model.
 
-Safety valves: a per-poll cap on new candidates (default 50) so a bad query like "game" cannot trigger hundreds of reviews; a monthly AI budget cap in settings that pauses reviews and emails you when reached; adapter health failures surface on the dashboard and in the digest.
+Safety valves: a per-poll cap on new candidates (default 50) so a bad query like "game" cannot trigger hundreds of reviews, and 200 for a backfill or a scan, which is a deliberate one-off sweep rather than a run that happens three times a day. Both are settings fields, and neither loses the remainder — a run that stops at the cap records the window it skipped and the next one drains it (the backlog window above). Then a monthly AI budget cap in settings that pauses reviews and emails you when reached; and adapter health failures, which surface on the dashboard and in the digest. A failed poll is recorded against the plan — `lastRunAt`, `lastError`, with `lastSuccessAt` left standing so the dashboard can say "failing since" rather than only "failed" — and retried with a widening gap, because the usual causes fix themselves given a pause and hammering them is what turns a blip into a block.
+
+**Schedules are reconciled, not written once.** A `schedules.reconcile` job runs every minute on the core worker (never a `WORKER_SOURCES` satellite), reads the active items and their plans, and installs, rewrites or removes the pg-boss schedules to match — keyed by plan id, so pausing an item or changing its interval takes effect without a restart, and a schedule left behind by a half-finished deploy is repaired. It touches only `poll.*` schedules; the heartbeat and the rates refresh are installed at startup. An interval is snapped up to a period cron can express, because a step runs within a field: `*/7` on the hour fires at 0, 7, 14, 21 and then 0 again, which is a three-hour gap in what was asked to be a seven-hour cycle. It is also clamped to the adapter's `recommendedMinInterval` (§5), whatever the item asks for.
 
 ---
 

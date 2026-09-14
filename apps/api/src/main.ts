@@ -32,7 +32,7 @@ try {
   // Registered before start() so a failure while subscribing still shuts the queues down.
   shutdown.add('job queues', () => boss.stop({ graceful: true }));
   await boss.start();
-  await registerQueues(boss, await processRegistrations({ config, db, logger }), logger);
+  await registerQueues(boss, await processRegistrations({ config, db, logger, boss }), logger);
 
   if (servesApi(config.role)) {
     if (config.isProduction && !webAppIsBuilt()) {

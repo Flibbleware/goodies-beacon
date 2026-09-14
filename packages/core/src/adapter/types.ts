@@ -37,10 +37,20 @@ export type PollMode = 'poll' | 'backfill' | 'scan';
 export interface SearchRequest {
   /** The plan's watermark. Null on a cold plan or a backfill, which pages by `cap` instead. */
   since: Date | null;
+  /**
+   * An upper bound on `listedAt`, exclusive: return nothing listed at or after it.
+   *
+   * Set only when the previous poll hit the cap. Sources page newest-first, so a capped poll
+   * takes the newest N and leaves a gap between the watermark and that batch; without a ceiling
+   * the next poll would fetch the same newest N again and the gap would never be reached. The
+   * scheduler passes the oldest listing the last poll processed, so the window walks backwards
+   * until it meets the watermark (§6).
+   */
+  until?: Date;
   mode: PollMode;
   /** Set when `mode` is not 'poll'. */
   depth?: BackfillDepth;
-  /** Stop paging once this many new listings have been collected (§6, default 200). */
+  /** Stop paging once this many new listings have been collected (§6: 50 polling, 200 backfilling). */
   cap: number;
 }
 

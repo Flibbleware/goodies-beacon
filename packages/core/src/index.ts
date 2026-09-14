@@ -283,6 +283,34 @@ export {
   refreshRates,
   STALE_AFTER_DAYS,
 } from './money/rates.js';
+export {
+  ensurePlanState,
+  type IngestDeps,
+  type IngestRequest,
+  type IngestResult,
+  ingestListings,
+  recordPollFailure,
+} from './poll/ingest.js';
+export {
+  durationToMinutes,
+  IntervalError,
+  type PollSchedule,
+  pollSchedule,
+  snapToExpressible,
+  staggerOffset,
+} from './poll/interval.js';
+export { type ActivePlan, activePlans, findActivePlan } from './poll/plans.js';
+export {
+  type DesiredSchedule,
+  desiredSchedules,
+  type PollJobData,
+  RECONCILE_CRON,
+  type ReconcileDeps,
+  type ReconcileResult,
+  reconcileRegistration,
+  reconcileSchedules,
+} from './poll/reconcile.js';
+export { type PollOutcome, type PollTarget, type RunPollOptions, runPoll } from './poll/run.js';
 export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
 export {
   HEARTBEAT_CRON,
@@ -297,6 +325,8 @@ export {
   heartbeatRolesFor,
   pollQueueName,
   pollSourcesFor,
+  REVIEW_QUEUE,
+  SCHEDULE_QUEUE,
 } from './queue/names.js';
 export {
   assertUniqueQueues,
@@ -306,7 +336,10 @@ export {
   registerQueues,
 } from './queue/registry.js';
 export {
+  DEFAULT_BACKFILL_CAP,
   DEFAULT_DIGEST_TIME,
+  DEFAULT_POLL_CAP,
+  DEFAULT_POLL_INTERVAL,
   DEFAULT_SMTP_PORT,
   DEFAULT_TIMEZONE,
   type EbaySourceSettings,
@@ -316,7 +349,9 @@ export {
   instanceSettingsSchema,
   isEbayConfigured,
   isEmailConfigured,
+  type PollingSettings,
   type PublicSettings,
+  pollingSettingsSchema,
   type Settings,
   type SettingsPatch,
   SMTP_SECURITIES,

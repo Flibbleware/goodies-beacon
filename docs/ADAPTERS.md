@@ -82,6 +82,13 @@ return { ..., sellerHash: sellerHash(SOURCE, seller.handle, salt), raw: rest };
 listing older than `request.since` means the rest are older still. Returning early saves the
 requests that would have fetched listings you then throw away.
 
+**Honour `request.until` as well as `request.since`.** It is a ceiling on `listedAt`, exclusive,
+and it is set only when the previous run stopped at the cap. Because results come newest-first, a
+capped run takes the newest N and leaves the rest of its window unreached; without the ceiling the
+next run would fetch the same newest N again and the gap would never be reached (§6). Pass it to
+the source if it has a range filter — eBay's `itemStartDate` takes `[since..until]` — and drop
+anything at or above it either way, so the last run's oldest listing is not ingested twice.
+
 ## Search options and regions
 
 `describeSearchOptions()` is how the UI and the interviewer learn what your source supports,

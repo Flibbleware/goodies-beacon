@@ -9,6 +9,9 @@
   "references": [
     {
       "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/sources/ebay"
     }
   ],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]

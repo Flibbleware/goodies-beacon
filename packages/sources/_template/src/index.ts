@@ -141,6 +141,8 @@ export const templateAdapter: SourceAdapter = {
       url.searchParams.set('sort', 'newest');
       url.searchParams.set('offset', String(offset));
       if (request.since) url.searchParams.set('since', request.since.toISOString());
+      // The ceiling a capped run leaves behind, so the next one walks the gap it skipped (§6).
+      if (request.until) url.searchParams.set('before', request.until.toISOString());
 
       const response = await ctx.http.fetch(url.toString());
       if (!response.ok) throw new Error(`search failed: HTTP ${response.status}`);
@@ -159,6 +161,8 @@ export const templateAdapter: SourceAdapter = {
         if (request.since && listing.listedAt && listing.listedAt <= request.since) {
           return collected;
         }
+        // Exclusive, so the previous run's oldest listing is not ingested a second time.
+        if (request.until && listing.listedAt && listing.listedAt >= request.until) continue;
         collected.push(listing);
         if (collected.length >= request.cap) break;
       }

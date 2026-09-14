@@ -38,6 +38,7 @@ export async function writeSettings(
   const current = await readSettings(db);
   const merged = settingsSchema.parse({
     instance: { ...current.instance, ...defined(patch.instance) },
+    polling: { ...current.polling, ...defined(patch.polling) },
     email: {
       ...current.email,
       ...defined(patch.email),

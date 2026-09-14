@@ -430,6 +430,51 @@ rebuilds the schema on start (see [what is and is not in a dump](#what-is-and-is
 Queue names are stable and carry their subject: `poll.ebay`, `heartbeat.api`. Renaming one orphans
 whatever is already queued under the old name.
 
+`review.candidate` is created but nothing consumes it yet — the reviewer arrives in P1-12. That is
+deliberate: a poll has to be able to send to it, and jobs waiting in a queue are better than jobs
+taken by a placeholder and discarded. Expect it to grow a backlog once items are polling, and for
+that backlog to drain the first time a worker with a reviewer starts.
+
+## Polling
+
+Every active wanted item's enabled search plans get a `poll.<source>` schedule at the item's
+interval — three times a day unless the item or the instance says otherwise — staggered by a hash
+of the plan id so a hundred plans do not all fire in the same second. Four things stop a plan
+polling: the item is not `active`, the plan's own `enabled` flag is off, the item's settings have
+that marketplace switched off, or no adapter is installed for its source.
+
+Schedules are not written once at startup. A `schedules.reconcile` job runs every minute on the
+core worker and brings pg-boss into line with the database, so pausing an item or changing its
+interval takes effect within a minute without a restart. A `WORKER_SOURCES` satellite never runs
+it: schedules live centrally and a satellite only consumes the jobs they create.
+
+Two settings govern the rest, both in the `polling` section of the settings row:
+
+| Setting | Default | What it does |
+|---|---|---|
+| `defaultInterval` | `PT8H` | Used by any item whose own interval is null. ISO 8601 |
+| `pollCap` | 50 | Most new listings one routine poll will take |
+| `backfillCap` | 200 | Most one backfill or "Scan current listings" will take |
+
+A run that stops at the cap does not lose the rest. Marketplaces page newest-first, so it takes the
+newest N, advances the watermark and records the window it skipped; the next runs search that
+window and walk it backwards until it is empty. A plan's *first* run is the exception — it has no
+watermark, so its window is the whole history of the query, and sweeping that is what the backfill
+setting is for, not a routine poll.
+
+What each plan is doing is in `search_plan_state`, until P1-14 puts it on the item page:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c \
+  'select plan_id, source, watermark, last_success_at, last_error, candidates_found
+     from search_plan_state order by last_run_at desc nulls last'
+```
+
+`last_error` with a `last_success_at` still set is a plan that is failing now and was working
+before — pg-boss retries it three times with a widening gap. An empty `last_error` and a recent
+`last_success_at` is a healthy plan. A `backlog_until` that is not null means the plan is still
+draining a window an earlier capped run skipped, and will keep doing so until it is.
+
 ## Liveness
 
 A `heartbeat.<role>` job runs every five minutes and updates `process_heartbeat.last_seen_at` for

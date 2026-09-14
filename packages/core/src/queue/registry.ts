@@ -10,7 +10,15 @@ export type JobHandler = (jobs: readonly Job<unknown>[]) => Promise<void>;
 /** One queue this process consumes: what to create, what to run, and any recurring schedule. */
 export interface QueueRegistration {
   readonly name: string;
-  readonly handler: JobHandler;
+  /**
+   * Omitted for a queue this process creates but does not consume.
+   *
+   * A poll has to be able to send a review job before the reviewer exists (P1-12), and pg-boss
+   * refuses to send to a queue that has not been created. Creating it without subscribing lets
+   * the jobs wait for the process that will handle them, rather than being taken by a placeholder
+   * handler and thrown away.
+   */
+  readonly handler?: JobHandler;
   readonly queueOptions?: Omit<Queue, 'name'>;
   readonly workOptions?: WorkOptions;
   readonly schedule?: { readonly cron: string; readonly options?: ScheduleOptions };
@@ -49,9 +57,12 @@ export async function registerQueues(
 
   for (const { name, handler, queueOptions, workOptions, schedule } of registrations) {
     await boss.createQueue(name, queueOptions);
-    await boss.work(name, workOptions ?? {}, (jobs) => handler(jobs));
+    if (handler) await boss.work(name, workOptions ?? {}, (jobs) => handler(jobs));
     if (schedule) await boss.schedule(name, schedule.cron, null, schedule.options);
   }
 
-  logger.info('subscribed to queues', { queues: registrations.map(({ name }) => name) });
+  logger.info('subscribed to queues', {
+    queues: registrations.filter(({ handler }) => handler).map(({ name }) => name),
+    created: registrations.filter(({ handler }) => !handler).map(({ name }) => name),
+  });
 }

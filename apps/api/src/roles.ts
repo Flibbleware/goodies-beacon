@@ -12,6 +12,10 @@ export function runsWorker(role: Role): boolean {
 /**
  * The queues this process consumes, from `ROLE`. The worker package is imported only when a
  * worker role needs it, so an API-only process never loads adapter dependencies.
+ *
+ * `deps.boss` is the same instance the caller is about to register these on: the worker needs it
+ * to send review jobs and to install the poll schedules (§6), neither of which it can do through
+ * a registration alone.
  */
 export async function processRegistrations(deps: WorkerDeps): Promise<QueueRegistration[]> {
   const { config, db, logger } = deps;
