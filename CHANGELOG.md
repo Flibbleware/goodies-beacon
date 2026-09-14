@@ -4,6 +4,14 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-06 Currency conversion. Daily ECB rates from frankfurter.dev cached in a new `fx_rates`
+  table, and `toGbp(amount, currency)` returning both the converted price and the publication date
+  of the rate it used, which is recorded on the listing. Rates are kept per date rather than
+  overwritten, so a verdict from months ago can still be explained; the ECB publishes on working
+  days only, so the rate date is frequently not the day a listing was seen. A missing rate falls
+  back to the newest stored one with a single warning rather than failing a poll — a price at
+  Friday's rate beats no price — and a currency that has never had a rate converts to null.
+
 - Fixed: `.gitignore` had a bare `media/`, meant for the runtime media volume, and a bare pattern
   matches a directory of that name at *any* depth — so `packages/core/src/media` and
   `apps/api/src/media` were never committed. Everything built and tested locally and CI failed at

@@ -19,13 +19,15 @@ function names(workerSources: readonly SourceId[]): string[] {
 }
 
 describe('workerRegistrations', () => {
-  it('subscribes to every source plus its own heartbeat when WORKER_SOURCES is empty', () => {
+  it('subscribes to every source, its heartbeat and the rate refresh when WORKER_SOURCES is empty', () => {
     expect(names([])).toEqual([
       ...MARKETPLACE_SOURCE_IDS.map((id) => `poll.${id}`),
       'heartbeat.worker',
+      'rates.refresh',
     ]);
   });
 
+  /** A narrowed worker is a satellite: it polls, and the core keeps the shared jobs. */
   it('subscribes only to the named poll queues when WORKER_SOURCES narrows it', () => {
     expect(names(['ebay'])).toEqual(['poll.ebay']);
     expect(names(['vinted', 'mercari_jp'])).toEqual(['poll.vinted', 'poll.mercari_jp']);

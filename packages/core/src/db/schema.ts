@@ -508,7 +508,31 @@ export const sourceCookies = pgTable(
   ],
 );
 
+/**
+ * Daily reference rates, one row per currency per publication date (§4 price conversion).
+ *
+ * Stored as units per GBP, because every conversion in Goodies Beacon goes *to* GBP: a price of
+ * 40 USD is `40 / units_per_gbp('USD')`. Rows are kept rather than overwritten so a verdict from
+ * July can still be explained — `listings.price_rate_date` names the row that was used, and the
+ * ECB publishes on working days only, so that date is often not the day the listing was seen.
+ */
+export const fxRates = pgTable(
+  'fx_rates',
+  {
+    currency: text('currency').notNull(),
+    /** The ECB publication date, as `YYYY-MM-DD`; not the day we fetched it. */
+    rateDate: text('rate_date').notNull(),
+    unitsPerGbp: numeric('units_per_gbp', { precision: 18, scale: 8 }).notNull(),
+    fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.currency, table.rateDate] }),
+    index('fx_rates_currency_date_idx').on(table.currency, table.rateDate),
+  ],
+);
+
 export type InstanceSecret = typeof instanceSecret.$inferSelect;
+export type FxRate = typeof fxRates.$inferSelect;
 export type SourceCookie = typeof sourceCookies.$inferSelect;
 export type WantedItem = typeof wantedItems.$inferSelect;
 export type NewWantedItem = typeof wantedItems.$inferInsert;

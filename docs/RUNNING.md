@@ -556,6 +556,18 @@ The **proxy URL** is optional and eBay does not need one. It is there for the sc
 which are judged on where the request comes from; when set it applies to both the HTTP client and
 the browser, and the Test button reports the address requests leave from.
 
+## Exchange rates
+
+Prices are compared in GBP, so anything listed in another currency is converted. Rates come from
+the European Central Bank via [frankfurter.dev](https://frankfurter.dev), need no key, and are
+refreshed by a job that runs twice a day; each listing records which day's rate was used.
+
+The ECB publishes on working days only, so a listing seen on a Sunday is converted at Friday's
+rate and says so. If the service is unreachable the newest stored rate keeps being used and a
+warning appears in the log — a price at last week's rate is more useful than no price — so a
+sustained outage shows up as `using an exchange rate that has not been refreshed recently` rather
+than as a failed poll.
+
 ## The web app
 
 The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand

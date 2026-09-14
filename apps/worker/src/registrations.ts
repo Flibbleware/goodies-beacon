@@ -5,6 +5,7 @@ import {
   type Logger,
   pollSourcesFor,
   type QueueRegistration,
+  ratesRefreshRegistration,
 } from '@goodies-beacon/core';
 import { pollRegistration } from './poll.js';
 
@@ -24,7 +25,13 @@ export function workerRegistrations({ config, db, logger }: WorkerDeps): QueueRe
     pollRegistration(source, logger),
   );
 
+  // A worker narrowed to particular sources is a satellite — it polls and nothing else, so it
+  // neither reports liveness for the whole role nor refreshes rates the core already has.
   if (config.workerSources.length > 0) return polls;
 
-  return [...polls, heartbeatRegistration(db, 'worker', logger)];
+  return [
+    ...polls,
+    heartbeatRegistration(db, 'worker', logger),
+    ratesRefreshRegistration(db, logger),
+  ];
 }
