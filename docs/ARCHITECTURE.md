@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.26 — 14 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.27 — 14 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -217,7 +217,9 @@ What `Seen` is for is the count of what is genuinely new to the instance, relist
 
 **Settings** — Single row: polling defaults (global interval, the poll and backfill caps), digest time + timezone, currency base, retention days, AI role config, per-source credentials (see §12 on secrets).
 
-**CostLedger** — Per-call AI usage, for the costs page and the monthly budget guardrail.
+**CostLedger** — Per-call AI usage, for the costs page and the monthly budget guardrail. Fresh input, cached reads and cache writes are separate columns because they are charged at separate rates (§9), and `costKnown` records whether the model was in the price table at all.
+
+**Event** — Instance-level things worth surfacing outside a log: so far only the budget cap. `id, kind, level, dedupeKey, message, data, notifiedAt, createdAt`, with a unique index on (kind, dedupeKey) that is what makes "one event, not one per job" true — fifty review jobs meeting an exhausted budget in one month write one row between them. Distinct from Notification, which is per candidate and requires one.
 
 ---
 
@@ -337,9 +339,11 @@ All model calls go through the Vercel AI SDK, which gives one interface (`genera
 
 Configuration is `provider:model` per role, e.g. `AI_REVIEWER=openai:gpt-5-mini`, with an API key per provider. Switching providers is a settings change; no code changes. Ollama is supported for a local model, with the caveat that small local vision models are noticeably weaker at grading.
 
-Cost controls: per-call usage recorded in `CostLedger`; a costs page shows spend per item and per role; a monthly budget cap pauses reviews. Because polls are only a few times a day, reviews can be submitted via the provider's batch API (50% cheaper on Anthropic and OpenAI) with a settings toggle; real-time items skip batching.
+Cost controls: per-call usage recorded in `CostLedger`; a costs page shows spend per item and per role; a monthly budget cap pauses reviews. Three details P1-08 found worth writing down. **Cached input is counted apart from fresh input**, because the SDK reports `inputTokens` as the *total* including cache and the three are charged at three different rates — recording the total alongside the cache figures bills the same tokens twice, so a cached review would look several times dearer than it was and the cap would fire early. **An unpriced model records its cost as unknown rather than as zero**, with one warning per model per process: a zero would read as "this was free" on the costs page and let the cap run past its limit, and OpenRouter (which reprices per underlying model) is permanently in that state. And **pausing is a deferral, not a failure** — a deferred review runs next month or as soon as the cap is raised, where a failed one would exhaust its retries against a condition no retry can fix and dead-letter a candidate. Because polls are only a few times a day, reviews can be submitted via the provider's batch API (50% cheaper on Anthropic and OpenAI) with a settings toggle; real-time items skip batching.
 
-Prompt caching: the spec, criteria and reference images are the same for every candidate of an item, so they are placed first in the prompt to benefit from provider-side caching where supported (on Anthropic a cached image costs a tenth of a fresh one).
+Prompt caching: the spec, criteria and reference images are the same for every candidate of an item, so they are placed first in the prompt to benefit from provider-side caching where supported (on Anthropic a cached image costs a tenth of a fresh one). A prefix cache matches from the beginning and stops at the first byte that differs, so the ordering costs nothing on an item's first candidate and everything on the rest.
+
+**Images in a prompt are bytes this instance has already fetched, never a remote URL.** The AI SDK resolves a URL by fetching it itself, which would send a marketplace-supplied address straight out of the worker with none of §12's protections — no private-address block list, no size cap, no content-type check — while P1-05 exists to do exactly that fetch under guard. The prompt builder refuses an `http(s)` URL rather than trusting the caller, because the failure is silent and the input is attacker-controlled.
 
 Image token budget: image cost is proportional to pixel area on Anthropic and OpenAI, and per 768-pixel tile on Google, so the savings come from downscaling on upload (reference images ≈ 800 px, grade examples ≈ 600 px), from caching, and from sending grade images in a second, smaller call only for listings that have already passed the other criteria. The AI layer exposes an image-packing strategy per provider: `separate` (default — each image sent individually with its label as a caption) and `contact_sheet` (several small examples tiled onto one image with labels drawn on and clear borders), which is worth enabling for Gemini-style tile pricing and is a net loss elsewhere because a composite gets downscaled to the provider's per-image cap and loses the detail the reviewer needs.
 

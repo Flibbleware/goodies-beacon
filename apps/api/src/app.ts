@@ -18,7 +18,7 @@ export interface AppDeps {
   readonly db: Database;
   readonly logger: Logger;
   /** Only the parts of the config the routes need, so tests need not build a whole one. */
-  readonly config: Pick<Config, 'host' | 'secretKey' | 'version' | 'sha' | 'mediaDir'>;
+  readonly config: Pick<Config, 'host' | 'secretKey' | 'version' | 'sha' | 'mediaDir' | 'ai'>;
   /** Injected by tests that need to drive the clock or inspect the counters. */
   readonly rateLimiter?: LoginRateLimiter;
   /** Where the built web app lives, or absent not to serve it — development leaves that to Vite. */

@@ -21,6 +21,18 @@
     "test": "vitest run --root ../.. --project @goodies-beacon/ai"
   },
   "dependencies": {
-    "@goodies-beacon/core": "workspace:*"
+    "@ai-sdk/anthropic": "4.0.53",
+    "@ai-sdk/google": "4.0.69",
+    "@ai-sdk/openai": "4.0.66",
+    "@ai-sdk/openai-compatible": "3.0.48",
+    "@goodies-beacon/core": "workspace:*",
+    "ai": "7.0.97",
+    "drizzle-orm": "0.45.2",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@types/pg": "8.21.0",
+    "pg": "8.23.0"
   }
 }

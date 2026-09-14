@@ -4,6 +4,30 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-08 AI layer. `packages/ai` is now the only place a model is called: three roles
+  (interviewer, pre-filter, reviewer) each configured as `provider:model`, reached through the
+  Vercel AI SDK over Anthropic, OpenAI, Google, OpenRouter and Ollama. A caller names a role and a
+  Zod schema and never a provider, so changing which model judges your listings is a Settings
+  change. Settings gains an AI section with a key per provider — stored encrypted, never sent back
+  to the browser, and falling back to `.env` — a Test button per provider that makes a real call
+  with the model a role is actually set to, a monthly budget cap, and the image strategy.
+- Every call is recorded to `cost_ledger` with its role, item, candidate and cost, computed from a
+  price table in the repo carrying the date it was last checked. A model that is not in the table
+  records its cost as *unknown* rather than zero and warns once — a zero would read as "this was
+  free" on the costs page and let the budget cap run past its limit.
+- Cached input is counted and charged apart from fresh input. The SDK reports `inputTokens` as the
+  total including cache, so recording that alongside the cache figures would bill the same tokens
+  twice and make a cached review look several times dearer than it was.
+- The monthly budget cap pauses reviews rather than failing them: a deferred review runs next
+  month, or as soon as the cap is raised, where a failed one would exhaust its retries against a
+  condition no retry can fix and dead-letter a candidate. Reaching it writes one event for the
+  month however many jobs meet it, enforced by a unique index rather than by convention.
+- Fixed before it shipped: a prompt image given as a URL would have been fetched by the AI SDK
+  itself, sending a marketplace-supplied address out of the worker with none of the protections
+  P1-05 built — no private-address block list, no size cap, no content-type check. Prompts now
+  take bytes this instance has already fetched under guard, and a remote URL is refused with an
+  error saying so.
+
 - P1-07 Poll scheduler and candidate ingestion. Every active wanted item's search plans now get a
   pg-boss cron schedule at the item's interval — three times a day by default, staggered by a hash
   of the plan id so a hundred plans do not all fire in the same second — and the poll job stores

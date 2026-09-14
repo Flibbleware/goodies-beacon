@@ -20,6 +20,8 @@ import {
   BUYING_TYPES,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
+  EVENT_KINDS,
+  EVENT_LEVELS,
   FEEDBACK_RESOLUTIONS,
   FEEDBACK_TYPES,
   MEDIA_KINDS,
@@ -462,7 +464,20 @@ export const costLedger = pgTable(
     candidateId: uuid('candidate_id').references(() => candidates.id, { onDelete: 'set null' }),
     inputTokens: integer('input_tokens').notNull().default(0),
     outputTokens: integer('output_tokens').notNull().default(0),
+    /**
+     * Cached input, billed at its own rate and counted apart from `input_tokens`.
+     *
+     * §9 puts the spec, criteria and reference images first precisely so they cache, and on
+     * Anthropic a cache read costs about a tenth of a fresh read while a write costs about a
+     * quarter more. Folding them into `input_tokens` would make the ledger overstate a cached
+     * review several-fold and the budget cap fire early — which is the sort of wrong that looks
+     * like working software.
+     */
+    cacheReadTokens: integer('cache_read_tokens').notNull().default(0),
+    cacheWriteTokens: integer('cache_write_tokens').notNull().default(0),
     costUsd: numeric('cost_usd', { precision: 12, scale: 6 }).notNull().default('0'),
+    /** False when the model was not in the price table, so the costs page can say "at least". */
+    costKnown: boolean('cost_known').notNull().default(true),
     createdAt,
   },
   (table) => [
@@ -470,6 +485,36 @@ export const costLedger = pgTable(
     // The budget cap sums a calendar month, and the costs page groups by item (§9).
     index('cost_ledger_created_idx').on(table.createdAt),
     index('cost_ledger_item_idx').on(table.wantedItemId),
+  ],
+);
+
+/**
+ * Instance-level events worth surfacing outside a log: so far, the budget cap (§9).
+ *
+ * Not `notifications`, which is per candidate and requires one. The unique index on
+ * (kind, dedupe_key) is what makes "one event, not one per job" true — fifty review jobs meeting
+ * an exhausted budget in the same month write one row between them, the same way the notification
+ * index guarantees at-most-once per candidate.
+ */
+export const events = pgTable(
+  'events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kind: text('kind').$type<(typeof EVENT_KINDS)[number]>().notNull(),
+    level: text('level').$type<(typeof EVENT_LEVELS)[number]>().notNull().default('warning'),
+    /** What makes this event the same event: the calendar month, for the budget cap. */
+    dedupeKey: text('dedupe_key').notNull(),
+    message: text('message').notNull(),
+    data: jsonb('data').$type<Record<string, unknown>>().notNull().default({}),
+    /** Set once the digest or a real-time email has carried it (§10). */
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
+    createdAt,
+  },
+  (table) => [
+    check('events_kind', oneOf(table.kind, EVENT_KINDS)),
+    check('events_level', oneOf(table.level, EVENT_LEVELS)),
+    uniqueIndex('events_kind_dedupe_key').on(table.kind, table.dedupeKey),
+    index('events_created_idx').on(table.createdAt),
   ],
 );
 
@@ -568,6 +613,8 @@ export type NewVerdict = typeof verdicts.$inferInsert;
 export type Feedback = typeof feedback.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type CostLedgerEntry = typeof costLedger.$inferSelect;
+export type NewCostLedgerEntry = typeof costLedger.$inferInsert;
+export type Event = typeof events.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
 

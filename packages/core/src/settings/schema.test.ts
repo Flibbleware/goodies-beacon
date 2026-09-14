@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_AI_ROLES,
   DEFAULT_BACKFILL_CAP,
   DEFAULT_DIGEST_TIME,
   DEFAULT_POLL_CAP,
@@ -20,6 +21,16 @@ describe('settingsSchema', () => {
         defaultInterval: DEFAULT_POLL_INTERVAL,
         pollCap: DEFAULT_POLL_CAP,
         backfillCap: DEFAULT_BACKFILL_CAP,
+      },
+      ai: {
+        roles: DEFAULT_AI_ROLES,
+        anthropic: { apiKey: '' },
+        openai: { apiKey: '' },
+        google: { apiKey: '' },
+        openrouter: { apiKey: '' },
+        ollama: { baseUrl: '' },
+        monthlyBudget: null,
+        imageStrategy: 'separate',
       },
       email: {
         host: '',

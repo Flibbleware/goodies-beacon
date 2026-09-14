@@ -18,6 +18,14 @@ const app = createApp({
     version: 'dev',
     sha: 'unknown',
     mediaDir: MEDIA_DIR,
+    // No provider keys in the environment, so Settings is the only source (§12).
+    ai: {
+      anthropicApiKey: undefined,
+      openaiApiKey: undefined,
+      googleGenerativeAiApiKey: undefined,
+      openrouterApiKey: undefined,
+      ollamaBaseUrl: undefined,
+    },
   },
 });
 

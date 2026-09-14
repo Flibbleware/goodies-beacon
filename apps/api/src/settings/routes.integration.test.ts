@@ -4,6 +4,7 @@ import {
   createDb,
   createPool,
   type Database,
+  DEFAULT_AI_ROLES,
   DEFAULT_BACKFILL_CAP,
   DEFAULT_DIGEST_TIME,
   DEFAULT_POLL_CAP,
@@ -95,6 +96,14 @@ describe.skipIf(!databaseUrl)('the settings routes', () => {
         version: 'dev',
         sha: 'unknown',
         mediaDir: MEDIA_DIR,
+        // No provider keys in the environment, so Settings is the only source (§12).
+        ai: {
+          anthropicApiKey: undefined,
+          openaiApiKey: undefined,
+          googleGenerativeAiApiKey: undefined,
+          openrouterApiKey: undefined,
+          ollamaBaseUrl: undefined,
+        },
       },
     });
 
@@ -129,6 +138,19 @@ describe.skipIf(!databaseUrl)('the settings routes', () => {
             defaultInterval: DEFAULT_POLL_INTERVAL,
             pollCap: DEFAULT_POLL_CAP,
             backfillCap: DEFAULT_BACKFILL_CAP,
+          },
+          ai: {
+            roles: DEFAULT_AI_ROLES,
+            monthlyBudget: null,
+            imageStrategy: 'separate',
+            // Booleans, never the keys themselves: the browser is told whether one is set.
+            providers: {
+              anthropic: { configured: false },
+              openai: { configured: false },
+              google: { configured: false },
+              openrouter: { configured: false },
+              ollama: { configured: false },
+            },
           },
           email: {
             host: '',

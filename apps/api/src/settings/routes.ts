@@ -1,4 +1,8 @@
+import { testProvider } from '@goodies-beacon/ai';
 import {
+  AI_PROVIDERS,
+  type AiProvider,
+  aiProvidersFromEnv,
   type Config,
   createHttpClient,
   createMemoryCookieJar,
@@ -20,7 +24,7 @@ import { parseBody } from '../parse.js';
 
 export interface SettingsRouteDeps {
   readonly db: Database;
-  readonly config: Pick<Config, 'host' | 'secretKey'>;
+  readonly config: Pick<Config, 'host' | 'secretKey' | 'ai'>;
   readonly logger: Logger;
 }
 
@@ -31,8 +35,13 @@ export interface SettingsRouteDeps {
 export function createSettingsRoutes({ db, config, logger }: SettingsRouteDeps) {
   const routes = new Hono();
 
+  // `.env` keys count as configured even though Settings holds none, so the UI does not show an
+  // empty box beside a provider that is, in fact, working (§12 allows either source).
+  const publicSettings = async () =>
+    toPublicSettings(await readSettings(db), aiProvidersFromEnv(config.ai));
+
   routes.get('/', async (c) =>
-    c.json({ settings: toPublicSettings(await readSettings(db)), instanceHost: config.host }),
+    c.json({ settings: await publicSettings(), instanceHost: config.host }),
   );
 
   routes.put('/', async (c) => {
@@ -40,7 +49,31 @@ export function createSettingsRoutes({ db, config, logger }: SettingsRouteDeps) 
     if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
 
     const saved = await writeSettings(db, body.value, config.secretKey);
-    return c.json({ settings: toPublicSettings(saved), instanceHost: config.host });
+    return c.json({
+      settings: toPublicSettings(saved, aiProvidersFromEnv(config.ai)),
+      instanceHost: config.host,
+    });
+  });
+
+  /**
+   * The Test button beside each AI provider (§9). It makes the smallest real call the provider
+   * will take, with the model a role is actually configured to use — a key can be valid and still
+   * have no access to the model someone typed, and that is the failure worth catching here rather
+   * than in the first review.
+   */
+  routes.post('/ai/:provider/test', async (c) => {
+    const provider = c.req.param('provider');
+    if (!(AI_PROVIDERS as readonly string[]).includes(provider)) {
+      return errorResponse(c, 404, 'unknown_provider', `No such AI provider: ${provider}.`);
+    }
+
+    const health = await testProvider(provider as AiProvider, {
+      settings: await readSettings(db),
+      secretKey: config.secretKey,
+      env: config.ai,
+    });
+
+    return c.json({ health });
   });
 
   /**

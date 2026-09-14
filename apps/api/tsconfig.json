@@ -18,6 +18,9 @@
     },
     {
       "path": "../../packages/sources/ebay"
+    },
+    {
+      "path": "../../packages/ai"
     }
   ],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
