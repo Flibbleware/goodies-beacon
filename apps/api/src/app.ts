@@ -6,6 +6,7 @@ import { createLoginRateLimiter, type LoginRateLimiter } from './auth/rate-limit
 import { createAuthRoutes } from './auth/routes.js';
 import { errorHandler, notFoundHandler } from './errors.js';
 import { createHealthRoute } from './health.js';
+import { createMediaRoutes } from './media/routes.js';
 import { type RequestVariables, requestId } from './request-id.js';
 import { securityHeaders } from './security-headers.js';
 import { createSettingsRoutes } from './settings/routes.js';
@@ -17,7 +18,7 @@ export interface AppDeps {
   readonly db: Database;
   readonly logger: Logger;
   /** Only the parts of the config the routes need, so tests need not build a whole one. */
-  readonly config: Pick<Config, 'host' | 'secretKey' | 'version' | 'sha'>;
+  readonly config: Pick<Config, 'host' | 'secretKey' | 'version' | 'sha' | 'mediaDir'>;
   /** Injected by tests that need to drive the clock or inspect the counters. */
   readonly rateLimiter?: LoginRateLimiter;
   /** Where the built web app lives, or absent not to serve it — development leaves that to Vite. */
@@ -47,6 +48,7 @@ export function createApp(deps: AppDeps) {
   // every other /api path — including ones that do not exist.
   app.use('/api/*', requireSession(db));
   app.route('/api/settings', createSettingsRoutes({ db, config, logger }));
+  app.route('/api/media', createMediaRoutes({ db, mediaDir: config.mediaDir, logger }));
 
   // The API's own 404, before the web app's catch-all: an unknown /api path is a mistake worth a
   // JSON error, not a page.

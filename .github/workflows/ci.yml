@@ -28,6 +28,11 @@ jobs:
       - name: Shellcheck
         run: shellcheck scripts/*.sh
 
+      # A bare pattern in .gitignore matches that directory at any depth, so a source folder can
+      # be swallowed silently: it builds locally and CI fails at import.
+      - name: Source files are not ignored
+        run: ./scripts/check-tracked-sources.sh
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest

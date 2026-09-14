@@ -16,6 +16,9 @@ Errors always take the shape `{ error: { code, message } }`. Every response carr
 | `POST` | `/api/auth/logout` | public | required |
 | `POST` | `/api/auth/password` | session | required |
 | `GET` | `/api/auth/session` | public | — |
+| `POST` | `/api/media` | session | required |
+| `GET` | `/api/media/:id` | session | — |
+| `GET` | `/api/media/:id/thumb` | session | — |
 | `GET` | `/api/settings` | session | — |
 | `PUT` | `/api/settings` | session | required |
 | `POST` | `/api/settings/email/test` | session | required |

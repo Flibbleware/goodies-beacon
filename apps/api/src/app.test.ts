@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
 import { CSRF_COOKIE, CSRF_HEADER } from './auth/cookies.js';
 
+/** The media routes only touch it when an image is served; nothing here serves one. */
+const MEDIA_DIR = '/tmp/goodies-beacon-test-media';
+
 const logger: Logger = { error() {}, warn() {}, info() {}, debug() {}, child: () => logger };
 
 /** These routes answer before touching the database, so a stub keeps them out of Postgres. */
@@ -14,6 +17,7 @@ const app = createApp({
     secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
     version: 'dev',
     sha: 'unknown',
+    mediaDir: MEDIA_DIR,
   },
 });
 

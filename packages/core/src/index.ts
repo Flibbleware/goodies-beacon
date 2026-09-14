@@ -234,6 +234,32 @@ export {
   verdictSchema,
 } from './domain/verdict.js';
 export { createLogger, createSilentLogger, type Logger } from './logger.js';
+export {
+  hammingDistance,
+  looksLikeSameImage,
+  perceptualHash,
+  SAME_IMAGE_DISTANCE,
+} from './media/hash.js';
+export {
+  type FetchImageOptions,
+  fetchImage,
+  findMedia,
+  MAX_BYTES,
+  MAX_REDIRECTS,
+  MediaRejectedError,
+  mediaPath,
+  STORED_EDGE,
+  type StoreImageOptions,
+  storeImage,
+  THUMBNAIL_EDGE,
+} from './media/ingest.js';
+export {
+  assertFetchableUrl,
+  assertPublicAddress,
+  BlockedAddressError,
+  isBlockedAddress,
+  type Resolver,
+} from './media/ssrf.js';
 export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
 export {
   HEARTBEAT_CRON,

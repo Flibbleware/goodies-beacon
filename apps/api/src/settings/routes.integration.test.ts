@@ -17,6 +17,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import { CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE } from '../auth/cookies.js';
 
+/** The media routes only touch it when an image is served; nothing here serves one. */
+const MEDIA_DIR = '/tmp/goodies-beacon-test-media';
+
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const smtpUrl = process.env.TEST_SMTP_URL;
 const mailpitUrl = process.env.TEST_MAILPIT_URL ?? 'http://localhost:8025';
@@ -83,7 +86,13 @@ describe.skipIf(!databaseUrl)('the settings routes', () => {
     app = createApp({
       db,
       logger,
-      config: { host: HOST, secretKey: SECRET_KEY, version: 'dev', sha: 'unknown' },
+      config: {
+        host: HOST,
+        secretKey: SECRET_KEY,
+        version: 'dev',
+        sha: 'unknown',
+        mediaDir: MEDIA_DIR,
+      },
     });
 
     const start = await app.request('/api/auth/session');

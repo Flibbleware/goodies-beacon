@@ -4,6 +4,26 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: `.gitignore` had a bare `media/`, meant for the runtime media volume, and a bare pattern
+  matches a directory of that name at *any* depth — so `packages/core/src/media` and
+  `apps/api/src/media` were never committed. Everything built and tested locally and CI failed at
+  import. Biome reads `.gitignore` too (`vcs.useIgnoreFile`), so those files were also going
+  unlinted and unformatted: one mistake quietly disabled two gates. The root-only patterns are now
+  anchored with a leading slash, and `scripts/check-tracked-sources.sh` fails the lint job and the
+  pre-commit hook if a file under `src/`, `scripts/` or `fixtures/` is ignored.
+
+- P1-05 Media ingest. Listing and reference images are fetched behind an SSRF guard, size-capped
+  at 15 MB, re-encoded to webp with a thumbnail, perceptually hashed and stored under `MEDIA_DIR`
+  with a row; `POST /api/media` takes an upload and `GET /api/media/:id` serves it with an
+  immutable cache header. Re-encoding rather than storing what arrived is what strips EXIF — which
+  can carry a seller's GPS coordinates — and means a file that is not really an image never
+  reaches the disk.
+- The perceptual hash is a difference hash computed with sharp rather than the `blockhash` package
+  ARCHITECTURE.md §15 names: the published package is a single release from 2019 with no types,
+  and it needs raw pixels, so sharp is in the pipeline either way. The threshold was measured, not
+  guessed — a real photograph resized and re-encoded moves 5–7 bits of 64, two different ones
+  18–46 — so ten separates them with room either side.
+
 - P1-04 eBay adapter. Search across any eBay marketplace with the plan's region, `newlyListed`
   ordering and the watermark as an `itemStartDate` filter, paging until the watermark or the cap;
   `getItem` for the description, full images and ships-to-UK; a health check reporting the daily

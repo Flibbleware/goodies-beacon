@@ -5,3 +5,7 @@ pre-commit:
       glob: "*.{js,jsx,ts,tsx,json,jsonc}"
       run: pnpm exec biome check --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
+    # Catches a source directory swallowed by a bare .gitignore pattern at the moment it would
+    # otherwise be committed without its files, rather than in CI ten minutes later.
+    tracked-sources:
+      run: ./scripts/check-tracked-sources.sh

@@ -5,6 +5,9 @@ import type { Database, Logger } from '@goodies-beacon/core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
 
+/** The media routes only touch it when an image is served; nothing here serves one. */
+const MEDIA_DIR = '/tmp/goodies-beacon-test-media';
+
 const logger: Logger = { error() {}, warn() {}, info() {}, debug() {}, child: () => logger };
 
 const INDEX = '<!doctype html><title>Goodies Beacon</title><div id="root"></div>';
@@ -31,6 +34,7 @@ beforeAll(() => {
       secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
       version: 'dev',
       sha: 'unknown',
+      mediaDir: MEDIA_DIR,
     },
     webRoot,
   });
