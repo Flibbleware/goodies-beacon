@@ -45,6 +45,16 @@ export {
   resetUnknownModelWarnings,
 } from './ledger.js';
 export {
+  boundDescription,
+  criteriaTitles,
+  DESCRIPTION_LIMIT,
+  type PrefilterListing,
+  type PrefilterRequest,
+  type PrefilterResult,
+  runPrefilter,
+  TITLE_LIMIT,
+} from './prefilter.js';
+export {
   type CostResult,
   computeCost,
   findPrice,
@@ -53,6 +63,12 @@ export {
   PRICES_CHECKED_ON,
   type Usage,
 } from './pricing.js';
+export {
+  buildPrefilterPrompt,
+  PREFILTER_PROMPT_VERSION,
+  PREFILTER_SYSTEM,
+  type PrefilterPromptInput,
+} from './prompts/prefilter.v1.js';
 export {
   createModel,
   modelForRole,

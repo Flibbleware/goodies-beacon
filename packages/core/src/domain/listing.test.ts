@@ -66,6 +66,9 @@ describe('reviewerOutputSchema', () => {
   it('has no decision field: §7 step 6 decides, the model does not', () => {
     const output = reviewerOutputSchema.parse({
       criteriaResults: [{ criterionId: 'big-box', result: 'pass', evidence: 'Box visible' }],
+      englishSummary: 'A boxed copy.',
+      shipsToUk: 'unknown',
+      grade: null,
     });
 
     expect(output).not.toHaveProperty('decision');
@@ -74,18 +77,47 @@ describe('reviewerOutputSchema', () => {
 
   it('rejects a per-criterion result outside pass/fail/unknown', () => {
     const result = reviewerOutputSchema.safeParse({
-      criteriaResults: [{ criterionId: 'big-box', result: 'probably' }],
+      criteriaResults: [{ criterionId: 'big-box', result: 'probably', evidence: '' }],
+      englishSummary: '',
+      shipsToUk: 'unknown',
+      grade: null,
     });
 
     expect(result.success).toBe(false);
   });
+
+  /**
+   * No field a model fills in may be optional: an optional field is left out of the JSON Schema's
+   * `required` list, and OpenAI refuses the whole schema. `model-schemas.test.ts` proves the rule
+   * holds across every model-facing schema; this pins the consequence for the reviewer.
+   */
+  it('insists the model answers every field rather than defaulting one in', () => {
+    const missing = reviewerOutputSchema.safeParse({
+      criteriaResults: [{ criterionId: 'big-box', result: 'pass', evidence: 'Box visible' }],
+    });
+
+    expect(missing.success).toBe(false);
+  });
+
+  it('expresses "not graded yet" as null rather than as absent', () => {
+    const output = reviewerOutputSchema.parse({
+      criteriaResults: [],
+      englishSummary: '',
+      shipsToUk: 'yes',
+      grade: null,
+    });
+
+    expect(output.grade).toBeNull();
+  });
 });
 
 describe('prefilterOutputSchema', () => {
-  it('is the cheap two-field shape from §7 step 3', () => {
-    expect(prefilterOutputSchema.parse({ plausible: true })).toEqual({
+  it('is the cheap two-field shape from §7 step 3, with both required', () => {
+    expect(prefilterOutputSchema.parse({ plausible: true, reason: 'A boxed copy.' })).toEqual({
       plausible: true,
-      reason: '',
+      reason: 'A boxed copy.',
     });
+
+    expect(prefilterOutputSchema.safeParse({ plausible: true }).success).toBe(false);
   });
 });

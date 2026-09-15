@@ -235,6 +235,7 @@ export {
 export {
   type CriterionResultEntry,
   criterionResultSchema,
+  MODEL_OUTPUT_SCHEMAS,
   type PrefilterOutput,
   prefilterOutputSchema,
   type ReviewerOutput,

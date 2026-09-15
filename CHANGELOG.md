@@ -4,6 +4,40 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: **structured output did not work on OpenAI at all**, in the configuration the AI roles
+  ship with. A Zod `.default()` makes a field optional, an optional field is left out of the JSON
+  Schema's `required` list, and OpenAI refuses such a schema outright — *"'required' is required to
+  be supplied and to be an array including every key in properties"*. Three of the reviewer's four
+  fields and one of the pre-filter's two carried defaults, so `openai:gpt-5-nano` — the shipped
+  default for the pre-filter role — could not answer a single call, while Gemini accepted the same
+  schema happily. Found by running the pre-filter check against both providers rather than one.
+  Optionality is now expressed as `nullable`, which is portable, and `model-schemas.test.ts` walks
+  every model-facing schema at every level and fails if an optional field returns. Nothing had
+  shipped against a model yet, so no stored verdict is affected.
+
+- P1-09 Pre-filter. The cheap text pass from ARCHITECTURE.md §7 step 3: a listing's title and the
+  first 1,500 characters of its description, with the item's summary, criteria and the
+  interviewer's plausibility note, judged as `{ plausible, reason }` by whichever model the
+  `prefilter` role is set to. Its job is to stop obvious rubbish — a t-shirt, a soundtrack, a
+  sequel, a manual on its own — reaching the vision model, which is where the money goes.
+- It is built around the fact that its two mistakes are not symmetrical. A listing wrongly kept
+  costs a fraction of a penny and the reviewer catches it; one wrongly discarded is never
+  reviewed, never emailed and never noticed. So the prompt is explicitly reluctant to reject,
+  the criteria are passed as context labelled "do not apply these yourself", and the stage
+  **fails open** — a model that cannot be reached, or that answers something unparseable, keeps
+  the listing and records that nothing was asked rather than silently dropping it.
+- The prompt is a versioned module in `packages/ai/src/prompts/` with a changelog header saying
+  what each version tried and why, because a verdict records which prompt produced it.
+- Nineteen fixture cases for the two example specs, and
+  `pnpm --filter @goodies-beacon/ai prefilter-check` to run them against a real cheap model. It
+  reports wrong discards and wrong keeps separately and fails on the first; it also fails when a
+  case could not be run at all, since a check whose subject fails open would otherwise report a
+  green run with no API key configured. Scored 19/19 on Gemini 3.1 Flash-Lite for under half a
+  penny, with no wrong discards.
+- The check paces itself at twelve requests a minute by default, because the free tiers it is most
+  likely to be pointed at are measured per minute and a rate limit in the middle of a run reports
+  as a prompt failure. `--rpm` raises it on a paid key.
+
 - P1-08 AI layer. `packages/ai` is now the only place a model is called: three roles
   (interviewer, pre-filter, reviewer) each configured as `provider:model`, reached through the
   Vercel AI SDK over Anthropic, OpenAI, Google, OpenRouter and Ollama. A caller names a role and a
