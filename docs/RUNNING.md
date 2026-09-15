@@ -657,12 +657,18 @@ To check a model before pointing the instance at it:
 
 ```sh
 pnpm --filter @goodies-beacon/ai prefilter-check
-pnpm --filter @goodies-beacon/ai prefilter-check -- --model openai:gpt-5-nano
+pnpm --filter @goodies-beacon/ai prefilter-check -- --model google:gemini-3.1-flash-lite
+pnpm --filter @goodies-beacon/ai prefilter-check -- --rpm 600   # paid key, run it fast
 ```
 
 That runs the fixture cases against a real model and reports wrong discards and wrong keeps
-separately. A full run is roughly 15,000 input tokens: about a tenth of a penny on a
-cheapest-tier model, and under 1.5p on anything you would sensibly put in this role.
+separately. A full run is roughly 16,000 input tokens: about a tenth of a penny on a
+cheapest-tier model, and under 1.5p on anything you would sensibly put in this role. It is paced
+at twelve requests a minute so it does not trip a free tier's limit, which takes about a minute
+and a half; `--rpm` raises that.
+
+Gemini 3.1 Flash-Lite scored 19/19 on 15 September 2026. Anything with a **wrong discard** is not
+fit for this role whatever its total, because that is the mistake nothing reports.
 
 ### What a call costs, and the monthly cap
 

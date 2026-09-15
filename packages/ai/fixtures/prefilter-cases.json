@@ -132,10 +132,18 @@
     {
       "id": "powermac-imac",
       "spec": "power-mac-5500",
-      "expect": "plausible",
-      "why": "An all-in-one Mac of roughly the right era, wrong model. Near the line on purpose: the reviewer reads the model from the photographs, so the pre-filter should not decide it.",
+      "expect": "reject",
+      "why": "A different model line, named outright in the title. The ambiguous case — an all-in-one whose model is *not* stated — is `powermac-vintage-apple`, and it is kept; this one states it, so there is nothing for the photographs to settle. Written as `plausible` in the first draft, which conflated the two.",
       "title": "Apple iMac G3 Bondi Blue All In One 1998",
       "description": "Original bondi blue iMac G3. All in one with the screen built in. Powers on."
+    },
+    {
+      "id": "powermac-5500-for-parts",
+      "spec": "power-mac-5500",
+      "expect": "plausible",
+      "why": "The right machine, described in the language of a negative keyword ('spares or repair'). Condition is the reviewer's business and the spec says 'working or repairable', so this must survive — the hard filter in §7 step 2 is what applies negative keywords, not this.",
+      "title": "Apple Power Macintosh 5500 all in one - spares or repair, not tested",
+      "description": "Power Mac 5500. Untested, no power lead to try it with. Screen has not been checked. Sold as spares or repair."
     },
     {
       "id": "powermac-empty-case",

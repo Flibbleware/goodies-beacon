@@ -26,6 +26,13 @@ export interface GenerateDeps {
   db: Database;
   logger: Logger;
   secretKey: string;
+  /**
+   * Provider keys from `.env` (§12 allows either source).
+   *
+   * Optional, and omitting it is quietly consequential: a provider configured only in `.env` then
+   * looks unconfigured, and every call fails the same way a missing key does. Pass `config.ai`
+   * unless you mean Settings to be the only source.
+   */
   env?: AiKeys;
   /** Read once by the caller when it is making several calls; re-read here otherwise. */
   settings?: Settings;

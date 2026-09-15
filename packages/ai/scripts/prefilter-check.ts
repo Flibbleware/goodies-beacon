@@ -9,9 +9,14 @@
  *
  *   pnpm --filter @goodies-beacon/ai prefilter-check
  *   pnpm --filter @goodies-beacon/ai prefilter-check -- --model openai:gpt-5-nano
+ *   pnpm --filter @goodies-beacon/ai prefilter-check -- --rpm 600
  *
  * The role's model comes from Settings in the database. `--model` overrides it for one run,
  * which is how you compare two before changing what the instance uses.
+ *
+ * `--rpm` is the request rate. The default is slow enough for a provider's free tier — Gemini's
+ * gives 15 a minute — because a check that trips a rate limit reports the cases it could not run
+ * as failures of the prompt, which is a confusing thing to be handed. Raise it on a paid key.
  */
 
 import { readFileSync } from 'node:fs';
@@ -20,6 +25,7 @@ import {
   createDb,
   createLogger,
   createPool,
+  parseConfig,
   parseModelRef,
   readSettings,
   wantedSpecSchema,
@@ -34,12 +40,32 @@ try {
   // Already exported, or no .env; the checks below report what is missing either way.
 }
 
-const databaseUrl = process.env.DATABASE_URL;
-const secretKey = process.env.GOODIES_BEACON_SECRET_KEY;
-if (!databaseUrl || !secretKey) {
-  console.error('DATABASE_URL and GOODIES_BEACON_SECRET_KEY must be set; see .env.example.');
+/**
+ * The real config parser rather than a handful of `process.env` reads, because the provider keys
+ * it produces are the half that is easy to forget: `generateForRole` takes them as an argument,
+ * and omitting it makes every `.env` key invisible and every call fail open — which looks exactly
+ * like a missing key, and is how the first version of this script "ran" eighteen cases without
+ * calling anything.
+ */
+let config: ReturnType<typeof parseConfig>;
+try {
+  config = parseConfig(process.env);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 }
+
+const { databaseUrl, secretKey } = config;
+
+const rpmAt = process.argv.indexOf('--rpm');
+const rpm = rpmAt === -1 ? 12 : Number(process.argv[rpmAt + 1]);
+if (!Number.isFinite(rpm) || rpm <= 0) {
+  console.error(
+    `--rpm must be a positive number of requests per minute. Got: ${process.argv[rpmAt + 1]}`,
+  );
+  process.exit(1);
+}
+const spacingMs = Math.ceil(60_000 / rpm);
 
 const overrideAt = process.argv.indexOf('--model');
 const override = overrideAt === -1 ? undefined : process.argv[overrideAt + 1];
@@ -87,15 +113,23 @@ interface Outcome {
 const outcomes: Outcome[] = [];
 
 try {
-  console.log(`Pre-filter check — ${cases.length} cases on ${using}\n`);
+  const seconds = Math.round((cases.length * spacingMs) / 1000);
+  console.log(`Pre-filter check — ${cases.length} cases on ${using}, ${rpm}/min (~${seconds}s)\n`);
 
+  let first = true;
   for (const entry of cases) {
+    // Paced rather than fired off together: the free tiers this is most likely to be run against
+    // are measured per minute, and a 429 here is indistinguishable in the output from a prompt
+    // that failed.
+    if (!first) await new Promise((resolve) => setTimeout(resolve, spacingMs));
+    first = false;
+
     const spec = wantedSpecSchema.parse(
       JSON.parse(readFileSync(`${specs}/${entry.spec}.json`, 'utf8')),
     );
 
     const result = await runPrefilter(
-      { db, logger, secretKey },
+      { db, logger, secretKey, env: config.ai },
       {
         listing: { title: entry.title, description: entry.description },
         spec,

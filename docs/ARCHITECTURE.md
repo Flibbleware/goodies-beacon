@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.28 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.29 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -340,6 +340,8 @@ All model calls go through the Vercel AI SDK, which gives one interface (`genera
 | `reviewer` | Vision review + grading + English summary | Vision, structured output | Mid (GPT-5 mini, Gemini Flash, Claude Haiku/Sonnet) |
 
 Configuration is `provider:model` per role, e.g. `AI_REVIEWER=openai:gpt-5-mini`, with an API key per provider. Switching providers is a settings change; no code changes. Ollama is supported for a local model, with the caveat that small local vision models are noticeably weaker at grading.
+
+**That promise has a condition, and P1-09 found it the hard way: every schema handed to a model must have no optional fields.** An optional field is left out of the JSON Schema's `required` list, and OpenAI's structured output refuses the whole schema — *"'required' is required to be supplied and to be an array including every key in properties"* — while Gemini accepts the same schema without comment. In Zod a `.default()` is what makes a field optional, so three of the reviewer's four fields and one of the pre-filter's two were unusable on OpenAI and fine on Google: a provider swap that fails, in the configuration the roles ship with. Optionality is expressed as `nullable` instead, which is required-but-may-be-null and portable, and `model-schemas.test.ts` walks every model-facing schema — nested objects included, since the rule applies at every level — and fails if an optional field reappears.
 
 Cost controls: per-call usage recorded in `CostLedger`; a costs page shows spend per item and per role; a monthly budget cap pauses reviews. Three details P1-08 found worth writing down. **Cached input is counted apart from fresh input**, because the SDK reports `inputTokens` as the *total* including cache and the three are charged at three different rates — recording the total alongside the cache figures bills the same tokens twice, so a cached review would look several times dearer than it was and the cap would fire early. **An unpriced model records its cost as unknown rather than as zero**, with one warning per model per process: a zero would read as "this was free" on the costs page and let the cap run past its limit, and OpenRouter (which reprices per underlying model) is permanently in that state. And **pausing is a deferral, not a failure** — a deferred review runs next month or as soon as the cap is raised, where a failed one would exhaust its retries against a condition no retry can fix and dead-letter a candidate. Because polls are only a few times a day, reviews can be submitted via the provider's batch API (50% cheaper on Anthropic and OpenAI) with a settings toggle; real-time items skip batching.
 
