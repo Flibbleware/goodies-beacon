@@ -7,7 +7,8 @@ import { CRITERION_RESULTS, SHIPS_TO_UK, VERDICT_DECISIONS } from './constants.j
  * The reviewer never outputs a decision. It reports per-criterion evidence and the deterministic
  * function in P1-11 decides, so "why was this rejected" is always answerable from the rules
  * rather than from a model's mood. `reviewerOutputSchema` is what `generateObject` is held to;
- * `verdictSchema` is the stored row once a decision has been derived.
+ * `verdictSchema` is the assembled verdict once the rules have decided — the stored columns plus
+ * the derived `reasons`, which is not one of them.
  *
  * **Every field a model fills in is required, and none of them carries a `.default()`.** A
  * default makes a field optional, an optional field is left out of the JSON Schema's `required`
@@ -43,12 +44,31 @@ export const prefilterOutputSchema = z.object({
 });
 
 /**
- * The stored row, once P1-11's rules have decided. Not a model contract — it is built in code and
- * read back from the database — so a default is safe here in a way it is not above.
+ * A verdict as the rest of the system uses it, once P1-11's rules have decided. Not a model
+ * contract — it is built in code and read back from the database — so a default is safe here in a
+ * way it is not above.
+ *
+ * **It is not the shape of the `verdicts` row.** The table's `reason` is singular and is the
+ * `REJECTION_REASONS` enum for a hard-filter rejection (§7 step 2), null when the reviewer
+ * decided. There is no column for the plural `reasons` below and deliberately so: see it.
  */
 export const verdictSchema = reviewerOutputSchema.extend({
   decision: z.enum(VERDICT_DECISIONS),
-  /** Why the rules landed there, in the order §7 step 6 applies them. */
+  /**
+   * Why the rules landed there, in the order §7 step 6 applies them.
+   *
+   * **Derived, never stored.** `decideVerdict` is a pure function of the spec version and the
+   * per-criterion results, and both of those *are* stored — the spec version immutably — so
+   * re-running it reproduces the reasons exactly, for ever, for nothing. A column would be a
+   * second copy of something already implied, free to drift from the rules that wrote it the
+   * first time the wording of a reason changes.
+   *
+   * That holds as long as every input is recoverable from the row. It is today. When Phase 5
+   * attaches grading scales, a verdict must reference a scale *version* rather than a scale, or
+   * editing a scale silently rewrites the explanation of every verdict judged under the old one.
+   * §4 already versions scales "so a verdict can name the grade images it saw"; this is the same
+   * requirement arriving from the other direction.
+   */
   reasons: z.array(z.string()).default([]),
 });
 

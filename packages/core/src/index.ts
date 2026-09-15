@@ -196,6 +196,14 @@ export {
   type WantedItemStatus,
 } from './domain/constants.js';
 export {
+  type DecidableCriterion,
+  type Decision,
+  type DecisionInput,
+  decideVerdict,
+  type GradeRank,
+  resolveOnUnknown,
+} from './domain/decide.js';
+export {
   LINT_CODES,
   type LintCode,
   lintCriterion,

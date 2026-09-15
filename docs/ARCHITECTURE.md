@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.30 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.31 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -302,6 +302,8 @@ Runs per Candidate in the review worker. Each stage can stop the pipeline early,
    - any criterion `unknown` with `onUnknown = reject` → **reject**
    - grade below minimum → reject; grade unknown → uncertain
    - otherwise → **match**
+
+   **These are listed in reading order, not severity order, so all of them are evaluated and the worst outcome wins.** The second rule yields uncertain and the fourth yields reject, so a listing that trips both would be emailed as uncertain if the rules were applied in order and stopped at the first hit. The reasons accumulate in the order above, because that is the order a person reads them in. Anything that stops the grade being compared — none reported, no scale attached, or a label that is not on the scale — surfaces as uncertain rather than passing: a minimum the instance cannot check is a configuration fault, and silently matching would hide a broken scale behind a stream of apparently fine verdicts. (P1-11.)
 7. **Notify.** `match` and `uncertain` go to the notifier, respecting the item's mode. `uncertain` emails say exactly what was unknown ("manuals not shown or mentioned"). `reject` is stored with reasons and visible in the audit view.
 
 Model instructions for step 5 are explicit about the quantifiable/soft distinction: "if the photos clearly show a crack in the case and the criterion says no cracks, that is a `fail`; if the photos are too blurry to tell, that is `unknown`". The review never sees another wanted item's context.

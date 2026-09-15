@@ -56,3 +56,29 @@ describe.each(Object.entries(MODEL_OUTPUT_SCHEMAS))('the %s output schema', (nam
     expect(Object.keys(json.properties as object).length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * P1-11's other half: the decision is made in one place, so the reviewer must have no way to
+ * express one. A `decision` field on the reviewer's schema would let a model's opinion reach the
+ * verdict directly and quietly stop `decideVerdict` being the authority — the whole point of
+ * §7 step 6 being deterministic.
+ */
+describe('the reviewer schema', () => {
+  const json = z.toJSONSchema(MODEL_OUTPUT_SCHEMAS.reviewer, { io: 'input' }) as {
+    properties: Record<string, unknown>;
+  };
+
+  it('gives the model no way to state a decision', () => {
+    for (const forbidden of ['decision', 'reasons', 'verdict', 'match', 'reject']) {
+      expect(Object.keys(json.properties), forbidden).not.toContain(forbidden);
+    }
+  });
+
+  it('gives the model no way to state a per-criterion decision either', () => {
+    const entry = (
+      json.properties.criteriaResults as { items: { properties: Record<string, unknown> } }
+    ).items.properties;
+
+    expect(Object.keys(entry)).toEqual(['criterionId', 'result', 'evidence']);
+  });
+});
