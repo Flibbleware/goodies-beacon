@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.30; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.31; section numbers below refer to it.*
 
-Version 1.6 — 15 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.7 — 15 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -535,6 +535,23 @@ throws, P1-12 records a visible `failed` candidate with the error, and it is ret
 Pure function from `(spec version, reviewer output)` to `{ decision, reasons }` implementing the rules in §7 step 6, including `onUnknown` per criterion and the item default.
 
 Done when: a table-driven unit test covers every rule branch, and the function is the only place a decision is made (the reviewer never outputs a decision).
+
+- [x] `decideVerdict` in `packages/core/src/domain/decide.ts`, pure: no database, no clock, no model. Thirty-three tests in `decide.test.ts`, the first eight of them the rule table itself — one row per line of §7 step 6, in the direction that fires it and the direction that does not — then the grade rules, the ways results can fail to line up with the criteria, and both example specs.
+- [x] The reviewer cannot express a decision: two tests in `model-schemas.test.ts` assert that neither `reviewerOutputSchema` nor its per-criterion entry has a `decision`, `reasons` or `verdict` property, so a model's opinion has no route to the verdict.
+
+**§7's rules are listed in reading order, not severity order, and evaluating them in order and stopping at the first hit is wrong.** Rule 2 (soft fail) yields uncertain and rule 4 (unknown set to reject) yields reject, so a listing with both would be emailed as uncertain when the rules meant to reject it. Every rule is evaluated, the reasons accumulate in §7's order because that is the order a person reads them in, and the worst outcome wins.
+
+Anything that stops the grade being compared — no grade reported, no scale attached, a label that is not on the scale, a minimum that is not on the scale — surfaces as uncertain rather than passing. A minimum the instance cannot actually check is a configuration fault, and silently matching would hide a broken scale behind a stream of apparently fine verdicts.
+
+#### Two things P1-11 found that belong to later tasks
+
+**`verdicts` has nowhere to put `reasons`, and will not get one.** The table has a singular `reason`, which is the `REJECTION_REASONS` enum for hard-filter rejections (`over_budget`, `negative_keyword`, `prefilter`) and is null when the reviewer decided. `verdictSchema` in `verdict.ts` separately declared `reasons: string[]` and its docblock called itself "the stored row", which it is not — there is no such column and no migration adds one.
+
+  Resolved in favour of **deriving them**, and the docblock is corrected to say so. `decideVerdict` is a pure function of the spec version and the per-criterion results, both of which are already stored and the spec version immutably, so re-running it reproduces the reasons exactly, for ever, for nothing. A column would be a second copy of something already implied, free to drift from the rules that wrote it the first time a reason's wording changes. P1-12 therefore stores `decision` and `criteria_results` and nothing else new; P1-15 calls `decideVerdict` when it renders.
+
+  **The condition this rests on is that every input stays recoverable from the row**, which it is today and which Phase 5 could quietly break: a verdict must reference a grading scale *version* rather than a scale, or editing a scale rewrites the explanation of every verdict judged under the old one. §4 already versions scales "so a verdict can name the grade images it saw" — this is the same requirement arriving from the other direction, and it is recorded on `verdictSchema.reasons` where whoever adds grading will be looking.
+
+**`SpecSettings.defaultOnUnknown` is currently unreachable.** The plan asks P1-11 to honour "`onUnknown` per criterion *and* the item default", but `criterionSchema` hard-defaults `onUnknown` to `surface`, so every parsed criterion carries an explicit value and the item default never applies. For the fallback to mean anything a criterion needs a way to say "no opinion", which is a nullable field and therefore a P1-02 schema change owned by the spec editor (P1-13). `decideVerdict` implements the fallback already — `resolveOnUnknown` takes the criterion's setting when it has one and the item default otherwise — so the rules will not need changing when it arrives, and the behaviour is tested from both directions today.
 
 #### P1-12 Review worker pipeline — L
 

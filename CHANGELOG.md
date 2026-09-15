@@ -4,6 +4,22 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-11 Decision rules. The deterministic function from ARCHITECTURE.md §7 step 6: a hard
+  criterion failing rejects, a soft one surfaces as uncertain, and an unknown does whichever the
+  criterion (or the item) says it should. It is pure — no database, no clock, no model — so a
+  verdict can always be explained from the rules and the stored results, and re-running it on the
+  same inputs gives the same answer for ever.
+- The reviewer has no way to express a decision at all: its schema carries no `decision`,
+  `reasons` or `verdict` field, and a test asserts it, so a model's opinion cannot reach a verdict
+  without going through the rules.
+- §7's rules are listed in reading order rather than severity order, so all of them are evaluated
+  and the worst outcome wins. Stopping at the first rule that fired would let a soft failure mask
+  a hard one and email a listing the rules meant to reject.
+- A grade that cannot be checked — none reported, no scale attached, or a label that is not on the
+  scale — surfaces as uncertain rather than passing, because a minimum the instance cannot
+  actually check is a configuration fault and silently matching would hide a broken scale behind a
+  stream of apparently fine verdicts.
+
 - Fixed: **a malformed model response was never retried.** The AI SDK's `maxRetries` covers
   retryable *API* errors — a 429, a 5xx, a dropped connection — and a response that parsed but did
   not match the schema is not one of them, so setting it (which is what P1-08 did, and documented
