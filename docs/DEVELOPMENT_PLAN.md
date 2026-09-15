@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.29; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.30; section numbers below refer to it.*
 
-Version 1.5 — 15 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.6 — 15 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -499,9 +499,36 @@ Prompt and structured output per §7 step 5: per-criterion `{ criterionId, resul
 
 Done when:
 
-- [ ] Structured output is validated with Zod; a malformed response is retried once and then recorded as a review failure visible in the UI.
-- [ ] Fixture tests cover: a clear pass, a clear hard fail (visible damage), an unknown (contents not visible), and a Japanese listing producing an English summary.
-- [ ] The exact prompt and image list sent are stored with the verdict so "Show prompt" can display them.
+- [x] Structured output is validated with Zod; a malformed response is retried once and then recorded as a review failure visible in the UI. Held to `reviewerOutputSchema`, then reconciled against the criteria that were actually asked — see the decision below. `runReviewer` throws `ReviewFailedError` carrying the prompt; P1-12 turns that into the `failed` stage the UI shows, which is why the box is ticked here for everything but the rendering.
+
+  **The retry did not exist.** P1-08 set the SDK's `maxRetries` to 1 and documented it as the malformed-output retry, but `maxRetries` covers *retryable API errors* — a 429, a 5xx, a dropped connection — and a response that parsed but did not match the schema is not one of them, so `generateObject` threw on the first attempt however high it was set. Nothing noticed because no test counted the calls. `generateForRole` now retries `NoObjectGeneratedError` itself, exactly once, and two tests in `generate.integration.test.ts` count the attempts: one that the second failure gives up, one that an answer arriving on the retry is accepted. The pre-filter gets the same fix for free.
+- [x] Fixture tests cover: a clear pass, a clear hard fail (visible damage), an unknown (contents not visible), and a Japanese listing producing an English summary. Eight cases in `packages/ai/fixtures/reviewer-cases.json` across both example specs, including the four named above, a prompt-injection attempt and a hard fail on a criterion whose `onUnknown` is `reject`. `pnpm --filter @goodies-beacon/ai reviewer-check` runs them against the configured model and grades each criterion, `shipsToUk` and the summary separately. It is paced at four requests a minute, not the pre-filter check's twelve: the reviewer-tier free tiers are much tighter than the cheap models' — Gemini 3.8 Flash allows five a minute and twenty a *day* — so a run at ten reports three quarters of its cases as failures of the model rather than of the rate limit, and a free key is good for about two full runs a day per model. Thirty offline tests cover the prompt assembly, the bounding, the reconciliation and the fixture set's own well-formedness.
+
+  Run 15 September 2026 on `google:gemini-3.6-flash`: **41/41 checks, all eight cases, $0.066**. The prompt-injection case passed on every run of the day — the model reported the jewel-case sequel as failing three criteria and ignored the instruction to mark everything as a match.
+
+  Getting there took two fixture corrections and no prompt changes, which is the ratio P1-09 saw too. The Japanese listing's `crt-condition` was written expecting `pass`; the seller denies burn-in only, while the criterion also asks about cracks and discolouration that nothing settles, so `unknown` is the honest answer and the model was right. And `performa-parts-only` no longer asserts `all-in-one` at all: for a shell with the CRT removed the criterion admits two readings — it is the all-in-one form factor rather than a tower, but it has no screen built into it either — and a fixture that encodes an arbitrary choice between them produces a red run that teaches nothing. The case still asserts the hard `complete-machine` fail it exists for.
+
+  That second one is worth carrying into P1-13 and the interviewer: **a criterion that bundles a form-factor test with a component-presence test cannot be answered cleanly for a partial item.** It is the spec author's problem, not the reviewer's, and it is the kind of thing P1-02's linter could learn to warn about.
+
+  **Every fixture carries its evidence in the seller's text, because the repository holds no listing photographs to commit.** That is a real limit of this set and it is recorded in the fixture file rather than papered over: these cases prove the reviewer reads evidence, reports unknowns honestly and translates, but none of them proves it can read a photograph. The `images` field exists for when photographs are added; the vision path itself — ordering, labelling, and the refusal to accept a remote URL — is pinned offline by `images.test.ts` and by the reviewer's own integration tests.
+- [x] The exact prompt and image list sent are stored with the verdict so "Show prompt" can display them. `ReviewResult` carries `promptText` and `promptImages` for P1-12 to write to the `verdicts.prompt_text` and `prompt_images` columns P1-01 created. Images are named, never embedded — base64 bytes per verdict would dwarf every other row in the database and the nightly dump with it — so `promptImages` is `{ mediaId, label, kind }` in the order the images were sent, and the labels appear in the text where the pictures were. A `ReviewFailedError` carries both as well, because the first question after a failed review is always what was actually sent.
+
+#### Decision — the reviewer's answers are reconciled against the criteria (from P1-10, 15 September 2026)
+
+Zod proves the *shape* of a response, not that it answered the question. A model can return four
+well-formed results for five criteria, or invent a `criterionId`, and both parse. A criterion with
+no answer is therefore filled in as `unknown` rather than dropped: §7 step 6 surfaces an unknown to
+the collector or rejects on it, where a dropped criterion would let a silent omission read as a
+pass and email them something the rules were never given the chance to stop. An unrecognised id is
+dropped instead — there is no criterion for the rules to apply it to — and both cases log.
+
+#### Decision — the reviewer fails loudly where the pre-filter fails open (from P1-10, 15 September 2026)
+
+The two stages sit either side of the same asymmetry and land opposite ways up. The pre-filter
+keeps a listing it could not judge, because a wrongly discarded listing is never reviewed and
+nobody finds out. The reviewer cannot do that: there is no later stage to catch what it missed, and
+a review that silently produced nothing is a listing the collector is never told about. So it
+throws, P1-12 records a visible `failed` candidate with the error, and it is retried with backoff.
 
 #### P1-11 Decision rules — M
 

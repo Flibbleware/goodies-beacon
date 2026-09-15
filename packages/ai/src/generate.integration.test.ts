@@ -12,7 +12,7 @@ import { MockLanguageModelV3 } from 'ai/test';
 import type { Pool } from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { generateForRole } from './generate.js';
+import { generateForRole, ModelOutputError, OBJECT_RETRIES } from './generate.js';
 import * as providers from './providers.js';
 
 /**
@@ -171,5 +171,74 @@ describe.skipIf(!databaseUrl)('generateForRole against a real Postgres', () => {
     expect(result.promptText).toContain('Big box, front');
     expect(result.promptText).toContain('[image]');
     expect(result.promptText).not.toContain('base64');
+  });
+
+  /**
+   * The SDK's `maxRetries` covers retryable *API* errors — a 429, a 5xx, a dropped connection —
+   * and a response that parsed but did not match the schema is not one of them. Setting it and
+   * believing the schema retry was handled is what P1-08 did, and nothing noticed until this
+   * counted the calls.
+   */
+  it('gives a malformed structured response exactly one more go', async () => {
+    let calls = 0;
+    useStubModel(
+      new MockLanguageModelV3({
+        doGenerate: async () => {
+          calls += 1;
+          return {
+            content: [{ type: 'text', text: '{"plausible":"not a boolean"}' }],
+            finishReason: { unified: 'stop' as const, raw: 'stop' },
+            usage: {
+              inputTokens: { total: 100, noCache: 100, cacheRead: 0, cacheWrite: 0 },
+              outputTokens: { total: 10, text: 10, reasoning: 0 },
+            },
+            warnings: [],
+          };
+        },
+      }),
+    );
+
+    await expect(
+      generateForRole(
+        { db, logger, secretKey: SECRET_KEY },
+        { role: 'prefilter', schema, system: 'Judge it.', prompt: 'A listing.' },
+      ),
+    ).rejects.toBeInstanceOf(ModelOutputError);
+
+    expect(calls).toBe(OBJECT_RETRIES + 1);
+  });
+
+  /** A model that recovers on the second attempt is not a failure. */
+  it('accepts a good answer that arrived on the retry', async () => {
+    let calls = 0;
+    useStubModel(
+      new MockLanguageModelV3({
+        doGenerate: async () => {
+          calls += 1;
+          return {
+            content: [
+              {
+                type: 'text',
+                text: calls === 1 ? 'sorry, here you go:' : '{"plausible":true,"reason":"big box"}',
+              },
+            ],
+            finishReason: { unified: 'stop' as const, raw: 'stop' },
+            usage: {
+              inputTokens: { total: 100, noCache: 100, cacheRead: 0, cacheWrite: 0 },
+              outputTokens: { total: 10, text: 10, reasoning: 0 },
+            },
+            warnings: [],
+          };
+        },
+      }),
+    );
+
+    const result = await generateForRole(
+      { db, logger, secretKey: SECRET_KEY },
+      { role: 'prefilter', schema, system: 'Judge it.', prompt: 'A listing.' },
+    );
+
+    expect(calls).toBe(2);
+    expect(result.object).toEqual({ plausible: true, reason: 'big box' });
   });
 });

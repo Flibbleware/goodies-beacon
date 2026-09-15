@@ -67,8 +67,18 @@ export interface GenerateResult<T> {
  * Once rather than the default several times: the usual cause is a model that cannot hold the
  * schema, and a second failure is evidence of that rather than bad luck. Each attempt is billed,
  * so retrying five times to reach the same conclusion spends five times as much to learn it.
+ *
+ * **This is our own retry, not the SDK's.** `maxRetries` covers *retryable API errors* — a 429, a
+ * 5xx, a dropped connection — and a response that parsed but did not match the schema is not one
+ * of them, so the SDK throws `NoObjectGeneratedError` on the first attempt however high it is set.
+ * Passing it as `maxRetries` (which is what P1-08 did) therefore bought nothing, and P1-10's
+ * "retried once and then recorded as a review failure" was quietly untrue until a test counted
+ * the calls.
  */
 export const OBJECT_RETRIES = 1;
+
+/** The SDK's own retry, for the failures it *does* consider retryable. */
+const TRANSPORT_RETRIES = 1;
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
 
@@ -77,6 +87,28 @@ export class ModelOutputError extends Error {
   constructor(message: string, options?: { cause: unknown }) {
     super(message, options);
   }
+}
+
+/**
+ * Runs the call, giving a malformed structured response one more go.
+ *
+ * Only `NoObjectGeneratedError` is retried here: everything else is either already retried by the
+ * SDK or is not going to be helped by asking again. The second attempt is billed like the first,
+ * which is why there is exactly one.
+ */
+async function attempt<R>(call: () => Promise<R>, abortSignal?: AbortSignal): Promise<R> {
+  let last: unknown;
+
+  for (let tries = 0; tries <= OBJECT_RETRIES; tries += 1) {
+    try {
+      return await call();
+    } catch (error) {
+      if (!NoObjectGeneratedError.isInstance(error) || abortSignal?.aborted) throw error;
+      last = error;
+    }
+  }
+
+  throw last;
 }
 
 export async function generateForRole<T>(
@@ -96,15 +128,19 @@ export async function generateForRole<T>(
       : [{ role: 'user' as const, content: [...request.prompt] }];
 
   try {
-    const result = await generateObject({
-      model: role.languageModel,
-      schema: request.schema,
-      system: request.system,
-      ...(typeof prompt === 'string' ? { prompt } : { messages: prompt }),
-      maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-      maxRetries: OBJECT_RETRIES,
-      ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),
-    });
+    const result = await attempt(
+      () =>
+        generateObject({
+          model: role.languageModel,
+          schema: request.schema,
+          system: request.system,
+          ...(typeof prompt === 'string' ? { prompt } : { messages: prompt }),
+          maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          maxRetries: TRANSPORT_RETRIES,
+          ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),
+        }),
+      request.abortSignal,
+    );
 
     const entry: LedgerEntry = {
       role: request.role,

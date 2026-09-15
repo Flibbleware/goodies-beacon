@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.29 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.30 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -346,6 +346,14 @@ Configuration is `provider:model` per role, e.g. `AI_REVIEWER=openai:gpt-5-mini`
 Cost controls: per-call usage recorded in `CostLedger`; a costs page shows spend per item and per role; a monthly budget cap pauses reviews. Three details P1-08 found worth writing down. **Cached input is counted apart from fresh input**, because the SDK reports `inputTokens` as the *total* including cache and the three are charged at three different rates — recording the total alongside the cache figures bills the same tokens twice, so a cached review would look several times dearer than it was and the cap would fire early. **An unpriced model records its cost as unknown rather than as zero**, with one warning per model per process: a zero would read as "this was free" on the costs page and let the cap run past its limit, and OpenRouter (which reprices per underlying model) is permanently in that state. And **pausing is a deferral, not a failure** — a deferred review runs next month or as soon as the cap is raised, where a failed one would exhaust its retries against a condition no retry can fix and dead-letter a candidate. Because polls are only a few times a day, reviews can be submitted via the provider's batch API (50% cheaper on Anthropic and OpenAI) with a settings toggle; real-time items skip batching.
 
 Prompt caching: the spec, criteria and reference images are the same for every candidate of an item, so they are placed first in the prompt to benefit from provider-side caching where supported (on Anthropic a cached image costs a tenth of a fresh one). A prefix cache matches from the beginning and stops at the first byte that differs, so the ordering costs nothing on an item's first candidate and everything on the rest.
+
+**A malformed structured response is retried once, by us and not by the SDK.** `maxRetries` covers retryable *API* errors — a 429, a 5xx, a dropped connection — and a response that parsed but did not match the schema is not one of them, so setting it and believing the schema retry was handled (which is what P1-08 did) buys nothing: the call gives up on the first attempt. P1-10 found it by counting the calls. One retry, not several: the usual cause is a model that cannot hold the schema, a second failure is evidence of that rather than bad luck, and every attempt is billed. After that the call fails, and what the caller does with a failure is the asymmetry below.
+
+**The pre-filter fails open; the reviewer fails loudly.** The same asymmetry lands opposite ways up either side of the expensive stage. A listing the pre-filter could not judge is kept, because a wrongly discarded one is never reviewed and nobody finds out (§7 step 3). The reviewer cannot do that — there is no later stage to catch what it missed, and a review that silently produced nothing is a listing the collector is never told about — so it leaves the candidate in a visible `failed` state with the error, to be retried with backoff.
+
+**A model's answers are reconciled against the criteria that were asked.** A schema proves the shape of a response, not that it answered the question: a model can return four well-formed results for five criteria, or invent a `criterionId`, and both parse. A criterion with no answer is recorded as `unknown` rather than dropped, because §7 step 6 surfaces an unknown or rejects on it while a dropped criterion lets a silent omission read as a pass. An unrecognised id is dropped, there being no criterion for the rules to apply it to.
+
+**A listing is data in a prompt, never instructions.** The title, description and photographs are supplied by a stranger who would like their listing emailed to you. The reviewer's prompt fences them and says so, and the reviewer is told to ignore anything addressed to it and note the attempt in the summary instead.
 
 **Images in a prompt are bytes this instance has already fetched, never a remote URL.** The AI SDK resolves a URL by fetching it itself, which would send a marketplace-supplied address straight out of the worker with none of §12's protections — no private-address block list, no size cap, no content-type check — while P1-05 exists to do exactly that fetch under guard. The prompt builder refuses an `http(s)` URL rather than trusting the caller, because the failure is silent and the input is attacker-controlled.
 

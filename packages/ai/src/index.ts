@@ -70,6 +70,15 @@ export {
   type PrefilterPromptInput,
 } from './prompts/prefilter.v1.js';
 export {
+  REVIEWER_PROMPT_VERSION,
+  REVIEWER_SYSTEM,
+  type ReviewerListingInput,
+  renderCriteria,
+  renderImageIntro,
+  renderListing,
+  renderSpecSummary,
+} from './prompts/reviewer.v1.js';
+export {
   createModel,
   modelForRole,
   normaliseOllamaUrl,
@@ -78,4 +87,17 @@ export {
   type ResolvedRole,
   UnknownModelRefError,
 } from './providers.js';
+export {
+  boundReviewDescription,
+  countReviewImages,
+  type PromptImageRef,
+  REVIEW_DESCRIPTION_LIMIT,
+  ReviewFailedError,
+  type ReviewImage,
+  type ReviewListing,
+  type ReviewRequest,
+  type ReviewResult,
+  reconcileCriteria,
+  runReviewer,
+} from './reviewer.js';
 export { splitUsage } from './usage.js';

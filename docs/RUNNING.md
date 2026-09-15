@@ -670,6 +670,78 @@ and a half; `--rpm` raises that.
 Gemini 3.1 Flash-Lite scored 19/19 on 15 September 2026. Anything with a **wrong discard** is not
 fit for this role whatever its total, because that is the mistake nothing reports.
 
+### The reviewer
+
+The listings the pre-filter kept go to the reviewer: the item's spec, its criteria, its reference
+photographs and then the listing's own description and photos. It answers pass, fail or unknown
+for each criterion with a line of evidence, writes an English summary of the listing, and says
+whether it ships to the UK. It does **not** decide — the rules do that from its answers — and every
+verdict shows you each criterion, its evidence, and the exact prompt that produced it.
+
+It is written to say **unknown** rather than guess, and that is the behaviour to watch. A reviewer
+that reasons from what is normally included ("big box copies usually have the manual") rather than
+from what it can see turns every unknown into a quiet pass, and the unknowns are the thing you
+actually wanted told about. If verdicts come back confident about parts of a listing that were
+never photographed, the model in this role is the problem, not the spec.
+
+Unlike the pre-filter it **fails loudly**. A review that could not be completed — the model
+unreachable, or answering something that will not parse twice running — leaves the candidate in a
+visible `failed` state with the error rather than being quietly dropped, and is retried with
+backoff. There is no cheaper stage behind it to catch what it missed.
+
+A seller's description is treated as data, never as instructions. If a listing contains text
+addressed to an AI asking it to mark everything as a match, the reviewer is told to ignore it and
+mention the attempt in the summary.
+
+To check a model before pointing the instance at it:
+
+```sh
+pnpm --filter @goodies-beacon/ai reviewer-check
+pnpm --filter @goodies-beacon/ai reviewer-check -- --model google:gemini-3.1-flash
+pnpm --filter @goodies-beacon/ai reviewer-check -- --rpm 600   # paid key, run it fast
+```
+
+That runs the fixture cases against a real model and grades each criterion, the shipping flag and
+the summary separately, printing what it expected and what it got. A review is several times the
+size of a pre-filter call, so a full run costs a few pence rather than a fraction of one.
+
+It is paced at **four** requests a minute, slower than `prefilter-check`'s twelve, because the free
+tiers are per model and the reviewer-tier ones are much tighter than the cheap models: Gemini 3.8
+Flash allows five a minute, and a run at ten reports three quarters of its cases as failures of the
+model rather than of the rate limit. `--rpm` raises it on a paid key.
+
+There is a **daily** cap as well as a per-minute one — twenty requests a day per model on Google's
+free tier — so a free key is good for about two full runs a day, and the third reports every case
+as a failure. If a whole run comes back as "could not be run", check the quota before the prompt.
+
+Gemini 3.6 Flash scored 41/41 checks on 15 September 2026 for about 5p. It ignored the fixture
+listing that instructs the reviewer to mark everything as a match, and reported that listing's
+three genuine failures instead.
+
+When a case disagrees with the model, read the criterion before you blame the prompt. Both misses
+on the first full run were the fixture's fault: one asked for a `pass` on a criterion the listing
+only half addressed, and one asserted an answer to a criterion that genuinely has two readings for
+a partial item. A criterion that bundles two tests — "an all-in-one **with the screen built into
+the case**" — cannot be answered cleanly when half the machine is missing, and that is worth fixing
+in the spec rather than arguing with the reviewer about.
+
+The fixture cases carry their evidence in the seller's text, because there are no listing
+photographs in the repository. They will tell you whether a model reports unknowns honestly,
+follows the criteria and translates; they will not tell you how well it reads a photograph, which
+is the thing you are mostly paying for. Judge that on your own items with the backfill, before
+freezing a spec.
+
+### Images in a review
+
+Each reference or grading image costs roughly 1,000–1,500 input tokens *per review*, so they are
+the biggest lever on what this costs. The item page shows a running count and nudges at six.
+Reference images are downscaled on upload and sent with their labels, so the model knows which
+variant each one shows.
+
+Every image in a prompt is one this instance has already fetched, checked and stored — never a URL
+handed to the provider to fetch, which would send a marketplace address out of the worker with
+none of the ingest's protections.
+
 ### What a call costs, and the monthly cap
 
 Every call is recorded in `cost_ledger` with its role, model, tokens and cost. Prices come from a
