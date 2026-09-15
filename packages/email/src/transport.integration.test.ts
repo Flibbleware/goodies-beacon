@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { testMessage } from './test-message.js';
 import { SmtpError, type SmtpSettings, sendMail } from './transport.js';
@@ -10,7 +11,19 @@ import { SmtpError, type SmtpSettings, sendMail } from './transport.js';
 const smtpUrl = process.env.TEST_SMTP_URL;
 const mailpitUrl = process.env.TEST_MAILPIT_URL ?? 'http://localhost:8025';
 
-const TO = 'owner@example.com';
+/**
+ * Vitest's default is five seconds, which is a unit-test budget. These talk to a real SMTP server
+ * over a real socket, and on a loaded run — the browser tests drive Chromium, the database tests
+ * run serially — a send has overrun it. When it did, the message landed *after* the test's own
+ * cleanup and failed the next test on an inbox it had not filled, so one slow send read as two
+ * bugs, neither of them real.
+ */
+const NETWORK_TIMEOUT_MS = 30_000;
+
+/** Each test sends to its own address, so a late arrival cannot be mistaken for another's. */
+function recipient(): string {
+  return `owner+${randomUUID()}@example.com`;
+}
 
 function settings(overrides: Partial<SmtpSettings> = {}): SmtpSettings {
   const url = new URL(smtpUrl ?? 'smtp://localhost:1025');
@@ -25,15 +38,40 @@ function settings(overrides: Partial<SmtpSettings> = {}): SmtpSettings {
   };
 }
 
-async function inbox(): Promise<{ ID: string; To: { Address: string }[]; Subject: string }[]> {
+interface InboxMessage {
+  ID: string;
+  To: { Address: string }[];
+  Subject: string;
+}
+
+async function inbox(): Promise<InboxMessage[]> {
   const res = await fetch(`${mailpitUrl}/api/v1/messages`);
-  const body = (await res.json()) as {
-    messages: { ID: string; To: { Address: string }[]; Subject: string }[];
-  };
+  const body = (await res.json()) as { messages: InboxMessage[] };
   return body.messages;
 }
 
+const addressedTo = (messages: InboxMessage[], address: string): InboxMessage[] =>
+  messages.filter((message) => message.To.some((entry) => entry.Address === address));
+
+/**
+ * Waits for a message rather than reading once. `sendMail` resolves when the server has accepted
+ * the message, which is a moment before Mailpit has indexed it and made it visible over HTTP.
+ */
+async function waitForMessage(address: string): Promise<InboxMessage> {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const [message] = addressedTo(await inbox(), address);
+    if (message) return message;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(`no message for ${address} arrived within five seconds`);
+}
+
 describe.skipIf(!smtpUrl)('sendMail against Mailpit', () => {
+  /**
+   * The inbox is still emptied around each test so a failure leaves nothing behind, but nothing
+   * asserts on it being empty: each test looks only at its own recipient, so a message arriving
+   * late cannot be read as another test's bug.
+   */
   beforeEach(async () => {
     await fetch(`${mailpitUrl}/api/v1/messages`, { method: 'DELETE' });
   });
@@ -42,45 +80,66 @@ describe.skipIf(!smtpUrl)('sendMail against Mailpit', () => {
     await fetch(`${mailpitUrl}/api/v1/messages`, { method: 'DELETE' });
   });
 
-  it('delivers the test message, and the inbox has it', async () => {
-    await sendMail(settings(), { ...testMessage('beacon.example.co.uk'), to: TO });
+  it(
+    'delivers the test message, and the inbox has it',
+    async () => {
+      const to = recipient();
+      await sendMail(settings(), { ...testMessage('beacon.example.co.uk'), to });
 
-    const messages = await inbox();
-    expect(messages).toHaveLength(1);
-    expect(messages[0]?.Subject).toBe('Goodies Beacon test email');
-    expect(messages[0]?.To.map((entry) => entry.Address)).toEqual([TO]);
-  });
+      const message = await waitForMessage(to);
 
-  it('names the instance in the body, so it is obvious which one sent it', async () => {
-    await sendMail(settings(), { ...testMessage('beacon.example.co.uk'), to: TO });
+      expect(message.Subject).toBe('Goodies Beacon test email');
+      expect(message.To.map((entry) => entry.Address)).toEqual([to]);
+    },
+    NETWORK_TIMEOUT_MS,
+  );
 
-    const [message] = await inbox();
-    const res = await fetch(`${mailpitUrl}/api/v1/message/${message?.ID}`);
-    const body = (await res.json()) as { Text: string };
+  it(
+    'names the instance in the body, so it is obvious which one sent it',
+    async () => {
+      const to = recipient();
+      await sendMail(settings(), { ...testMessage('beacon.example.co.uk'), to });
 
-    expect(body.Text).toContain('beacon.example.co.uk');
-  });
+      const message = await waitForMessage(to);
+      const res = await fetch(`${mailpitUrl}/api/v1/message/${message.ID}`);
+      const body = (await res.json()) as { Text: string };
 
-  it('reports a refused connection rather than hanging or swallowing it', async () => {
-    // Port 1 on loopback refuses immediately, which is what a wrong port looks like.
-    const error = await sendMail(settings({ port: 1 }), {
-      ...testMessage('beacon.example.co.uk'),
-      to: TO,
-    }).catch((thrown: unknown) => thrown);
+      expect(body.Text).toContain('beacon.example.co.uk');
+    },
+    NETWORK_TIMEOUT_MS,
+  );
 
-    expect(error).toBeInstanceOf(SmtpError);
-    expect((error as SmtpError).detail).toMatch(/ECONNREFUSED|connect/i);
-  });
+  it(
+    'reports a refused connection rather than hanging or swallowing it',
+    async () => {
+      // Port 1 on loopback refuses immediately, which is what a wrong port looks like.
+      const error = await sendMail(settings({ port: 1 }), {
+        ...testMessage('beacon.example.co.uk'),
+        to: recipient(),
+      }).catch((thrown: unknown) => thrown);
 
-  it('reports that TLS was demanded and not offered, in the words it was told', async () => {
-    // Mailpit here has no TLS, so requireTLS cannot be satisfied.
-    const error = await sendMail(settings({ security: 'starttls' }), {
-      ...testMessage('beacon.example.co.uk'),
-      to: TO,
-    }).catch((thrown: unknown) => thrown);
+      expect(error).toBeInstanceOf(SmtpError);
+      expect((error as SmtpError).detail).toMatch(/ECONNREFUSED|connect/i);
+    },
+    NETWORK_TIMEOUT_MS,
+  );
 
-    expect(error).toBeInstanceOf(SmtpError);
-    expect((error as SmtpError).detail.length).toBeGreaterThan(0);
-    expect(await inbox()).toEqual([]);
-  });
+  it(
+    'reports that TLS was demanded and not offered, in the words it was told',
+    async () => {
+      // Mailpit here has no TLS, so requireTLS cannot be satisfied.
+      const to = recipient();
+      const error = await sendMail(settings({ security: 'starttls' }), {
+        ...testMessage('beacon.example.co.uk'),
+        to,
+      }).catch((thrown: unknown) => thrown);
+
+      expect(error).toBeInstanceOf(SmtpError);
+      expect((error as SmtpError).detail.length).toBeGreaterThan(0);
+      // Scoped to this test's own recipient. Asserting the whole inbox was empty made this fail
+      // whenever an earlier test's message landed after that test's cleanup.
+      expect(addressedTo(await inbox(), to)).toEqual([]);
+    },
+    NETWORK_TIMEOUT_MS,
+  );
 });
