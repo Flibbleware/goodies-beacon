@@ -4,6 +4,49 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- Fixed: **a malformed model response was never retried.** The AI SDK's `maxRetries` covers
+  retryable *API* errors — a 429, a 5xx, a dropped connection — and a response that parsed but did
+  not match the schema is not one of them, so setting it (which is what P1-08 did, and documented
+  as the malformed-output retry) bought nothing: `generateObject` gave up on the first attempt.
+  Every role now gets one genuine second attempt at a structured answer before the call is treated
+  as a failure, which matters most for the reviewer, where the alternative is a candidate marked
+  failed over a single bad response. Found by a test that counted the calls.
+
+- P1-10 Reviewer. The vision review from ARCHITECTURE.md §7 step 5: the item's spec, its criteria,
+  its reference photographs with their labels and then the listing itself — description and
+  photos — go to whichever model the `reviewer` role is set to, and come back as a pass, fail or
+  unknown with one line of evidence for each criterion, an English summary of the listing, and
+  whether it ships to the UK.
+- The reviewer never decides. It reports evidence and P1-11's deterministic rules read it, so "why
+  was this rejected" is always answerable from the rules rather than from a model's mood.
+- It is written to prefer **unknown** to a guess. The whole point of §7's unknown handling — the
+  `onUnknown` flag, the "manuals not shown or mentioned" email — is worthless if the model reasons
+  from what is normally included rather than from what it can actually see, so the prompt says so
+  at length and a fixture case exists to catch it.
+- A criterion the model did not answer is recorded as unknown rather than dropped. Zod proves the
+  shape of a response, not that it answered the question, and a dropped criterion would let a
+  silent omission read as a pass.
+- Where the pre-filter fails open, the reviewer **fails loudly**: there is no later stage to catch
+  what it missed, so a review that could not be completed leaves the candidate visibly failed for
+  P1-12 to retry, carrying the prompt that was sent so the failure can be inspected.
+- A listing's title and description are fenced in the prompt as the seller's own words and the
+  model is told to treat them as data rather than instructions. A description is written by a
+  stranger who would like their listing emailed to you; one of the fixture cases is a listing that
+  asks the reviewer to mark everything as passed.
+- The exact prompt and the list of images sent are returned with the verdict so the UI's "Show
+  prompt" is a read rather than a rebuild. Images are named, not embedded — base64 bytes per
+  verdict would dwarf every other row in the database and the nightly dump with it.
+- Eight fixture cases and `pnpm --filter @goodies-beacon/ai reviewer-check` to run them against a
+  real model, grading each criterion, `shipsToUk` and the summary separately. Gemini 3.6 Flash
+  scores 41/41 for about 5p, and ignored the fixture listing that tells the reviewer to mark
+  everything as a match. They carry their evidence in the seller's text, because there are no
+  listing photographs in the repository to commit: they prove the reviewer reads evidence, reports
+  unknowns and translates, and they do not prove it can read a photograph.
+- The check is paced at four requests a minute rather than the pre-filter check's twelve. The
+  reviewer-tier free tiers are much tighter than the cheap models' — five requests a minute and
+  twenty a day on Google's — so a faster run reports most of its cases as failures of the model
+  rather than of the rate limit.
+
 - Fixed: **structured output did not work on OpenAI at all**, in the configuration the AI roles
   ship with. A Zod `.default()` makes a field optional, an optional field is left out of the JSON
   Schema's `required` list, and OpenAI refuses such a schema outright — *"'required' is required to

@@ -20,6 +20,7 @@
   "scripts": {
     "build": "tsc -b",
     "prefilter-check": "tsx scripts/prefilter-check.ts",
+    "reviewer-check": "tsx scripts/reviewer-check.ts",
     "test": "vitest run --root ../.. --project @goodies-beacon/ai"
   },
   "dependencies": {
