@@ -2,7 +2,7 @@
 
 *Phases 0 and 1. Companion to ARCHITECTURE.md v1.32; section numbers below refer to it.*
 
-Version 1.8 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.9 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -608,7 +608,37 @@ constraint violation tells the owner nothing about which field they got wrong.
 
 List page (status, mode, last poll, counts) and item page (current spec card, version history, per-plan stats with candidates found / reviewed / matched / uncertain and pre-filter cost, pause/resume, and the "Scan current listings" button disabled with a "Phase 5" tooltip).
 
-Done when: the list and item pages render from real data, and per-plan stats update after a poll.
+Done when:
+
+- [x] The list and item pages render from real data. Both are driven by `/api/items`, asserted in `apps/api/src/items/routes.integration.test.ts` and walked in the Playwright smoke test, which reads the spec card, the plan table and the counts off a real item.
+- [x] Per-plan stats update after a poll. The poll's half was already there; the review worker's half was not, and is now — see below.
+- [x] Pause and resume without writing a spec version, and "Scan current listings" disabled with a Phase 5 tooltip.
+
+#### What P1-14 found
+
+**Three of the five per-plan stats were never written.** `search_plan_state` has carried
+`candidates_reviewed`, `candidates_matched`, `candidates_uncertain` and `prefilter_cost_usd` since
+P1-07 created the table, and nothing has ever incremented them: the poll writes
+`candidates_found`, and everything after it can only be known once the review pipeline has run.
+The column that would have made this obvious is the one the item page exists to show, so it
+surfaced the moment there was a page. The review worker now records its half — a candidate that
+reached the vision review, what the rules made of it, and what the pre-filter charged.
+
+**The pre-filter is charged for every call, not only for its discards.** The cost was previously
+recorded on the verdict of a candidate the stage rejected, and nowhere at all for one it kept. Per
+plan that is exactly backwards: a query whose listings are all plausible would show a pre-filter
+cost of zero while paying for one call each, which is the opposite of what "is this query earning
+its keep" is asking.
+
+**"Reviewed" means §4's "reached vision review", not "has a verdict".** A candidate stopped by the
+price ceiling or discarded by the pre-filter also ends with a verdict, so counting those would
+bury the number that matters — how many of a query's listings were expensive enough to look at.
+
+**Last poll is computed twice, and the two are asserted to agree.** The list aggregates
+`search_plan_state` in SQL across every item; the item page derives the same three figures from
+the plan rows it already holds, rather than making a second round trip for numbers it has. One
+rule, two implementations, so `stats.integration.test.ts` runs both over the same data and
+compares them.
 
 #### P1-15 Candidates and verdicts UI — L
 

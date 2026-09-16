@@ -11,6 +11,7 @@ import type { CriterionResultEntry } from '../domain/verdict.js';
 import type { Logger } from '../logger.js';
 import { fetchImage, MediaRejectedError, storeImage } from '../media/ingest.js';
 import type { Converter } from '../money/convert.js';
+import { recordPrefilterCost, recordReviewedCandidate } from '../poll/stats.js';
 import { isSourceId, type SourceId } from '../sources.js';
 import { notifyRealtime } from './notify.js';
 import type { ReviewPortImage, ReviewPorts } from './ports.js';
@@ -189,6 +190,9 @@ async function prefilter(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcom
     candidateId: candidate.id,
   });
 
+  // Charged to the plan whichever way it went; only the ledger cares that it was this candidate.
+  await recordPrefilterCost(deps.db, candidate.searchPlanId, result.costUsd);
+
   if (result.plausible) return null;
 
   return stopEarly(deps, loaded, 'prefilter', result.reason, {
@@ -342,6 +346,10 @@ async function review(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcome> 
     outputTokens: reviewed.usage.outputTokens,
     costUsd: reviewed.costUsd.toFixed(6),
   });
+
+  // Beside the verdict rather than after the mark: the two record the same event, and a crash
+  // between them would leave the plan's tally disagreeing with the verdicts it is a tally of.
+  await recordReviewedCandidate(deps.db, candidate.searchPlanId, decision);
 
   // Banked before the notification, so a failure to send can never cause a re-review.
   await mark(deps.db, candidate.id, 'reviewed');

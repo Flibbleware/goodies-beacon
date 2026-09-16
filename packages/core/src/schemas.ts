@@ -80,9 +80,16 @@ export {
   verdictSchema,
 } from './domain/verdict.js';
 export {
+  type CandidateCounts,
   type ItemSaveInput,
+  type ItemStatusInput,
   type ItemSummary,
   itemSaveSchema,
+  itemStatusSchema,
+  NEVER_POLLED,
+  NO_CANDIDATES,
+  type PlanStats,
+  type PollState,
   type SpecVersionSummary,
 } from './items/schema.js';
 export {

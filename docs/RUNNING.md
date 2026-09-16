@@ -843,12 +843,44 @@ would surface it as uncertain instead. It is legal, just rarely what was meant.
 
 **Only an `active` item is polled.** A new one starts as a draft, which is the safe default: it
 keeps its spec and its search plans and does nothing at all until you set it active. `paused`,
-`found` and `archived` are all equally quiet.
+`found` and `archived` are all equally quiet. **Start polling** and **Pause polling** on the item
+page move it between active and paused; the schedule follows within the minute, because
+`schedules.reconcile` reads the status rather than being told. Pausing writes no spec version —
+status says whether the instance is looking, not what it is looking for.
 
 **Saving never edits a spec.** Each save writes the next version and points the item at it, so the
 version a verdict was judged under is still there to read — that is what makes "why did it reject
-this in July" answerable. The version history below the editor lists them with their change notes;
+this in July" answerable. The version history on the item page lists them with their change notes;
 the side-by-side diff between two of them comes with the interviewer.
+
+### The item page
+
+Everything one item is doing. The spec is rendered as a card rather than as JSON — the settings as
+the bounded values they are, every criterion in plain English with its hard/soft, quantifiable and
+on-unknown flags, and the reference images under the labels the reviewer is shown — with **Edit the
+spec** beside it for the JSON editor. Above it are the counts: candidates found for this item, how
+many matched, how many are uncertain, how many were rejected, and how many are still waiting to be
+judged.
+
+Then the **search plans**, one row per query, which is where "search broad, judge narrow" is
+audited:
+
+| Column | What it means |
+|---|---|
+| Found | New listings this query has turned into candidates |
+| Reviewed | How many of those reached the vision model — the stage that costs real money |
+| Matched / Uncertain | What the decision rules made of the ones that did |
+| Pre-filter | What the cheap stage has cost this query in total, in cents until it reaches a dollar |
+| Last run | When the query last polled, whether it succeeded or not |
+
+These are running totals that outlive retention, so they answer "has this query ever earned its
+keep" rather than "what is in the database today" — which is what the counts above are for. A row
+in red is a plan whose last run failed, with the error and the date it was last working, so a
+break reads as "failing since Tuesday" rather than only "failed". A plan you take out of the spec
+keeps its stats and is shown as removed, because the candidates it found are still here.
+
+**Scan current listings** is on the page and disabled: the on-demand sweep, its rate limit and its
+summary email are Phase 5.
 
 Four settings live in the spec *and* on the item row, because they are one field on screen:
 `notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade`. The document is what you
@@ -863,8 +895,9 @@ item, so a handful is plenty.
 
 ## The web app
 
-The pages are Dashboard, Wanted items, Settings and the login/first-run page; the rest of the
-left-hand navigation is there but disabled, labelled with the task that brings it. Settings holds
+The pages are Dashboard, Wanted items (list, item and spec editor), Settings and the
+login/first-run page; the rest of the left-hand navigation is there but disabled, labelled with
+the task that brings it. Settings holds
 account (change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles,
 provider keys and the budget cap) and instance (time zone, digest time) sections. Dark and light
 follow the operating system — there is no toggle, and so no stored preference to get out of step

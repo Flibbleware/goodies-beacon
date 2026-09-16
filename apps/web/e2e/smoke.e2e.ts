@@ -275,6 +275,66 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByRole('link', { name: 'Power Macintosh 5500' })).toBeVisible();
   });
 
+  await test.step('the list says what each item is doing', async () => {
+    const row = page.getByRole('listitem').filter({ hasText: 'Carmageddon big box' });
+
+    await expect(row).toContainText('active');
+    await expect(row).toContainText('Real-time email');
+    await expect(row).toContainText('version 2');
+    await expect(row).toContainText('Never polled');
+    await expect(row).toContainText('0 candidates');
+  });
+
+  await test.step('the item page renders the spec as a card rather than as JSON', async () => {
+    await page.getByRole('link', { name: 'Carmageddon big box' }).click();
+
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
+    await expect(page.getByRole('heading', { name: 'Carmageddon big box' })).toBeVisible();
+
+    const spec = section('Current spec');
+    // The settings, as the bounded values they are — not as criteria (§4's split).
+    await expect(spec).toContainText('£120');
+    await expect(spec).toContainText('real-time email');
+    await expect(spec).toContainText('auction and fixed');
+    // Every criterion in plain English with its flags.
+    await expect(spec).toContainText('Big box release, not the jewel case or budget re-release');
+    await expect(spec).toContainText('hard — rejects');
+    await expect(spec).toContainText('the photos may not settle it');
+    // And the reference image uploaded earlier, under the label the reviewer is shown.
+    await expect(spec).toContainText('UK big box, front');
+    await expect(spec).toContainText('1 image sent with every review of this item.');
+  });
+
+  await test.step('every search plan is listed with its stats, unrun ones included', async () => {
+    const plans = section('Search plans');
+
+    await expect(plans.getByRole('row')).toHaveCount(4);
+    await expect(plans).toContainText('ebay · EBAY_GB');
+    await expect(plans).toContainText('ebay · EBAY_US');
+    await expect(plans).toContainText('carmageddon big box');
+    await expect(plans.getByRole('row').nth(1)).toContainText('never');
+  });
+
+  await test.step('polling is paused and resumed without writing a spec version', async () => {
+    const history = section('Version history');
+    await expect(history.getByRole('listitem')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Pause polling' }).click();
+    await expect(page.getByText('paused', { exact: true })).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Start polling' })).toBeVisible();
+    // Still two versions: pausing says nothing about what the item is looking for.
+    await expect(history.getByRole('listitem')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Start polling' }).click();
+    await expect(page.getByRole('button', { name: 'Pause polling' })).toBeVisible();
+  });
+
+  await test.step('Scan current listings is present and disabled until Phase 5', async () => {
+    await expect(page.getByRole('button', { name: 'Scan current listings' })).toBeDisabled();
+  });
+
   await test.step('the password can be changed, and the new one is what signs you in', async () => {
     await page.goto('/settings');
 

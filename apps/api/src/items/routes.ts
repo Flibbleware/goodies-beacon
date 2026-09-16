@@ -2,9 +2,11 @@ import {
   createItem,
   type Database,
   itemSaveSchema,
+  itemStatusSchema,
   listItems,
   loadItem,
   saveItem,
+  setItemStatus,
   UnknownGradingScaleError,
 } from '@goodies-beacon/core';
 import { Hono } from 'hono';
@@ -43,6 +45,20 @@ export function createItemRoutes({ db }: ItemRouteDeps) {
     const item = await loadItem(db, c.req.param('id'));
     if (!item) return errorResponse(c, 404, 'not_found', 'No such wanted item.');
     return c.json({ item });
+  });
+
+  /**
+   * Pause and resume (§14). Separate from the save because it is not a spec change: putting a
+   * version in the history every time a query is paused for an evening would make the history
+   * answer a question nobody asked of it.
+   */
+  routes.patch('/:id', async (c) => {
+    const body = await parseBody(c, itemStatusSchema);
+    if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
+
+    const status = await setItemStatus(db, c.req.param('id'), body.value.status);
+    if (!status) return errorResponse(c, 404, 'not_found', 'No such wanted item.');
+    return c.json({ status });
   });
 
   routes.put('/:id', async (c) => {

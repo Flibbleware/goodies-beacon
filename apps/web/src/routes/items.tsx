@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createRoute, Link } from '@tanstack/react-router';
-import { itemsQuery } from '../api/items.js';
+import { type ItemRow, itemsQuery } from '../api/items.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export const itemsRoute = createRoute({
@@ -10,10 +10,7 @@ export const itemsRoute = createRoute({
   component: Items,
 });
 
-/**
- * A plain index, and only that: P1-14 replaces it with §14's list — mode, last poll and the
- * candidate counts. What it has to do now is get you to the editor and back.
- */
+/** §14's list: status, mode, last poll and counts, newest change first. */
 function Items() {
   const { data, isPending, isError } = useQuery(itemsQuery);
   const items = data?.items ?? [];
@@ -52,25 +49,58 @@ function Items() {
       {items.length > 0 ? (
         <ul className="mt-6 divide-y divide-edge rounded-xl border border-edge dark:divide-edge-dark dark:border-edge-dark">
           {items.map((item) => (
-            <li key={item.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 p-4">
-              <Link
-                to="/items/$itemId/edit"
-                params={{ itemId: item.id }}
-                className="text-sm font-medium hover:underline"
-              >
-                {item.title}
-              </Link>
-              <span className="rounded bg-paper-raised px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide dark:bg-paper-raised-dark">
-                {item.status}
-              </span>
-              <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
-                {item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}
-                {item.currentVersion === null ? '' : ` · version ${item.currentVersion}`}
-              </span>
+            <li key={item.id} className="p-4">
+              <Row item={item} />
             </li>
           ))}
         </ul>
       ) : null}
     </div>
   );
+}
+
+function Row({ item }: { item: ItemRow }) {
+  return (
+    <>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <Link
+          to="/items/$itemId"
+          params={{ itemId: item.id }}
+          className="text-sm font-medium hover:underline"
+        >
+          {item.title}
+        </Link>
+        <span className="rounded bg-paper-raised px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide dark:bg-paper-raised-dark">
+          {item.status}
+        </span>
+        <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
+          {item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}
+          {item.currentVersion === null ? '' : ` · version ${item.currentVersion}`}
+        </span>
+      </div>
+
+      <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-dim dark:text-ink-dim-dark">
+        <span className={item.failingPlans > 0 ? 'text-red-600 dark:text-red-400' : undefined}>
+          {lastPoll(item)}
+        </span>
+        <span>
+          {item.counts.candidates} candidate{item.counts.candidates === 1 ? '' : 's'}
+        </span>
+        <span>{item.counts.matched} matched</span>
+        <span>{item.counts.uncertain} uncertain</span>
+        {item.counts.pending > 0 ? <span>{item.counts.pending} waiting</span> : null}
+      </p>
+    </>
+  );
+}
+
+/** "Failing since" rather than only "failed", which is the distinction §6 asks the UI to keep. */
+function lastPoll(item: ItemRow): string {
+  if (item.failingPlans > 0) {
+    return item.lastSuccessAt
+      ? `Failing since ${new Date(item.lastSuccessAt).toLocaleString()}`
+      : 'Failing, and has never succeeded';
+  }
+  if (!item.lastPollAt) return 'Never polled';
+  return `Last polled ${new Date(item.lastPollAt).toLocaleString()}`;
 }
