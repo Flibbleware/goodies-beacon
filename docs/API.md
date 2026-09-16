@@ -19,6 +19,7 @@ Errors always take the shape `{ error: { code, message } }`. Every response carr
 | `GET` | `/api/candidates` | session | — |
 | `GET` | `/api/candidates/:id` | session | — |
 | `PATCH` | `/api/candidates/:id` | session | required |
+| `GET` | `/api/dashboard` | session | — |
 | `GET` | `/api/items` | session | — |
 | `POST` | `/api/items` | session | required |
 | `GET` | `/api/items/:id` | session | — |

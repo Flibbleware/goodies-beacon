@@ -8,7 +8,8 @@ below assumes you have read anything else.
 - [Backups](#backups) and [restoring](#restoring)
 - [The two images](#the-two-images) · [TLS](#tls) · [Process roles](#process-roles) ·
   [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email) ·
-  [Wanted items](#wanted-items) · [Candidates and verdicts](#candidates-and-verdicts)
+  [Wanted items](#wanted-items) · [Candidates and verdicts](#candidates-and-verdicts) ·
+  [The dashboard](#the-dashboard)
 
 ---
 
@@ -825,6 +826,33 @@ docker compose exec db psql -U goodies_beacon -c 'select kind, message, created_
 A cap with no exchange rate stored is not enforced — the ledger is in dollars and the cap is in
 pounds — and reviews continue with a warning rather than stopping, because a rates outage should
 not take the product down. Leave the cap empty for no limit.
+
+## The dashboard
+
+The page you land on, and the fastest way to find out whether anything is wrong.
+
+| Panel | What it tells you |
+|---|---|
+| Today | Verdicts reached since midnight **in the instance's time zone**, by decision, plus what is still waiting |
+| Wanted items | How many are active, paused and draft |
+| Sources | Per marketplace: how many active plans it has, when it last polled, and the last error if it is failing |
+| AI spend | This calendar month's spend against the monthly cap, and whether reviews are paused |
+| Processes | When each role last recorded a heartbeat, and whether that is too long ago |
+
+Every figure is a link to the page that explains it, so a number is never something you have to
+take on trust: today's uncertains open the audit view filtered to them, a failing source opens the
+item whose plan is failing, and the spend opens the AI section of Settings.
+
+**A failing source is on the page, not in the log.** The row turns red and carries the adapter's
+own error, the date it was last working — "failing since", because that is the thing worth acting
+on — and a link to the item that owns the failing plan. A source with plans but no poll yet reads
+"never polled" rather than being absent, and a source stays listed once it has polled even if its
+item is later paused: its last error is still the last thing that happened.
+
+**Processes** reads `process_heartbeat`, which each role updates every five minutes; anything more
+than ten minutes old is reported as not responding. On a single-container `ROLE=all` install both
+roles report; on a split deployment a missing `worker` means the remote worker is down, which is
+not something the core can tell you any other way.
 
 ## Wanted items
 

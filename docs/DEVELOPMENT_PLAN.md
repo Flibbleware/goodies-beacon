@@ -2,7 +2,7 @@
 
 *Phases 0 and 1. Companion to ARCHITECTURE.md v1.33; section numbers below refer to it.*
 
-Version 1.10 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.11 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -673,7 +673,31 @@ row, so re-running it reproduces exactly what it said the first time.
 
 Today's matches and uncertains, active items, source health (last poll, last success, last error per adapter), AI spend this month against the cap, worker heartbeat.
 
-Done when: every figure links to the page that explains it, and an adapter failure from the last poll is visible without opening logs.
+Done when:
+
+- [x] Every figure links to the page that explains it. Today's counts open the audit view filtered to that verdict, the item counts open the list, a failing source opens the item whose plan is failing, and the spend opens the AI section of Settings. The smoke test follows three of them and asserts where each lands.
+- [x] An adapter failure from the last poll is visible without opening logs: the row carries the adapter's own error text, the date it was last working, and a link to the item that owns the plan.
+- [x] One request for the whole page, so the panels are consistent with each other rather than each arriving from its own instant.
+
+#### What P1-16 found
+
+**"Today" has to be the owner's day, not UTC's.** Europe/London is UTC+1 for seven months of the
+year, so a verdict reached at 00:30 on a June morning is 23:30 the previous day in UTC — and
+anything that truncated the stored timestamp would file it under yesterday, every summer morning,
+with nothing to notice. `startOfDayIn` resolves the zone offset twice, because on the morning the
+clocks go forward the offset at midnight is not the offset now. §10's digest needs exactly the
+same function when it lands in Phase 2.
+
+**Playwright kills the server it starts, so a heartbeat's five-minute tick never fires.** The
+Processes panel was therefore saying something different on every local run and something else
+again on a fresh CI database. `process_heartbeat` is instance state like the settings row, so the
+e2e clears it and seeds the two cases it means to show — one process answering and one that
+stopped an hour ago — rather than depending on how long the run happened to take.
+
+**The spend is fetched by the API route rather than by the summary.** The budget cap lives in
+`@goodies-beacon/ai` because it needs the price table, and core cannot depend on ai without a
+cycle; the route joins the two. It is also the one panel allowed to fail on its own, because the
+others answer "is anything broken", which is exactly what is being asked when something is.
 
 #### P1-17 Prompt eval suite in CI — M
 

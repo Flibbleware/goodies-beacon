@@ -5,6 +5,7 @@ import { type AuthVariables, requireSession } from './auth/guard.js';
 import { createLoginRateLimiter, type LoginRateLimiter } from './auth/rate-limit.js';
 import { createAuthRoutes } from './auth/routes.js';
 import { createCandidateRoutes } from './candidates/routes.js';
+import { createDashboardRoutes } from './dashboard/routes.js';
 import { errorHandler, notFoundHandler } from './errors.js';
 import { createHealthRoute } from './health.js';
 import { createItemRoutes } from './items/routes.js';
@@ -50,6 +51,7 @@ export function createApp(deps: AppDeps) {
   // every other /api path — including ones that do not exist.
   app.use('/api/*', requireSession(db));
   app.route('/api/candidates', createCandidateRoutes({ db }));
+  app.route('/api/dashboard', createDashboardRoutes({ db, logger }));
   app.route('/api/items', createItemRoutes({ db }));
   app.route('/api/settings', createSettingsRoutes({ db, config, logger }));
   app.route('/api/media', createMediaRoutes({ db, mediaDir: config.mediaDir, logger }));

@@ -4,6 +4,24 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-16 Dashboard. The page a session lands on now answers the questions worth asking first: what
+  was judged today, what is being watched, whether the marketplaces are answering, what the month
+  has cost against the cap, and whether the processes are alive. It is one request, so the panels
+  agree with each other rather than each arriving from its own instant.
+- **Every figure is a link to the page that explains it.** A count of today's uncertains opens the
+  audit view filtered to them; a failing source opens the item whose plan is failing; the spend
+  opens the settings where the cap is set. A number you cannot click through to is a number you
+  have to take on trust.
+- A poll that failed says so on the page, in the adapter's own words, with the date it was last
+  working beside it — "failing since Tuesday" rather than "failed" — and names the item it belongs
+  to. Finding that out no longer means opening a log or a psql prompt.
+- Today means today where you are. Verdicts are counted from midnight in the instance's time zone,
+  not midnight UTC: in British Summer Time those are an hour apart, so anything simpler would have
+  filed an early-morning match under yesterday for seven months of the year.
+- A source with search plans but no poll yet is listed as such, because "eBay, three plans, never
+  polled" is exactly what a fresh instance needs to see, and a source that has polled stays listed
+  even once its item is paused — its last error is still the last thing that happened.
+
 - P1-15 Candidates and verdicts UI. The audit view requirement 6 asks for: every listing an item
   has been given, filterable by verdict and by origin, with a thumbnail, the English title, the
   price in GBP and in the seller's own currency, the source, the location and the ships-to-UK

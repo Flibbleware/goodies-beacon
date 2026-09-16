@@ -4,6 +4,8 @@ import {
   createPool,
   listings,
   media,
+  processHeartbeat,
+  searchPlanState,
   verdicts,
   wantedItems,
 } from '@goodies-beacon/core';
@@ -101,6 +103,47 @@ export async function seedCandidates(
         costUsd: '0.004000',
       });
     }
+  } finally {
+    await pool.end();
+  }
+}
+
+/**
+ * A search plan that ran and failed, so P1-16's "an adapter failure is visible without opening a
+ * log" can be driven. The same thing a real poll writes when eBay answers 503 (§6).
+ */
+export async function seedPlanFailure(
+  databaseUrl: string,
+  wantedItemId: string,
+  error: string,
+): Promise<void> {
+  const pool = createPool(databaseUrl);
+
+  try {
+    const db = createDb(pool);
+    await db.insert(searchPlanState).values({
+      planId: 'ebay-gb-carmageddon',
+      wantedItemId,
+      source: 'ebay',
+      lastRunAt: new Date(),
+      lastError: error,
+    });
+  } finally {
+    await pool.end();
+  }
+}
+
+/** Two processes, one answering and one that stopped an hour ago (§14's worker heartbeat). */
+export async function seedHeartbeats(databaseUrl: string): Promise<void> {
+  const pool = createPool(databaseUrl);
+
+  try {
+    await createDb(pool)
+      .insert(processHeartbeat)
+      .values([
+        { role: 'api', lastSeenAt: new Date() },
+        { role: 'worker', lastSeenAt: new Date(Date.now() - 60 * 60 * 1000) },
+      ]);
   } finally {
     await pool.end();
   }
