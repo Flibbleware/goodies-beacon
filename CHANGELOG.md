@@ -4,6 +4,29 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-14 Wanted items UI. The list says what each item is doing — status, notification mode, when
+  it last polled, and how many candidates it has found, matched, left uncertain or not yet
+  judged — and each one opens an item page that renders its spec as a card rather than as JSON:
+  every criterion in plain English with its hard/soft, quantifiable and on-unknown flags, the
+  settings as the bounded values they are, and the reference images under the labels the reviewer
+  is shown. "Nothing is a black box" now has a page to be true on.
+- The search-plan table, with what each query has found, how much of it was expensive enough to
+  review, what came of that, and what the pre-filter charged meanwhile. A plan taken out of the
+  spec keeps its stats and is shown as removed, because the candidates it found are still here.
+  A plan that is failing now but worked before says "failing since", which is the distinction
+  worth acting on.
+- Pause and resume, which deliberately writes no spec version: status says whether the instance
+  is looking and nothing about what it is looking for, and a version every time a query was
+  paused for an evening would make the history answer a question nobody asked of it. The
+  scheduler picks the change up within the minute without a restart.
+- Fixed: **three quarters of the per-plan stats were never written.** The poll recorded
+  `candidates_found` and nothing else, so `candidates_reviewed`, `candidates_matched`,
+  `candidates_uncertain` and `prefilter_cost_usd` had sat at zero since P1-07 created the table —
+  the item page would have said a query found four hundred listings and nothing about whether any
+  of them were worth it. The review worker now records its half: a candidate that reached the
+  vision review, what the rules made of it, and the cost of every pre-filter call whichever way
+  it went.
+
 - P1-13 Spec editor. Wanted items can be created and amended without the interviewer: a title, a
   status, and the spec as JSON, checked against the real schema as you type so an error names the
   field it is in rather than the document it is somewhere inside. The two worked examples go in by

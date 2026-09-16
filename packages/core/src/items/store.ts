@@ -1,7 +1,17 @@
 import { desc, eq, max } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { gradingScales, specVersions, wantedItems } from '../db/schema.js';
-import type { ItemSaveInput, ItemSummary, SpecVersionSummary } from './schema.js';
+import type { WantedItemStatus } from '../domain/constants.js';
+import type {
+  CandidateCounts,
+  ItemSaveInput,
+  ItemSummary,
+  PlanStats,
+  PollState,
+  SpecVersionSummary,
+} from './schema.js';
+import { NEVER_POLLED, NO_CANDIDATES, summarisePollState } from './schema.js';
+import { candidateCounts, planStats, pollStates } from './stats.js';
 
 /**
  * Reading and writing wanted items and their spec versions (P1-13).
@@ -18,7 +28,7 @@ export interface StoredSpec {
   document: Record<string, unknown>;
 }
 
-export interface LoadedItem {
+export interface LoadedItem extends PollState {
   id: string;
   title: string;
   status: ItemSummary['status'];
@@ -29,6 +39,9 @@ export interface LoadedItem {
   /** Null only for an item whose first version failed to write, which nothing here can produce. */
   current: StoredSpec | null;
   versions: SpecVersionSummary[];
+  /** Every plan in the current spec with what it has done, plus any the spec has since dropped. */
+  plans: PlanStats[];
+  counts: CandidateCounts;
 }
 
 export interface SavedVersion {
@@ -45,20 +58,50 @@ export class UnknownGradingScaleError extends Error {
 }
 
 export async function listItems(db: Database): Promise<ItemSummary[]> {
-  const rows = await db
-    .select({
-      id: wantedItems.id,
-      title: wantedItems.title,
-      status: wantedItems.status,
-      notificationMode: wantedItems.notificationMode,
-      currentVersion: specVersions.version,
-      updatedAt: wantedItems.updatedAt,
-    })
-    .from(wantedItems)
-    .leftJoin(specVersions, eq(specVersions.id, wantedItems.currentSpecVersionId))
-    .orderBy(desc(wantedItems.updatedAt));
+  const [rows, counts, polls] = await Promise.all([
+    db
+      .select({
+        id: wantedItems.id,
+        title: wantedItems.title,
+        status: wantedItems.status,
+        notificationMode: wantedItems.notificationMode,
+        currentVersion: specVersions.version,
+        updatedAt: wantedItems.updatedAt,
+      })
+      .from(wantedItems)
+      .leftJoin(specVersions, eq(specVersions.id, wantedItems.currentSpecVersionId))
+      .orderBy(desc(wantedItems.updatedAt)),
+    candidateCounts(db),
+    pollStates(db),
+  ]);
 
-  return rows.map((row) => ({ ...row, currentVersion: row.currentVersion ?? null }));
+  return rows.map((row) => ({
+    ...row,
+    currentVersion: row.currentVersion ?? null,
+    ...(polls.get(row.id) ?? NEVER_POLLED),
+    counts: counts.get(row.id) ?? NO_CANDIDATES,
+  }));
+}
+
+/**
+ * Pause and resume, and nothing else (§14). Undefined when there is no such item.
+ *
+ * Deliberately not `saveItem` with a different status: that writes a spec version, and pausing an
+ * item for a fortnight is not a change to what it is looking for. The scheduler notices within the
+ * minute either way — `schedules.reconcile` reads the status rather than being told (§6).
+ */
+export async function setItemStatus(
+  db: Database,
+  id: string,
+  status: WantedItemStatus,
+): Promise<WantedItemStatus | undefined> {
+  const [row] = await db
+    .update(wantedItems)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(wantedItems.id, id))
+    .returning({ status: wantedItems.status });
+
+  return row?.status;
 }
 
 export async function loadItem(db: Database, id: string): Promise<LoadedItem | undefined> {
@@ -84,6 +127,11 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
     .orderBy(desc(specVersions.version));
 
   const currentRow = versions.find((row) => row.id === item.currentSpecVersionId);
+
+  const [plans, counts] = await Promise.all([
+    planStats(db, id, currentRow?.searchPlans ?? []),
+    candidateCounts(db, id),
+  ]);
 
   return {
     id: item.id,
@@ -117,6 +165,9 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
       changeNote: row.changeNote,
       createdAt: row.createdAt,
     })),
+    plans,
+    counts: counts.get(id) ?? NO_CANDIDATES,
+    ...summarisePollState(plans),
   };
 }
 

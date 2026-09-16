@@ -16,6 +16,7 @@ import {
   type ReviewPorts,
   runMigrations,
   runReview,
+  searchPlanState,
   specVersions,
   verdicts,
   wantedItems,
@@ -128,6 +129,8 @@ interface SeedOptions {
   notificationMode?: 'realtime' | 'digest';
   origin?: 'poll' | 'backfill';
   title?: string;
+  /** Set to attribute the candidate to a plan, so P1-14's per-query stats can be asserted. */
+  searchPlanId?: string;
 }
 
 /** One wanted item, one spec version, one listing, one candidate ready to review. */
@@ -196,9 +199,17 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
       listingId: listing.id,
       specVersionId: version.id,
       origin: options.origin ?? 'poll',
+      searchPlanId: options.searchPlanId ?? null,
     })
     .returning({ id: candidates.id });
   if (!candidate) throw new Error('could not seed the candidate');
+
+  if (options.searchPlanId) {
+    await db
+      .insert(searchPlanState)
+      .values({ planId: options.searchPlanId, wantedItemId: item.id, source: '_template' })
+      .onConflictDoNothing();
+  }
 
   return { candidateId: candidate.id, itemId: item.id };
 }
@@ -223,6 +234,11 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
     await db.delete(listings);
     await db.delete(wantedItems);
   });
+
+  const planRow = async (planId: string) => {
+    const [row] = await db.select().from(searchPlanState).where(eq(searchPlanState.planId, planId));
+    return row;
+  };
 
   /** The whole of §7 for a candidate that survives every stage. */
   it('runs a candidate through every stage and stores the verdict', async () => {
@@ -527,5 +543,80 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
     const outcome = await runReview(depsWith(fakePorts()), crypto.randomUUID());
 
     expect(outcome).toEqual({ status: 'skipped', why: 'missing' });
+  });
+
+  /**
+   * P1-14's stats. The poll writes `candidates_found`; everything after it can only be known once
+   * the pipeline has run, so without these the item page can say a query found four hundred
+   * listings and nothing about whether any of them were worth looking at.
+   */
+  describe('the per-plan stats the item page reads', () => {
+    it('counts a reviewed candidate against its plan and charges it the pre-filter', async () => {
+      const { candidateId } = await seed({ searchPlanId: 'plan-stats-match' });
+
+      await runReview(depsWith(fakePorts()), candidateId);
+
+      const row = await planRow('plan-stats-match');
+      expect(row?.candidatesReviewed).toBe(1);
+      expect(row?.candidatesMatched).toBe(1);
+      expect(row?.candidatesUncertain).toBe(0);
+      expect(Number(row?.prefilterCostUsd)).toBeCloseTo(0.000_02, 6);
+    });
+
+    it('records an uncertain as uncertain and not as a match', async () => {
+      const { candidateId } = await seed({ searchPlanId: 'plan-stats-uncertain' });
+      const ports = fakePorts({
+        reviewResult: {
+          criteriaResults: [
+            { criterionId: 'big-box', result: 'unknown', evidence: 'the box is not pictured' },
+          ],
+        },
+      });
+
+      await runReview(depsWith(ports), candidateId);
+
+      const row = await planRow('plan-stats-uncertain');
+      expect(row?.candidatesReviewed).toBe(1);
+      expect(row?.candidatesMatched).toBe(0);
+      expect(row?.candidatesUncertain).toBe(1);
+    });
+
+    /**
+     * "Reviewed" is §4's "reached vision review". A candidate the pre-filter discarded also ends
+     * with a verdict, and counting it here would bury the number that matters — how many of this
+     * query's listings were expensive enough to look at.
+     */
+    it('does not count a candidate the pre-filter discarded, but still charges the call', async () => {
+      const { candidateId } = await seed({ searchPlanId: 'plan-stats-discarded' });
+
+      await runReview(depsWith(fakePorts({ plausible: false })), candidateId);
+
+      const row = await planRow('plan-stats-discarded');
+      expect(row?.candidatesReviewed).toBe(0);
+      expect(Number(row?.prefilterCostUsd)).toBeCloseTo(0.000_02, 6);
+    });
+
+    /** A hard filter calls no model at all, so there is nothing to charge the query for. */
+    it('charges nothing for a candidate stopped by a hard filter', async () => {
+      const { candidateId } = await seed({
+        searchPlanId: 'plan-stats-filtered',
+        priceCeiling: { amount: 10, currency: 'GBP' },
+      });
+
+      await runReview(depsWith(fakePorts()), candidateId);
+
+      const row = await planRow('plan-stats-filtered');
+      expect(row?.candidatesReviewed).toBe(0);
+      expect(Number(row?.prefilterCostUsd)).toBe(0);
+    });
+
+    it('leaves the counters alone for a candidate that came from no plan', async () => {
+      const { candidateId } = await seed({ origin: 'backfill' });
+
+      const outcome = await runReview(depsWith(fakePorts()), candidateId);
+
+      expect(outcome).toMatchObject({ status: 'reviewed' });
+      expect(await db.select().from(searchPlanState)).toEqual([]);
+    });
   });
 });

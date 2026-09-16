@@ -1,14 +1,33 @@
 import type {
+  CandidateCounts,
   ItemSummary,
   NotificationMode,
+  PlanStats,
   SpecVersionSummary,
   WantedItemStatus,
   WantedSpec,
 } from '@goodies-beacon/core/schemas';
 import { api } from './client.js';
 
-/** The wire shape: JSON carries timestamps as ISO strings, not Dates. */
-export type ItemRow = Omit<ItemSummary, 'updatedAt'> & { updatedAt: string };
+/**
+ * The wire shapes. JSON carries timestamps as ISO strings, so the date fields are restated rather
+ * than inherited; everything else comes from the server's own types and cannot drift from them.
+ */
+export type ItemRow = Omit<ItemSummary, 'updatedAt' | 'lastPollAt' | 'lastSuccessAt'> & {
+  updatedAt: string;
+  lastPollAt: string | null;
+  lastSuccessAt: string | null;
+};
+
+export type PlanRow = Omit<
+  PlanStats,
+  'watermark' | 'backlogUntil' | 'lastRunAt' | 'lastSuccessAt'
+> & {
+  watermark: string | null;
+  backlogUntil: string | null;
+  lastRunAt: string | null;
+  lastSuccessAt: string | null;
+};
 
 export interface LoadedItem {
   id: string;
@@ -20,6 +39,11 @@ export interface LoadedItem {
   updatedAt: string;
   current: { versionId: string; version: number; document: Record<string, unknown> } | null;
   versions: (Omit<SpecVersionSummary, 'createdAt'> & { createdAt: string })[];
+  plans: PlanRow[];
+  counts: CandidateCounts;
+  lastPollAt: string | null;
+  lastSuccessAt: string | null;
+  failingPlans: number;
 }
 
 export interface SavedVersion {
@@ -52,6 +76,11 @@ export function createItem(body: ItemSave): Promise<SavedVersion> {
 
 export function saveItem(id: string, body: ItemSave): Promise<SavedVersion> {
   return api<SavedVersion>(`/api/items/${id}`, { method: 'PUT', body });
+}
+
+/** Pause and resume. Not a save: it writes no spec version (§14). */
+export function setItemStatus(id: string, status: WantedItemStatus): Promise<{ status: string }> {
+  return api(`/api/items/${id}`, { method: 'PATCH', body: { status } });
 }
 
 export interface UploadedMedia {

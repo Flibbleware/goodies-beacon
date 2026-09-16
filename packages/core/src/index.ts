@@ -252,11 +252,19 @@ export {
   verdictSchema,
 } from './domain/verdict.js';
 export {
+  type CandidateCounts,
   type ItemSaveInput,
+  type ItemStatusInput,
   type ItemSummary,
   itemSaveSchema,
+  itemStatusSchema,
+  NEVER_POLLED,
+  NO_CANDIDATES,
+  type PlanStats,
+  type PollState,
   type SpecVersionSummary,
 } from './items/schema.js';
+export { candidateCounts, planStats, pollStates } from './items/stats.js';
 export {
   createItem,
   type LoadedItem,
@@ -265,6 +273,7 @@ export {
   type SavedVersion,
   type StoredSpec,
   saveItem,
+  setItemStatus,
   UnknownGradingScaleError,
 } from './items/store.js';
 export { createLogger, createSilentLogger, type Logger } from './logger.js';
@@ -345,6 +354,7 @@ export {
   reconcileSchedules,
 } from './poll/reconcile.js';
 export { type PollOutcome, type PollTarget, type RunPollOptions, runPoll } from './poll/run.js';
+export { recordPrefilterCost, recordReviewedCandidate } from './poll/stats.js';
 export { createBoss, QUEUE_SCHEMA } from './queue/boss.js';
 export {
   HEARTBEAT_CRON,

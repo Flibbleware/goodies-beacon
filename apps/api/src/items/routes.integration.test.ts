@@ -221,6 +221,90 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     expect(item.versions[1]?.changeNote).toBe('First version, entered by hand.');
   });
 
+  describe('pause and resume', () => {
+    it('changes the status without writing a spec version', async () => {
+      const created = await send('POST', '/api/items', {
+        title: 'Carmageddon',
+        status: 'active',
+        spec: example('carmageddon'),
+      });
+      const { itemId } = (await created.json()) as { itemId: string };
+
+      const paused = await send('PATCH', `/api/items/${itemId}`, { status: 'paused' });
+      expect(paused.status).toBe(200);
+      expect(await paused.json()).toEqual({ status: 'paused' });
+
+      const read = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
+      const { item } = (await read.json()) as {
+        item: { status: string; versions: unknown[]; current: { version: number } };
+      };
+
+      expect(item.status).toBe('paused');
+      // The history answers "what changed about the spec", and pausing changed nothing about it.
+      expect(item.versions).toHaveLength(1);
+      expect(item.current.version).toBe(1);
+    });
+
+    it('refuses a status that is not one', async () => {
+      const created = await send('POST', '/api/items', {
+        title: 'Carmageddon',
+        spec: example('carmageddon'),
+      });
+      const { itemId } = (await created.json()) as { itemId: string };
+
+      const res = await send('PATCH', `/api/items/${itemId}`, { status: 'sleeping' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('answers 404 for an item that is not there', async () => {
+      const missing = '00000000-0000-4000-8000-000000000000';
+
+      expect((await send('PATCH', `/api/items/${missing}`, { status: 'paused' })).status).toBe(404);
+    });
+  });
+
+  describe('what the list and the item page carry', () => {
+    it('gives every item its counts and its poll state', async () => {
+      await send('POST', '/api/items', { title: 'Carmageddon', spec: example('carmageddon') });
+
+      const res = await app.request('/api/items', { headers: { cookie } });
+      const { items } = (await res.json()) as {
+        items: {
+          counts: Record<string, number>;
+          lastPollAt: string | null;
+          failingPlans: number;
+        }[];
+      };
+
+      expect(items[0]?.counts).toEqual({
+        candidates: 0,
+        matched: 0,
+        uncertain: 0,
+        rejected: 0,
+        pending: 0,
+      });
+      expect(items[0]?.lastPollAt).toBeNull();
+      expect(items[0]?.failingPlans).toBe(0);
+    });
+
+    it('gives the item page a row per search plan, unrun ones included', async () => {
+      const spec = example('carmageddon');
+      const created = await send('POST', '/api/items', { title: 'Carmageddon', spec });
+      const { itemId } = (await created.json()) as { itemId: string };
+
+      const res = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
+      const { item } = (await res.json()) as {
+        item: { plans: { planId: string; query: string; candidatesFound: number }[] };
+      };
+
+      expect(item.plans.map((plan) => plan.planId)).toEqual(
+        (spec.searchPlans as { id: string }[]).map((plan) => plan.id),
+      );
+      expect(item.plans[0]).toMatchObject({ query: 'carmageddon', candidatesFound: 0 });
+    });
+  });
+
   it('answers 404 for an item that is not there', async () => {
     const missing = '00000000-0000-4000-8000-000000000000';
 

@@ -9,6 +9,7 @@ import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { parseSpecText, STARTING_SPEC, withReferenceImage } from '../items/parse.js';
 import { ReferenceImages } from '../items/reference-images.js';
 import { SpecEditor } from '../items/spec-editor.js';
+import { VersionHistory } from '../items/version-history.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export const newItemRoute = createRoute({
@@ -99,9 +100,19 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link to="/items" className="text-sm text-ink-dim hover:underline dark:text-ink-dim-dark">
-        ← Wanted items
-      </Link>
+      {item ? (
+        <Link
+          to="/items/$itemId"
+          params={{ itemId: item.id }}
+          className="text-sm text-ink-dim hover:underline dark:text-ink-dim-dark"
+        >
+          ← {item.title}
+        </Link>
+      ) : (
+        <Link to="/items" className="text-sm text-ink-dim hover:underline dark:text-ink-dim-dark">
+          ← Wanted items
+        </Link>
+      )}
 
       <h1 className="mt-2 text-xl font-semibold tracking-tight">
         {item ? item.title : 'New wanted item'}
@@ -192,48 +203,5 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
         <VersionHistory versions={item.versions} currentId={item.current?.versionId} />
       ) : null}
     </div>
-  );
-}
-
-/**
- * A plain list, as the task says: the side-by-side diff between two versions is Phase 3's, and
- * what is needed now is to see that a save made a version and what its note was.
- */
-function VersionHistory({
-  versions,
-  currentId,
-}: {
-  versions: LoadedItem['versions'];
-  currentId: string | undefined;
-}) {
-  const headingId = useId();
-
-  return (
-    <section aria-labelledby={headingId} className="mt-10">
-      <h2 id={headingId} className="font-medium">
-        Version history
-      </h2>
-      <ul className="mt-3 divide-y divide-edge rounded-xl border border-edge dark:divide-edge-dark dark:border-edge-dark">
-        {versions.map((version) => (
-          <li key={version.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 p-4">
-            <span className="text-sm font-medium">Version {version.version}</span>
-            {version.id === currentId ? (
-              <span className="rounded bg-paper-raised px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide dark:bg-paper-raised-dark">
-                Current
-              </span>
-            ) : null}
-            <time
-              dateTime={version.createdAt}
-              className="text-xs text-ink-dim dark:text-ink-dim-dark"
-            >
-              {new Date(version.createdAt).toLocaleString()}
-            </time>
-            <span className="w-full text-sm text-ink-dim dark:text-ink-dim-dark">
-              {version.changeNote ?? 'No change note.'}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
