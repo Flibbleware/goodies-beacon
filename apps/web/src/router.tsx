@@ -2,6 +2,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { appLayoutRoute } from './routes/app-layout.js';
 import { dashboardRoute } from './routes/dashboard.js';
+import { editItemRoute, newItemRoute } from './routes/item-editor.js';
+import { itemsRoute } from './routes/items.js';
 import { loginRoute } from './routes/login.js';
 import { rootRoute } from './routes/root.js';
 import { settingsRoute } from './routes/settings.js';
@@ -12,7 +14,13 @@ import { settingsRoute } from './routes/settings.js';
  */
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  appLayoutRoute.addChildren([dashboardRoute, settingsRoute]),
+  appLayoutRoute.addChildren([
+    dashboardRoute,
+    itemsRoute,
+    newItemRoute,
+    editItemRoute,
+    settingsRoute,
+  ]),
 ]);
 
 export function buildRouter(queryClient: QueryClient) {
