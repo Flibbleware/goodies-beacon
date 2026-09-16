@@ -5,6 +5,7 @@ import {
   createPool,
   listings,
   media,
+  processHeartbeat,
   runMigrations,
   seen,
   settings,
@@ -40,6 +41,12 @@ export default async function globalSetup(): Promise<void> {
     await db.delete(listings);
     await db.delete(seen);
     await db.delete(media);
+    /**
+     * Liveness is instance state like the rest. Playwright kills the server it starts as soon as
+     * the run ends, so a heartbeat's five-minute tick never fires and a row left behind would make
+     * the dashboard's Processes panel say something different on every run.
+     */
+    await db.delete(processHeartbeat);
   } finally {
     await pool.end();
   }

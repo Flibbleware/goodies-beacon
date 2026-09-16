@@ -104,6 +104,21 @@ export {
   isEncrypted,
   secretsEqual,
 } from './crypto.js';
+export type {
+  DashboardSummary,
+  ItemCounts,
+  SourceHealth,
+  TodayCounts,
+  WorkerLiveness,
+} from './dashboard/schema.js';
+export {
+  dashboardSummary,
+  itemCounts,
+  type SummaryOptions,
+  sourceHealth,
+  todayCounts,
+  workerLiveness,
+} from './dashboard/summary.js';
 export {
   CONNECT_TIMEOUT_MS,
   createDb,
@@ -254,6 +269,7 @@ export {
   wantedSpecSchema,
 } from './domain/spec.js';
 export { DESCRIPTION_LIMIT, toPlainText } from './domain/text.js';
+export { startOfDayIn } from './domain/time.js';
 export {
   type CriterionResultEntry,
   criterionResultSchema,

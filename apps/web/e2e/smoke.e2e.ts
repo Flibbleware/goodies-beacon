@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { seedCandidates } from './seed.js';
+import { seedCandidates, seedHeartbeats, seedPlanFailure } from './seed.js';
 
 /** The same database the app under test is using; P1-15's rows are written straight into it. */
 const databaseUrl = process.env.E2E_DATABASE_URL ?? process.env.TEST_DATABASE_URL ?? '';
@@ -487,6 +487,52 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     expect(overflow).toBeLessThanOrEqual(1);
 
     await page.setViewportSize({ width: 1280, height: 720 });
+  });
+
+  await test.step('the dashboard fills in, and a failing source is on it rather than in a log', async () => {
+    await seedPlanFailure(databaseUrl, carmageddonId, 'eBay said 503 Service Unavailable');
+    await seedHeartbeats(databaseUrl);
+
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+    await expect(page).toHaveURL('/');
+
+    // The zone an earlier step saved in Settings, which is what "today" is read in (§14).
+    const today = section('Today');
+    await expect(today).toContainText('Asia/Tokyo');
+    await expect(today.getByRole('link', { name: /Matched/ })).toContainText('1');
+    await expect(today.getByRole('link', { name: /Uncertain/ })).toContainText('1');
+    await expect(today.getByRole('link', { name: /Rejected/ })).toContainText('1');
+
+    await expect(section('Wanted items').getByRole('link', { name: /Active/ })).toContainText('1');
+
+    // The acceptance line: the adapter's own words, with the item it belongs to, on the page.
+    const sources = section('Sources');
+    await expect(sources).toContainText('ebay');
+    await expect(sources).toContainText('eBay said 503 Service Unavailable');
+    await expect(sources.getByRole('link', { name: 'Carmageddon big box' })).toBeVisible();
+
+    await expect(section('AI spend')).toContainText('no cap set');
+    // A process that has stopped answering says so, in the words §6 asks for.
+    const processes = section('Processes');
+    await expect(processes).toContainText('api last seen');
+    await expect(processes).toContainText('worker not responding since');
+  });
+
+  await test.step('every figure links to the page that explains it', async () => {
+    await section('Today')
+      .getByRole('link', { name: /Uncertain/ })
+      .click();
+
+    await expect(page).toHaveURL('/candidates?decision=uncertain');
+    await expect(page.getByText('Carmageddon, box only, no disc')).toBeVisible();
+
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+    await section('Sources').getByRole('link', { name: 'Carmageddon big box' }).click();
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
+
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+    await section('AI spend').getByRole('link').click();
+    await expect(page).toHaveURL('/settings');
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {

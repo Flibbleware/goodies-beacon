@@ -29,6 +29,13 @@ export {
   retainSchema,
   type VerdictView,
 } from './candidates/schema.js';
+export type {
+  DashboardSummary,
+  ItemCounts,
+  SourceHealth,
+  TodayCounts,
+  WorkerLiveness,
+} from './dashboard/schema.js';
 export {
   AI_ROLES,
   type AiRole,
