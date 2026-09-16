@@ -4,6 +4,32 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-15 Candidates and verdicts UI. The audit view requirement 6 asks for: every listing an item
+  has been given, filterable by verdict and by origin, with a thumbnail, the English title, the
+  price in GBP and in the seller's own currency, the source, the location and the ships-to-UK
+  flag. A rejection is one chip away from a match rather than behind a toggle that defaults to
+  off, because "everything the reviewer rejected is visible so you can audit it" only holds if
+  browsing them is the same act.
+- The candidate page: the photographs this instance stored, the English summary, the seller's
+  description, and the verdict with a pass, fail or unknown and one line of evidence for every
+  criterion that was asked. **Show prompt** reveals the exact text sent and the exact images, in
+  the order they were sent, read back from the verdict rather than rebuilt — a rebuild would show
+  what would be sent *now*, which is a different answer once the template has changed.
+- Why the rules landed where they did is shown beside the evidence, re-derived from the stored
+  results and the immutable spec version rather than from a stored copy that could disagree with
+  the rules that wrote it.
+- Retain is on the candidate page, so a candidate can be kept past the retention period. The
+  feedback buttons are there and disabled: the challenge loop is Phase 5.
+- The page is built narrow-first, because the digest emails will link to it and be opened on a
+  phone: one column, no tables, a gallery that scrolls rather than stretches, and a test that
+  fails if anything makes the page wider than the screen.
+- Fixed: **a seller's description was stored exactly as the marketplace sent it.** eBay returns
+  the description as a full HTML document and ARCHITECTURE.md §12 requires it sanitised before
+  storage; nothing did. It is now reduced to text at ingest — tags removed, `<script>` and
+  `<style>` contents removed with them, entities decoded — which keeps it out of the database, out
+  of the nightly dump and off the page, and incidentally stops the reviewer's character budget
+  being spent on `<font face="Arial">` instead of on what the seller wrote.
+
 - P1-14 Wanted items UI. The list says what each item is doing — status, notification mode, when
   it last polled, and how many candidates it has found, matched, left uncertain or not yet
   judged — and each one opens an item page that renders its spec as a card rather than as JSON:

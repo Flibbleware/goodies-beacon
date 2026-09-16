@@ -5,6 +5,7 @@
  * barrel reaches Postgres, pg-boss, pino and the native argon2 binding, none of which can be
  * bundled. Nothing imported from here may depend on those, and `schemas.test.ts` proves it.
  */
+
 export {
   type ChangePasswordInput,
   changePasswordSchema,
@@ -17,26 +18,48 @@ export {
   passwordSchema,
 } from './auth/schemas.js';
 export {
+  CANDIDATE_STAGE_LABELS,
+  type CandidateDetail,
+  type CandidateFilter,
+  type CandidateList,
+  type CandidateRow,
+  type CriterionEvidence,
+  candidateFilterSchema,
+  type ListingView,
+  retainSchema,
+  type VerdictView,
+} from './candidates/schema.js';
+export {
   AI_ROLES,
   type AiRole,
   BACKFILL_DEPTHS,
   type BackfillDepth,
+  CANDIDATE_ORIGINS,
+  CANDIDATE_STAGES,
+  type CandidateOrigin,
+  type CandidateStage,
   CONDITION_CATEGORIES,
   type ConditionCategory,
   CRITERION_KINDS,
   type CriterionKind,
+  type CriterionResult,
   IMAGE_STRATEGIES,
   type ImageStrategy,
   NOTIFICATION_MODES,
   type NotificationMode,
   ON_UNKNOWN,
   type OnUnknown,
+  REJECTION_REASONS,
   RELIST_POLICIES,
+  type RejectionReason,
   type RelistPolicy,
+  SHIPS_TO_UK,
   SHIPS_TO_UK_POLICIES,
   type ShipsToUkPolicy,
   SPEC_ORIGINS,
   type SpecOrigin,
+  VERDICT_DECISIONS,
+  type VerdictDecision,
   WANTED_ITEM_STATUSES,
   type WantedItemStatus,
 } from './domain/constants.js';

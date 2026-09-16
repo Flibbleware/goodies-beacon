@@ -3,8 +3,10 @@ import {
   authUser,
   createDb,
   createPool,
+  listings,
   media,
   runMigrations,
+  seen,
   settings,
   wantedItems,
 } from '@goodies-beacon/core';
@@ -31,8 +33,12 @@ export default async function globalSetup(): Promise<void> {
     await db.delete(authSession);
     await db.delete(authUser);
     await db.delete(settings);
-    // The spec editor steps create items and upload a photo, and both start from nothing.
+    // The spec editor steps create items and upload a photo, and the audit-view steps seed
+    // listings and candidates; all of them start from nothing. Listings outlive an item by
+    // design — §4 keys them on (source, externalId) globally — so they are cleared explicitly.
     await db.delete(wantedItems);
+    await db.delete(listings);
+    await db.delete(seen);
     await db.delete(media);
   } finally {
     await pool.end();

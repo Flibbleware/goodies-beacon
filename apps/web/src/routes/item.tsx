@@ -2,6 +2,7 @@ import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
 import { wantedSpecSchema } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link } from '@tanstack/react-router';
+import type { CandidateSearch } from '../api/candidates.js';
 import { ApiError } from '../api/client.js';
 import { itemQuery, itemsQuery, type LoadedItem, setItemStatus } from '../api/items.js';
 import { Alert, Button } from '../components/form.js';
@@ -124,28 +125,35 @@ function lastPoll(item: LoadedItem): string {
   return `Last polled ${new Date(item.lastPollAt).toLocaleString()}`;
 }
 
+/**
+ * The counts, each one a link into the audit view filtered to what it counts (P1-15). A number
+ * you cannot click through to is a number you have to take on trust, which is the opposite of
+ * what requirement 6 asks of this page.
+ */
 function Counts({ item }: { item: LoadedItem }) {
   const { candidates, matched, uncertain, rejected, pending } = item.counts;
 
-  const cells: [string, number, string][] = [
-    ['Candidates', candidates, 'Listings this item has been given'],
-    ['Matched', matched, 'Judged a match'],
-    ['Uncertain', uncertain, 'Something could not be established'],
-    ['Rejected', rejected, 'Filtered, discarded or judged against'],
-    ['Waiting', pending, 'Found but not yet judged'],
+  const cells: [string, number, CandidateSearch['decision'], string][] = [
+    ['Candidates', candidates, 'all', 'Listings this item has been given'],
+    ['Matched', matched, 'match', 'Judged a match'],
+    ['Uncertain', uncertain, 'uncertain', 'Something could not be established'],
+    ['Rejected', rejected, 'reject', 'Filtered, discarded or judged against'],
+    ['Waiting', pending, 'pending', 'Found but not yet judged'],
   ];
 
   return (
     <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-      {cells.map(([label, value, hint]) => (
-        <div
+      {cells.map(([label, value, decision, hint]) => (
+        <Link
           key={label}
+          to="/candidates"
+          search={{ item: item.id, decision }}
           title={hint}
-          className="rounded-xl border border-edge p-3 dark:border-edge-dark"
+          className="rounded-xl border border-edge p-3 hover:bg-paper-raised dark:border-edge-dark dark:hover:bg-paper-raised-dark"
         >
           <dt className="text-xs text-ink-dim dark:text-ink-dim-dark">{label}</dt>
           <dd className="mt-1 text-lg font-semibold tabular-nums">{value}</dd>
-        </div>
+        </Link>
       ))}
     </dl>
   );

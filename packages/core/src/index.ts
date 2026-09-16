@@ -73,6 +73,19 @@ export {
   updatePassword,
 } from './auth/user.js';
 export {
+  CANDIDATE_STAGE_LABELS,
+  type CandidateDetail,
+  type CandidateFilter,
+  type CandidateList,
+  type CandidateRow,
+  type CriterionEvidence,
+  candidateFilterSchema,
+  type ListingView,
+  retainSchema,
+  type VerdictView,
+} from './candidates/schema.js';
+export { listCandidates, loadCandidate, setRetain } from './candidates/store.js';
+export {
   type AiKeys,
   BAKED_VARIABLES,
   type Config,
@@ -240,6 +253,7 @@ export {
   type WantedSpec,
   wantedSpecSchema,
 } from './domain/spec.js';
+export { DESCRIPTION_LIMIT, toPlainText } from './domain/text.js';
 export {
   type CriterionResultEntry,
   criterionResultSchema,

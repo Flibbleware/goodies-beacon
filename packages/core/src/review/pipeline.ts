@@ -7,6 +7,7 @@ import type { CandidateStage, RejectionReason, VerdictDecision } from '../domain
 import { decideVerdict } from '../domain/decide.js';
 import type { ListingImage } from '../domain/listing.js';
 import { type WantedSpec, wantedSpecSchema } from '../domain/spec.js';
+import { toPlainText } from '../domain/text.js';
 import type { CriterionResultEntry } from '../domain/verdict.js';
 import type { Logger } from '../logger.js';
 import { fetchImage, MediaRejectedError, storeImage } from '../media/ingest.js';
@@ -228,8 +229,9 @@ async function enrich(deps: ReviewDeps, loaded: Loaded): Promise<void> {
     await deps.db
       .update(listings)
       .set({
-        description: enriched.description ?? listing.description,
-        descriptionEn: enriched.descriptionEn ?? listing.descriptionEn,
+        // Cleaned here as well as at the poll: enrichment is where the *full* HTML arrives (§12).
+        description: toPlainText(enriched.description) ?? listing.description,
+        descriptionEn: toPlainText(enriched.descriptionEn) ?? listing.descriptionEn,
         images: enriched.images.length > 0 ? enriched.images : listing.images,
         updatedAt: new Date(),
       })
@@ -237,7 +239,7 @@ async function enrich(deps: ReviewDeps, loaded: Loaded): Promise<void> {
 
     loaded.listing = {
       ...listing,
-      description: enriched.description ?? listing.description,
+      description: toPlainText(enriched.description) ?? listing.description,
       images: enriched.images.length > 0 ? enriched.images : listing.images,
     };
   }

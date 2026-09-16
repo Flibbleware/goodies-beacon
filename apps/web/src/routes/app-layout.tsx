@@ -22,7 +22,7 @@ export const appLayoutRoute = createRoute({
 const NAV = [
   { to: '/', label: 'Dashboard', soon: undefined },
   { to: '/items', label: 'Wanted items', soon: undefined },
-  { to: '/candidates', label: 'Candidates', soon: 'P1-15' },
+  { to: '/candidates', label: 'Candidates', soon: undefined },
   { to: '/scales', label: 'Grading scales', soon: 'Phase 5' },
   { to: '/costs', label: 'Costs', soon: 'Phase 5' },
   { to: '/settings', label: 'Settings', soon: undefined },

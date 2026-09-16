@@ -3,6 +3,7 @@ import type { RawListing } from '../adapter/types.js';
 import type { Database } from '../db/client.js';
 import { candidates, listings, searchPlanState, seen } from '../db/schema.js';
 import type { CandidateOrigin } from '../domain/constants.js';
+import { toPlainText } from '../domain/text.js';
 import type { Logger } from '../logger.js';
 import type { Converter } from '../money/convert.js';
 import type { SourceId } from '../sources.js';
@@ -179,8 +180,9 @@ async function ingestOne(
       url: listing.url,
       title: listing.title,
       titleEn: listing.titleEn,
-      description: listing.description,
-      descriptionEn: listing.descriptionEn,
+      // §7 step 1, and §12: a stranger's markup never reaches the database (see `toPlainText`).
+      description: toPlainText(listing.description),
+      descriptionEn: toPlainText(listing.descriptionEn),
       priceAmount: numeric(listing.priceAmount),
       priceCurrency: listing.priceCurrency,
       priceGbp: numeric(converted?.amountGbp ?? null),

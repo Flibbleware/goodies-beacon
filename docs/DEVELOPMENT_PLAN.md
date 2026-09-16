@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.32; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.33; section numbers below refer to it.*
 
-Version 1.9 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.10 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -646,9 +646,28 @@ Candidate list per item, filterable by verdict and origin, with thumbnail, Engli
 
 Done when:
 
-- [ ] Rejected candidates are as easy to browse as matches (this is the audit view from requirement 6).
-- [ ] "Show prompt" displays the stored prompt text and the exact images sent.
-- [ ] The page is usable on a phone (the digest emails will link here).
+- [x] Rejected candidates are as easy to browse as matches (this is the audit view from requirement 6). The same query, the same row, one filter value apart; `store.integration.test.ts` asserts a rejection and a match come back with the same fields, so neither can quietly grow a path the other lacks.
+- [x] "Show prompt" displays the stored prompt text and the exact images sent, in the order they were sent, read from `verdicts.prompt_text` and `verdicts.prompt_images` rather than rebuilt.
+- [x] The page is usable on a phone (the digest emails will link here). Driven at 390×844 in the smoke test, which fails if anything makes the document wider than the viewport.
+
+#### What P1-15 found
+
+**A seller's description was stored exactly as the marketplace sent it.** §12 requires it
+sanitised before storage and nothing did it — eBay's `getItem` returns a full HTML document, so
+what sat in the `listings` table, in every nightly dump and in the reviewer's prompt was a
+stranger's markup. §7 step 1's "text cleaned" had not been implemented either, and the two are
+the same omission. Descriptions are now reduced to text at ingest, at both write sites — the poll
+and the enrichment — and §12 is rewritten to say what is actually done.
+
+**Text rather than sanitised HTML, which §12 allowed either of.** DOMPurify server-side means
+jsdom, ten megabytes of dependency in an image §11 budgets at 400 MB slim, to keep a seller's
+table layout. Text needs no dependency and is safe because nothing is ever inserted as markup —
+there is no filter to bypass. It also recovers prompt budget that was being spent on font tags.
+
+**The rules' reasons are re-derived for the page, not stored.** `verdict.ts` argues that a column
+would be a second copy free to drift from the rules that wrote it, and this is the first caller
+to need them: `decideVerdict` is pure, the spec version is immutable and the results are on the
+row, so re-running it reproduces exactly what it said the first time.
 
 #### P1-16 Dashboard — M
 

@@ -8,7 +8,7 @@ below assumes you have read anything else.
 - [Backups](#backups) and [restoring](#restoring)
 - [The two images](#the-two-images) · [TLS](#tls) · [Process roles](#process-roles) ·
   [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email) ·
-  [Wanted items](#wanted-items)
+  [Wanted items](#wanted-items) · [Candidates and verdicts](#candidates-and-verdicts)
 
 ---
 
@@ -893,11 +893,51 @@ photograph so it knows which variant it is looking at, so "UK big box, front" ea
 "image1" does not. Each image costs roughly 1,000–1,500 input tokens on *every* review of that
 item, so a handful is plenty.
 
+## Candidates and verdicts
+
+Every listing a wanted item has been given is a **candidate**, and all of them are on
+**Candidates** — matches, uncertains and rejections alike. That is the point rather than an
+oversight: the thing worth checking is not what Goodies Beacon emailed you, it is what it threw
+away. Filter by verdict and by origin; the filters live in the URL, so a view can be bookmarked,
+and the counts on an item page link straight into the one they count.
+
+| Verdict | What it means |
+|---|---|
+| Match | Every criterion the reviewer could settle, it settled in the listing's favour |
+| Uncertain | Something could not be established, or a soft criterion failed — the email says which |
+| Rejected | A hard criterion failed, or a filter stopped it before a model was ever called |
+| Not yet judged | Found, and still in the queue or part-way through the pipeline |
+
+A rejection made before the reviewer says which filter did it — over the price ceiling, a negative
+keyword in the title, or discarded by the pre-filter — and those cost nothing, so the verdict's
+model columns are empty rather than pretending a model was consulted.
+
+Opening one shows the photographs, the English summary, the seller's description and the verdict
+in full: a pass, fail or unknown for every criterion with a line of evidence for each, and beneath
+them the reasons the rules reached the decision they did. **Show prompt** reveals the exact text
+the model was sent and the exact images, in order — read back from the verdict, not rebuilt, so it
+is what was sent on the day rather than what would be sent today.
+
+**Retain** keeps a candidate for good. Without it, candidates older than the retention period
+(thirty days by default) are deleted with their photographs once the nightly sweep exists — that
+job arrives in Phase 2, so nothing is being deleted yet and the toggle is what will spare it. The
+**Not a match** and **Challenge** buttons are visible and disabled — the re-review-and-fold-back
+loop is Phase 5.
+
+Descriptions are stored as **text**, not as the seller's HTML. eBay returns a full HTML document,
+and keeping it would put a stranger's markup in the database, in every dump and on the page; it is
+reduced to text at ingest, which also stops the reviewer's prompt budget being spent on font tags.
+A description stored before that existed is still rendered as text and cannot do anything but be
+read.
+
+The candidate page is the one the digest emails will link to, so it is built to be read on a
+phone: one column, no tables, and a gallery that scrolls sideways rather than widening the page.
+
 ## The web app
 
-The pages are Dashboard, Wanted items (list, item and spec editor), Settings and the
-login/first-run page; the rest of the left-hand navigation is there but disabled, labelled with
-the task that brings it. Settings holds
+The pages are Dashboard, Wanted items (list, item and spec editor), Candidates (list and one
+candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
+but disabled, labelled with the task that brings it. Settings holds
 account (change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles,
 provider keys and the budget cap) and instance (time zone, digest time) sections. Dark and light
 follow the operating system — there is no toggle, and so no stored preference to get out of step

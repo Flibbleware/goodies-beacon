@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { seedCandidates } from './seed.js';
+
+/** The same database the app under test is using; P1-15's rows are written straight into it. */
+const databaseUrl = process.env.E2E_DATABASE_URL ?? process.env.TEST_DATABASE_URL ?? '';
 
 const PASSWORD = 'a-good-enough-password';
 const NEW_PASSWORD = 'an-even-better-password';
@@ -47,6 +51,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   const history = section('Version history');
   // The editor has its own back link with the same name, so the sidebar one is named exactly.
   const nav = page.getByRole('link', { name: 'Wanted items', exact: true });
+  // Captured when the item is created, so the seeded candidates hang off the real one.
+  let carmageddonId = '';
+  const verdictFilter = page.getByRole('navigation', { name: 'Verdict' });
 
   await test.step('an unauthenticated visit lands on the first-run page', async () => {
     await page.goto('/');
@@ -198,6 +205,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     // Creating navigates to the item's own editor, which is where the version history lives.
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
+    carmageddonId = new URL(page.url()).pathname.split('/')[2] as string;
     await expect(page.getByText('Version 1 is the one polling uses.')).toBeVisible();
     await expect(history.getByText('Version 1', { exact: true })).toBeVisible();
     await expect(history.getByText('First version, entered by hand.')).toBeVisible();
@@ -333,6 +341,152 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
   await test.step('Scan current listings is present and disabled until Phase 5', async () => {
     await expect(page.getByRole('button', { name: 'Scan current listings' })).toBeDisabled();
+  });
+
+  await test.step('judged candidates appear in the audit view, rejections included', async () => {
+    await seedCandidates(databaseUrl, carmageddonId, [
+      {
+        title: 'Carmageddon PC CD-ROM big box, complete',
+        externalId: 'e2e-match',
+        decision: 'match',
+        englishSummary: 'A complete big box copy with the manual and disc pictured.',
+        description: 'Boxed & complete — no water damage.',
+        promptText: 'SYSTEM\n\n# The wanted item\nCarmageddon\n\n# The listing\nBig box, complete',
+        criteriaResults: [
+          {
+            criterionId: 'big-box',
+            result: 'pass',
+            evidence: 'the big box is pictured front and back',
+          },
+          {
+            criterionId: 'contents-complete',
+            result: 'pass',
+            evidence: 'manual and disc are shown',
+          },
+        ],
+      },
+      {
+        title: 'Carmageddon, box only, no disc',
+        externalId: 'e2e-uncertain',
+        decision: 'uncertain',
+        englishSummary: 'The box is shown but nothing inside it is.',
+        criteriaResults: [
+          { criterionId: 'big-box', result: 'pass', evidence: 'the big box is pictured' },
+          {
+            criterionId: 'contents-complete',
+            result: 'unknown',
+            evidence: 'contents not shown or mentioned',
+          },
+        ],
+      },
+      {
+        title: 'Carmageddon t-shirt, size L',
+        externalId: 'e2e-reject',
+        decision: 'reject',
+        reason: 'prefilter',
+        englishSummary: 'This is a t-shirt, not the game.',
+      },
+    ]);
+
+    await page.getByRole('link', { name: 'Candidates', exact: true }).click();
+
+    await expect(page).toHaveURL('/candidates');
+    await expect(page.getByText('3 candidates')).toBeVisible();
+    await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeVisible();
+    // The audit view: a rejection is listed beside the matches, not behind a toggle.
+    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
+    await expect(page.getByText('discarded by the pre-filter')).toBeVisible();
+  });
+
+  await test.step('the filters narrow it and survive a reload, so a view can be linked to', async () => {
+    await verdictFilter.getByRole('link', { name: 'Rejected' }).click();
+
+    await expect(page).toHaveURL('/candidates?decision=reject');
+    await expect(page.getByText('1 candidate', { exact: true })).toBeVisible();
+    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
+    await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeHidden();
+
+    await page.reload();
+    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
+
+    await verdictFilter.getByRole('link', { name: 'Uncertain' }).click();
+    await expect(page.getByText('Carmageddon, box only, no disc')).toBeVisible();
+  });
+
+  await test.step('the item page counts link straight into the filtered view', async () => {
+    await nav.click();
+    await page.getByRole('link', { name: 'Carmageddon big box' }).click();
+    await page.getByRole('link', { name: /Matched/ }).click();
+
+    await expect(page).toHaveURL(/\/candidates\?item=[0-9a-f-]+&decision=match$/);
+    await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeVisible();
+    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeHidden();
+  });
+
+  await test.step('a candidate shows its verdict, its evidence and the exact prompt sent', async () => {
+    await page.getByText('Carmageddon PC CD-ROM big box, complete').click();
+
+    await expect(page).toHaveURL(/\/candidates\/[0-9a-f-]+$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Carmageddon PC CD-ROM big box, complete',
+    );
+    // Price in GBP with the original beside it, and the ships-to-UK flag §1 asks for.
+    await expect(page.getByText('£95.00 (USD 120.00)')).toBeVisible();
+    await expect(page.getByText('ships to the UK')).toBeVisible();
+
+    const verdict = section('Verdict');
+    await expect(verdict).toContainText('the big box is pictured front and back');
+    await expect(verdict).toContainText('manual and disc are shown');
+    // The description was stored as text: the entity is decoded and no markup survives.
+    await expect(page.getByText('Boxed & complete — no water damage.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Show prompt' }).click();
+    await expect(page.getByText('# The wanted item')).toBeVisible();
+    await expect(page.getByText('1 image were sent with it')).toBeVisible();
+    await expect(page.getByText('reference: UK big box, front')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Hide prompt' }).click();
+    await expect(page.getByText('# The wanted item')).toBeHidden();
+  });
+
+  await test.step('an uncertain verdict says exactly what could not be established', async () => {
+    await page.goBack();
+    await verdictFilter.getByRole('link', { name: 'Uncertain' }).click();
+    await page.getByText('Carmageddon, box only, no disc').click();
+
+    await expect(page.getByText('contents not shown or mentioned')).toBeVisible();
+    await expect(page.getByText('UK shipping unknown')).toBeVisible();
+  });
+
+  await test.step('Retain keeps a candidate, and the feedback loop waits for Phase 5', async () => {
+    await page.getByRole('button', { name: 'Retain' }).click();
+    await expect(page.getByRole('button', { name: 'Stop retaining' })).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Stop retaining' })).toBeVisible();
+
+    await expect(page.getByRole('button', { name: 'Not a match' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Challenge' })).toBeDisabled();
+  });
+
+  await test.step('the candidate page works on a phone, which is where digest links open', async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open the listing' })).toBeVisible();
+
+    /**
+     * Nothing may push the page wider than the screen: the gallery scrolls, it does not stretch.
+     * Written as a string because the expression runs in the browser, and the tests are
+     * typechecked without the DOM library — which is right for every other file here.
+     */
+    const overflow = await page.evaluate<number>(
+      'document.documentElement.scrollWidth - document.documentElement.clientWidth',
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+
+    await page.setViewportSize({ width: 1280, height: 720 });
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {
