@@ -1,7 +1,29 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
 const PASSWORD = 'a-good-enough-password';
 const NEW_PASSWORD = 'an-even-better-password';
+
+/** The worked examples P1-02 keeps, entered exactly as they are written (P1-13). */
+const example = (name: string): Spec =>
+  JSON.parse(
+    readFileSync(
+      new URL(`../../../packages/core/src/domain/fixtures/${name}.json`, import.meta.url),
+      'utf8',
+    ),
+  );
+
+interface Spec {
+  criteria: { id: string; text: string; kind: string }[];
+  [key: string]: unknown;
+}
+
+const carmageddon = example('carmageddon');
+const powerMac = example('power-mac-5500');
+
+/** A 1×1 PNG: enough for sharp to re-encode, small enough to read in a diff. */
+const PNG_1PX =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
 /** Mailpit's HTTP API, so a "Send test email" click can be checked against a real inbox. */
 const MAILPIT = process.env.E2E_MAILPIT_URL;
@@ -20,8 +42,11 @@ async function inbox(): Promise<InboxMessage[]> {
  * One test rather than several: the instance has a single password and a single user, so these
  * steps are one story and splitting them would only make them depend on each other in secret.
  */
-test('first run, sign out, sign in, and deep links survive a refresh', async ({ page }) => {
+test('first run, settings, a wanted item, and deep links survive a refresh', async ({ page }) => {
   const section = (name: string) => page.getByRole('region', { name });
+  const history = section('Version history');
+  // The editor has its own back link with the same name, so the sidebar one is named exactly.
+  const nav = page.getByRole('link', { name: 'Wanted items', exact: true });
 
   await test.step('an unauthenticated visit lands on the first-run page', async () => {
     await page.goto('/');
@@ -159,7 +184,100 @@ test('first run, sign out, sign in, and deep links survive a refresh', async ({ 
     await expect(section('Email').getByRole('status').last()).toHaveText('Saved.');
   });
 
+  await test.step('the Carmageddon example is entered as a wanted item', async () => {
+    await nav.click();
+
+    await expect(page).toHaveURL('/items');
+    await expect(page.getByText('No wanted items yet.')).toBeVisible();
+
+    await page.getByRole('link', { name: 'New wanted item' }).click();
+    await page.getByLabel('Title').fill('Carmageddon big box');
+    await page.getByLabel('Status').selectOption('active');
+    await page.getByLabel('Spec').fill(JSON.stringify(carmageddon, null, 2));
+    await page.getByRole('button', { name: 'Create item' }).click();
+
+    // Creating navigates to the item's own editor, which is where the version history lives.
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
+    await expect(page.getByText('Version 1 is the one polling uses.')).toBeVisible();
+    await expect(history.getByText('Version 1', { exact: true })).toBeVisible();
+    await expect(history.getByText('First version, entered by hand.')).toBeVisible();
+  });
+
+  await test.step('a spec the schema rejects cannot be saved, and the error names the path', async () => {
+    const broken = { ...carmageddon, criteria: [{ ...carmageddon.criteria[0], text: '' }] };
+    await page.getByLabel('Spec').fill(JSON.stringify(broken, null, 2));
+
+    // The first alert is the editor's own; the upload panel adds a second when it cannot insert.
+    const problems = page.getByRole('alert').first();
+    await expect(problems).toContainText('criteria.0.text');
+    await expect(problems).toContainText('a criterion needs text');
+    await expect(page.getByRole('button', { name: 'Save new version' })).toBeDisabled();
+
+    // And a document that is not JSON at all says so rather than pretending it is a schema fault.
+    await page.getByLabel('Spec').fill('{ "summary": }');
+    await expect(problems).toContainText('JSON');
+  });
+
+  await test.step('a hard criterion the photos cannot settle is a warning, not a refusal', async () => {
+    const hardened = {
+      ...carmageddon,
+      criteria: carmageddon.criteria.map((criterion) =>
+        criterion.id === 'disc-readable' ? { ...criterion, kind: 'hard' } : criterion,
+      ),
+    };
+    await page.getByLabel('Spec').fill(JSON.stringify(hardened, null, 2));
+
+    await expect(page.getByRole('status').filter({ hasText: 'disc-readable' })).toContainText(
+      'hard but not quantifiable',
+    );
+    await expect(page.getByRole('button', { name: 'Save new version' })).toBeEnabled();
+  });
+
+  await test.step('a reference image is uploaded, labelled, and added to the spec', async () => {
+    await page.getByLabel('Label').fill('UK big box, front');
+    await page.getByLabel('Image').setInputFiles({
+      name: 'box.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(PNG_1PX, 'base64'),
+    });
+    await page.getByRole('button', { name: 'Upload and add' }).click();
+
+    await expect(page.getByText('Added to the spec: UK big box, front.')).toBeVisible();
+    await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
+  });
+
+  await test.step('saving again writes version 2 and leaves version 1 in the history', async () => {
+    await page.getByLabel('Change note').fill('Hardened the disc criterion; added a photo.');
+    await page.getByRole('button', { name: 'Save new version' }).click();
+
+    await expect(page.getByText('Saved as version 2.')).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText('Version 2 is the one polling uses.')).toBeVisible();
+    await expect(history.getByText('Hardened the disc criterion; added a photo.')).toBeVisible();
+    await expect(history.getByText('First version, entered by hand.')).toBeVisible();
+    // The editor reopens on the stored document, image and all.
+    await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
+  });
+
+  await test.step('the Power Mac 5500 example goes in as a second item', async () => {
+    await nav.click();
+    await page.getByRole('link', { name: 'New wanted item' }).click();
+
+    await page.getByLabel('Title').fill('Power Macintosh 5500');
+    await page.getByLabel('Spec').fill(JSON.stringify(powerMac, null, 2));
+    await page.getByRole('button', { name: 'Create item' }).click();
+
+    await expect(page.getByText('Version 1 is the one polling uses.')).toBeVisible();
+
+    await nav.click();
+    await expect(page.getByRole('link', { name: 'Carmageddon big box' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Power Macintosh 5500' })).toBeVisible();
+  });
+
   await test.step('the password can be changed, and the new one is what signs you in', async () => {
+    await page.goto('/settings');
+
     await page.getByLabel('Current password').fill(PASSWORD);
     await page.getByLabel('New password').fill(NEW_PASSWORD);
     await page.getByRole('button', { name: 'Change password' }).click();

@@ -4,6 +4,25 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-13 Spec editor. Wanted items can be created and amended without the interviewer: a title, a
+  status, and the spec as JSON, checked against the real schema as you type so an error names the
+  field it is in rather than the document it is somewhere inside. The two worked examples go in by
+  pasting them. Reference images are uploaded with their labels from the same page and appended to
+  the spec.
+- Saving never edits a spec. It writes the next version and points the item at it, so the version
+  a verdict was judged under is still there to read; the version history sits under the editor
+  with each version's change note. The side-by-side diff is the interviewer phase's.
+- P1-02's linter appears beneath the editor as warnings that do not block a save — a criterion that
+  is `hard` but not `quantifiable` rejects a listing the photos cannot settle, where `soft` would
+  surface it as uncertain. Saying so is the point; refusing it would be the tooling deciding.
+- An item starts as a draft and is polled only once it is set active, so a spec can be written,
+  read back and corrected before anything is fetched or any model is called.
+- The four settings §4 gives both the item and its spec — notification mode, poll interval,
+  grading scale and minimum grade — are projected onto the item row on every save. The document is
+  what you edit; the row is what the scheduler and the review pipeline read, and a spec saying
+  `realtime` beside a column left at `digest` would have been an item that agreed with itself on
+  screen and emailed nobody.
+
 - P1-12 Review worker pipeline. The `review` job from ARCHITECTURE.md §7, end to end: normalise,
   the hard filters, the pre-filter, enrichment, media ingest, the vision review, the decision
   rules, the stored verdict and the email. A candidate now goes from "a poll found this" to "you

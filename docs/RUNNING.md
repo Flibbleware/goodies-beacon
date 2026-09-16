@@ -7,7 +7,8 @@ below assumes you have read anything else.
 - [Upgrading and rolling back](#upgrading-and-rolling-back)
 - [Backups](#backups) and [restoring](#restoring)
 - [The two images](#the-two-images) · [TLS](#tls) · [Process roles](#process-roles) ·
-  [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email)
+  [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email) ·
+  [Wanted items](#wanted-items)
 
 ---
 
@@ -825,13 +826,49 @@ A cap with no exchange rate stored is not enforced — the ledger is in dollars 
 pounds — and reviews continue with a warning rather than stopping, because a rates outage should
 not take the product down. Leave the cap empty for no limit.
 
+## Wanted items
+
+A wanted item is a title, a status and a **spec**: what you are hunting for, the marketplaces and
+queries to look on, and the criteria the reviewer judges each listing against. Until the chat
+interviewer arrives in Phase 3 the spec is JSON you write yourself, on **Wanted items → New wanted
+item**. It is checked against the real schema as you type, so a mistake names the field it is in
+(`criteria.0.text`, `settings.priceCeiling.currency`) and the Save button stays disabled until it
+parses. Two worked examples to copy from are in the repository, at
+`packages/core/src/domain/fixtures/`.
+
+Beneath the errors sit **warnings**, which do not stop a save. There is one so far: a criterion
+that is `hard` but not `quantifiable`. `hard` rejects outright, so a criterion the photos cannot
+settle definitively rejects a listing on a blurry image as readily as on a real fault, where `soft`
+would surface it as uncertain instead. It is legal, just rarely what was meant.
+
+**Only an `active` item is polled.** A new one starts as a draft, which is the safe default: it
+keeps its spec and its search plans and does nothing at all until you set it active. `paused`,
+`found` and `archived` are all equally quiet.
+
+**Saving never edits a spec.** Each save writes the next version and points the item at it, so the
+version a verdict was judged under is still there to read — that is what makes "why did it reject
+this in July" answerable. The version history below the editor lists them with their change notes;
+the side-by-side diff between two of them comes with the interviewer.
+
+Four settings live in the spec *and* on the item row, because they are one field on screen:
+`notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade`. The document is what you
+edit; saving copies them onto the row, which is what the scheduler and the review pipeline
+actually read. Changing them in the database by hand will therefore be undone by the next save.
+
+**Reference images** are uploaded from the same page with a label, downscaled, and appended to the
+spec's `referenceImages`. The label is not decoration: the reviewer is shown it beside the
+photograph so it knows which variant it is looking at, so "UK big box, front" earns its keep and
+"image1" does not. Each image costs roughly 1,000–1,500 input tokens on *every* review of that
+item, so a handful is plenty.
+
 ## The web app
 
-The pages are Dashboard, Settings and the login/first-run page; the rest of the left-hand
-navigation is there but disabled, labelled with the task that brings it. Settings holds account
-(change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles, provider
-keys and the budget cap) and instance (time zone, digest time) sections. Dark and light follow the
-operating system — there is no toggle, and so no stored preference to get out of step with it.
+The pages are Dashboard, Wanted items, Settings and the login/first-run page; the rest of the
+left-hand navigation is there but disabled, labelled with the task that brings it. Settings holds
+account (change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles,
+provider keys and the budget cap) and instance (time zone, digest time) sections. Dark and light
+follow the operating system — there is no toggle, and so no stored preference to get out of step
+with it.
 
 ## What serves what
 
@@ -844,8 +881,8 @@ page, so a typo in a URL is not mistaken for a working endpoint.
 token. It is generated from the route table by `pnpm docs:api`, and CI fails if it is out of date.
 
 **Rehearsing against a running instance.** The Playwright smoke test — first run, sign out, sign
-in, a deep-link refresh, saving a setting — can be pointed at any instance, which is a quick way to
-prove a deploy actually works:
+in, a deep-link refresh, saving a setting, entering a wanted item — can be pointed at any instance,
+which is a quick way to prove a deploy actually works:
 
 ```sh
 E2E_BASE_URL=https://beacon.example.co.uk \

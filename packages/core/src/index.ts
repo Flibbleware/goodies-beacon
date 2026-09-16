@@ -251,6 +251,22 @@ export {
   type VerdictResult,
   verdictSchema,
 } from './domain/verdict.js';
+export {
+  type ItemSaveInput,
+  type ItemSummary,
+  itemSaveSchema,
+  type SpecVersionSummary,
+} from './items/schema.js';
+export {
+  createItem,
+  type LoadedItem,
+  listItems,
+  loadItem,
+  type SavedVersion,
+  type StoredSpec,
+  saveItem,
+  UnknownGradingScaleError,
+} from './items/store.js';
 export { createLogger, createSilentLogger, type Logger } from './logger.js';
 export {
   hammingDistance,

@@ -21,7 +21,7 @@ export const appLayoutRoute = createRoute({
 /** The pages from §14. The ones without a route yet name the task that brings them. */
 const NAV = [
   { to: '/', label: 'Dashboard', soon: undefined },
-  { to: '/items', label: 'Wanted items', soon: 'P1-14' },
+  { to: '/items', label: 'Wanted items', soon: undefined },
   { to: '/candidates', label: 'Candidates', soon: 'P1-15' },
   { to: '/scales', label: 'Grading scales', soon: 'Phase 5' },
   { to: '/costs', label: 'Costs', soon: 'Phase 5' },

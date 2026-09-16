@@ -53,6 +53,8 @@ export default defineConfig({
             GOODIES_BEACON_HOST: `localhost:${PORT}`,
             // Only the settings encryption uses this, and the smoke test stores no secrets.
             GOODIES_BEACON_SECRET_KEY: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
+            // The reference-image upload writes here; the default /data/media is the container's.
+            MEDIA_DIR: './test-results/e2e-media',
             GOODIES_BEACON_BUILD_VERSION: 'e2e',
             GOODIES_BEACON_BUILD_SHA: 'e2e',
             LOG_LEVEL: 'warn',

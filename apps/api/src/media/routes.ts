@@ -67,10 +67,16 @@ export function createMediaRoutes({ db, mediaDir, logger }: MediaRouteDeps) {
   return routes;
 }
 
+/**
+ * `path` is included because §4's `ReferenceImage` carries one beside the id, so the spec editor
+ * cannot write an entry without it. It is a hash of the bytes under the media directory and
+ * nothing outside this instance can be reached with it.
+ */
 function publicView(row: Media) {
   return {
     id: row.id,
     kind: row.kind,
+    path: row.path,
     label: row.label,
     width: row.width,
     height: row.height,

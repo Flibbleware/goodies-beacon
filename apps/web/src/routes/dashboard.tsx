@@ -19,8 +19,8 @@ function Dashboard() {
       <div className="mt-6 rounded-xl border border-dashed border-edge p-10 text-center dark:border-edge-dark">
         <p className="font-medium">Nothing is being watched yet.</p>
         <p className="mx-auto mt-2 max-w-md text-sm text-ink-dim dark:text-ink-dim-dark">
-          Once you can add a wanted item, this is where today's matches, source health and the
-          month's AI spend will appear.
+          Add a wanted item and this is where today's matches, source health and the month's AI
+          spend will appear.
         </p>
       </div>
     </div>

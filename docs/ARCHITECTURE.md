@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.31 — 15 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.32 — 16 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -117,6 +117,8 @@ Components:
 Names below are the tables/entities; types are illustrative.
 
 **WantedItem** — `id, title, status (draft|active|paused|found|archived), notificationMode (realtime|digest), pollEvery (ISO 8601 duration, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`. This field was a Postgres interval until v1.26; it holds the same ISO 8601 vocabulary `SpecSettings.pollEvery` uses, because the two are one field in the UI and a value that parsed one way in JSONB and another in a column is a bug waiting for whoever writes the second editor.
+
+**Those four fields are a projection of the spec, not a second opinion.** `notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade` appear here *and* in `SpecSettings`, and v1.32 settles which wins: the spec version is what is edited and every save rewrites these columns from it. They exist as columns because that is what the runtime reads — the scheduler takes `pollEvery` from the item row (§6) and the review pipeline takes `notificationMode` from it (§10), neither of them wanting to parse a JSONB document to answer a question asked of every plan and every candidate. P1-13 found the gap: an editor that wrote only the document would leave an item whose spec said `realtime` beside a column still saying `digest`, which reads as correct in the UI and emails nobody. Anything that writes a spec version — the manual editor, and the interviewer in Phase 3 — writes both, through the same function.
 
 **WantedSpecVersion** — Immutable. `id, wantedItemId, version, createdBy (interview|amendment|challenge|manual_edit|image_added), summary, settings, criteria[], searchPlans[], referenceImages[], changeNote`. Every change — a chat amendment, a direct edit in the form, or adding an image — creates a new version; a verdict records which version judged it, so "why did it reject this in July" is always answerable, and any two versions can be diffed in the UI.
 

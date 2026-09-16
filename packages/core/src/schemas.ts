@@ -27,12 +27,18 @@ export {
   type CriterionKind,
   IMAGE_STRATEGIES,
   type ImageStrategy,
+  NOTIFICATION_MODES,
+  type NotificationMode,
   ON_UNKNOWN,
   type OnUnknown,
   RELIST_POLICIES,
   type RelistPolicy,
   SHIPS_TO_UK_POLICIES,
   type ShipsToUkPolicy,
+  SPEC_ORIGINS,
+  type SpecOrigin,
+  WANTED_ITEM_STATUSES,
+  type WantedItemStatus,
 } from './domain/constants.js';
 export {
   LINT_CODES,
@@ -73,6 +79,12 @@ export {
   type VerdictResult,
   verdictSchema,
 } from './domain/verdict.js';
+export {
+  type ItemSaveInput,
+  type ItemSummary,
+  itemSaveSchema,
+  type SpecVersionSummary,
+} from './items/schema.js';
 export {
   AI_PROVIDERS,
   type AiProvider,

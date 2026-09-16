@@ -6,6 +6,7 @@ import { createLoginRateLimiter, type LoginRateLimiter } from './auth/rate-limit
 import { createAuthRoutes } from './auth/routes.js';
 import { errorHandler, notFoundHandler } from './errors.js';
 import { createHealthRoute } from './health.js';
+import { createItemRoutes } from './items/routes.js';
 import { createMediaRoutes } from './media/routes.js';
 import { type RequestVariables, requestId } from './request-id.js';
 import { securityHeaders } from './security-headers.js';
@@ -47,6 +48,7 @@ export function createApp(deps: AppDeps) {
   // After the auth routes, which have already answered by the time this is reached, so it guards
   // every other /api path — including ones that do not exist.
   app.use('/api/*', requireSession(db));
+  app.route('/api/items', createItemRoutes({ db }));
   app.route('/api/settings', createSettingsRoutes({ db, config, logger }));
   app.route('/api/media', createMediaRoutes({ db, mediaDir: config.mediaDir, logger }));
 

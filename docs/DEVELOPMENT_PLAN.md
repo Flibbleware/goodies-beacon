@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.31; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.32; section numbers below refer to it.*
 
-Version 1.7 — 15 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.8 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -583,9 +583,26 @@ Item creation and editing without the interviewer, at the size §17 gives Phase 
 
 Done when:
 
-- [ ] The two example specs (Carmageddon, Power Mac 5500) can be entered end to end by pasting or typing their JSON.
-- [ ] A spec that fails the schema cannot be saved, and the error names the path; linter warnings from P1-02 appear beneath the editor.
-- [ ] Each save creates a version, listed with its date and change note; the current version is what polling uses.
+- [x] The two example specs (Carmageddon, Power Mac 5500) can be entered end to end by pasting or typing their JSON. Both go in through the page in the Playwright smoke test, and through `/api/items` in `apps/api/src/items/routes.integration.test.ts`, which asserts that what comes back out is what went in.
+- [x] A spec that fails the schema cannot be saved, and the error names the path; linter warnings from P1-02 appear beneath the editor. The same `wantedSpecSchema` runs in the browser as on the server, so the editor says what a save would say rather than an approximation; every failing path is listed, not just the first, and `lintSpec`'s warnings sit beneath them without blocking the Save button.
+- [x] Each save creates a version, listed with its date and change note; the current version is what polling uses. `saveItem` inserts version N+1 and repoints `wanted_items.current_spec_version_id` in one transaction, which is the row `activePlans` joins on.
+
+#### What P1-13 found
+
+**Four settings live in two places, and only one of them was being read.** §4 puts
+`notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade` on the WantedItem *and* in
+`SpecSettings`, and says of `pollEvery` that "the two are one field in the UI". Nothing had yet
+written both: the scheduler reads `wanted_items.poll_every` (§6) and the review pipeline reads
+`wanted_items.notification_mode` (§10), while `decideVerdict` reads `settings.minimumGrade` out of
+the spec. An editor that wrote only the document would have produced an item whose spec said
+`realtime` and whose column still said `digest` — agreeing with itself on screen and emailing
+nobody. So the rule is now written down rather than implied: **the document is what is edited and
+the columns are a projection of it, rewritten on every save.** ARCHITECTURE.md §4 says so.
+
+**A `gradingScaleId` naming no scale was a 500 about a foreign key.** Phase 5 owns grading scales
+and the table is a stub, so the only way to reach one now is to type a uuid into the JSON. It is
+checked before the insert and answered as a 400 against `spec.settings.gradingScaleId`, because a
+constraint violation tells the owner nothing about which field they got wrong.
 
 #### P1-14 Wanted items UI — M
 
