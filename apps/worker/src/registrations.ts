@@ -16,6 +16,7 @@ import {
 import type { PgBoss } from 'pg-boss';
 import { adapters } from './adapters.js';
 import { pollRegistration } from './poll.js';
+import { reviewRegistration } from './review.js';
 
 export interface WorkerDeps {
   readonly config: Config;
@@ -54,12 +55,14 @@ export function workerRegistrations(deps: WorkerDeps): QueueRegistration[] {
     ...polls,
     heartbeatRegistration(db, 'worker', logger),
     ratesRefreshRegistration(db, logger, converter),
-    /**
-     * Created, not consumed: a poll must be able to send a review job before P1-12's reviewer
-     * exists, and pg-boss refuses to send to a queue that was never created. The jobs wait rather
-     * than being taken by a placeholder and discarded.
-     */
-    { name: REVIEW_QUEUE, queueOptions: { retryLimit: 3, retryDelay: 60, retryBackoff: true } },
+    reviewRegistration({
+      db,
+      config,
+      logger,
+      converter,
+      ...(boss ? { boss } : {}),
+      browser: deps.browser ?? null,
+    }),
     ...scheduleRegistrations(deps),
   ];
 }

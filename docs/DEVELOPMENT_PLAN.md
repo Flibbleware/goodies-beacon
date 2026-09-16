@@ -561,11 +561,21 @@ Notify is deliberately minimal here: for a `match` or `uncertain` on a realtime-
 
 Done when:
 
-- [ ] Integration test with the template adapter and a fake AI provider runs a candidate through every stage and asserts the stored verdict and cost rows.
-- [ ] A candidate rejected by hard filters has no AI cost.
-- [ ] Re-running the job for a completed candidate is a no-op.
-- [ ] Failures at any stage leave the candidate in a visible `failed` state with the error, and are retried three times with backoff.
-- [ ] A `match` on a realtime item sends one plain email and writes its `Notification` row first, so a retried job cannot send twice; a `reject`, a digest-mode item, and a backfill candidate send nothing.
+- [x] Integration test with the template adapter and a fake AI provider runs a candidate through every stage and asserts the stored verdict and cost rows. Eighteen cases in `apps/worker/src/review.integration.test.ts`, against a real Postgres. The fake is injected at the *port* — the same seam the worker uses to wire the real AI — rather than at the provider, because what is under test is which stages run, what stops the pipeline early, what is stored and what is sent; whether the prompts judge well is what the two check scripts measure against real models.
+- [x] A candidate rejected by hard filters has no AI cost. Asserted for both filters: the price ceiling and a negative keyword each leave `cost_ledger` empty, the pre-filter and reviewer ports uncalled, and a verdict whose model columns are null so nothing pretends a model was consulted.
+- [x] Re-running the job for a completed candidate is a no-op. Also covered: a re-delivered job resumes at the stage the candidate reached, so a worker that died after enrichment does not pay for the pre-filter again.
+- [x] Failures at any stage leave the candidate in a visible `failed` state with the error, and are retried three times with backoff. The error is written to `candidates.error` and re-thrown so pg-boss retries; `retryLimit: 3, retryBackoff: true` on the queue, asserted in `registrations.test.ts`.
+- [x] A `match` on a realtime item sends one plain email and writes its `Notification` row first, so a retried job cannot send twice; a `reject`, a digest-mode item, and a backfill candidate send nothing. All five cases tested, plus an uncertain email naming its unknowns per §10 and a second delivery finding the row already claimed.
+
+**A failed candidate starts again from the top, and that is a decision rather than an oversight.** `stage` holds one value and §4 makes `failed` a terminal state of its own, so it necessarily overwrites how far the candidate got; remembering that would take a second column. What restarting costs is a pre-filter call — a fraction of a penny — and an enrichment fetch whose images dedupe on their content hash. What it must never cost is a second *review*, and it cannot: a review that succeeded has already written its verdict and moved the candidate to `reviewed`, which is a no-op for ever after. The first draft of the test asserted the opposite and was wrong about the schema, not about the code.
+
+**The verdict is written before the notification, and the notification row is claimed before the email is sent.** The first ordering means a mail server being down can never cause a re-review. The second is §10's at-most-once guarantee: the unique index on `(candidate_id, channel)` only holds if claiming the row is what decides whether to send, where recording it afterwards would let a job that crashed between sending and recording send again on its retry. The cost is that a crash between the claim and the send loses that one email, which is the right way round — a missed email is visible in the UI, where a duplicate teaches its owner to ignore them. A send that fails outright does **not** fail the candidate either: the review succeeded, the verdict is stored, and the row is left with `sent_at` null as the durable record of "claimed but never delivered".
+
+#### Two things P1-12 found
+
+**Relist detection is not implemented, and it is not simply deferred work.** §7 step 2 lists it beside the price ceiling and the negative keywords, and P1-12's own scope names only those two — but the ordering does not work as written either. Step 2 matches on image hashes while the images are not ingested until step 4, so a new candidate has no hashes to match on when the rule is supposed to run; only the title and the seller hash are available that early. Either the rule moves after the media ingest, or it is defined as title-and-seller only. Worth settling before it is built.
+
+**Verdict token counts had no way to be filled in.** §4 puts `inputTokens`, `outputTokens` and `costUsd` on a Verdict, but `generateForRole` returned only the cost — the usage went to the ledger and no further. The AI layer's results now carry `usage` and `modelRef` alongside the cost, which is what lets a verdict say what judging *that* listing cost. The two answer different questions and must not be collapsed: the ledger is "what has this month cost" and is pruned by retention, the verdict is "what did this one cost" and is kept with it.
 
 #### P1-13 Spec editor (manual) — M
 

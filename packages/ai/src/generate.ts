@@ -10,6 +10,7 @@ import { generateObject, NoObjectGeneratedError } from 'ai';
 import type { z } from 'zod';
 import type { PromptPart } from './images.js';
 import { type LedgerEntry, recordUsage } from './ledger.js';
+import type { Usage } from './pricing.js';
 import { createModel, type ResolvedRole } from './providers.js';
 import { splitUsage } from './usage.js';
 
@@ -57,6 +58,16 @@ export interface GenerateResult<T> {
   costUsd: number;
   /** False when the model was not in the price table, so the cost is a floor. */
   costKnown: boolean;
+  /**
+   * The tokens this call used, split the way the price table charges them.
+   *
+   * Also on the ledger row, and on a verdict too (§4) because the two answer different questions:
+   * the ledger is "what has this month cost", the verdict is "what did judging *this* listing
+   * cost", and the second must survive the retention that prunes the first.
+   */
+  usage: Usage;
+  /** `provider:model`, as a verdict records the model that judged it (§4). */
+  modelRef: string;
   /** The text actually sent, stored with a verdict so "Show prompt" is a read (P1-10). */
   promptText: string;
 }
@@ -157,6 +168,8 @@ export async function generateForRole<T>(
       role,
       costUsd,
       costKnown: known,
+      usage: entry.usage,
+      modelRef: `${role.provider}:${role.model}`,
       promptText: describePrompt(request),
     };
   } catch (error) {

@@ -5,6 +5,7 @@ import {
   type WantedSpec,
 } from '@goodies-beacon/core';
 import { type GenerateDeps, generateForRole, ModelOutputError } from './generate.js';
+import type { Usage } from './pricing.js';
 import {
   buildPrefilterPrompt,
   PREFILTER_PROMPT_VERSION,
@@ -51,6 +52,9 @@ export interface PrefilterResult extends PrefilterOutput {
   /** Which prompt decided it, recorded so an old decision stays explainable. */
   promptVersion: string;
   costUsd: number;
+  /** Null when nothing was asked, which is what `failedOpen` means. */
+  modelRef: string | null;
+  usage: Usage;
   /**
    * True when no model was consulted and the listing was kept anyway — the model was unreachable,
    * or answered something that would not parse. Distinguishes "a model said keep this" from
@@ -123,6 +127,8 @@ export async function runPrefilter(
       reason: result.object.reason,
       promptVersion: PREFILTER_PROMPT_VERSION,
       costUsd: result.costUsd,
+      modelRef: result.modelRef,
+      usage: result.usage,
       failedOpen: false,
     };
   } catch (error) {
@@ -141,6 +147,8 @@ export async function runPrefilter(
       reason: 'The pre-filter could not be run, so this was kept for review.',
       promptVersion: PREFILTER_PROMPT_VERSION,
       costUsd: 0,
+      modelRef: null,
+      usage: { inputTokens: 0, outputTokens: 0 },
       failedOpen: true,
     };
   }

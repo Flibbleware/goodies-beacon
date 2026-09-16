@@ -10,6 +10,7 @@ import {
 import { type GenerateDeps, generateForRole, ModelOutputError } from './generate.js';
 import { buildReviewPrompt, countImages, type LabelledImage } from './images.js';
 import { boundDescription } from './prefilter.js';
+import type { Usage } from './pricing.js';
 import {
   REVIEWER_PROMPT_VERSION,
   REVIEWER_SYSTEM,
@@ -79,6 +80,10 @@ export interface ReviewResult extends ReviewerOutput {
   costUsd: number;
   /** False when the model was not in the price table, so the cost is a floor. */
   costKnown: boolean;
+  /** Recorded on the verdict as well as the ledger (§4). */
+  usage: Usage;
+  /** `provider:model`, so a verdict names what judged it. */
+  modelRef: string;
 }
 
 /**
@@ -252,6 +257,8 @@ export async function runReviewer(
       promptImages,
       costUsd: result.costUsd,
       costKnown: result.costKnown,
+      usage: result.usage,
+      modelRef: result.modelRef,
     };
   } catch (error) {
     if (request.abortSignal?.aborted) throw error;

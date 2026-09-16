@@ -100,9 +100,15 @@ importers:
 
   apps/worker:
     dependencies:
+      '@goodies-beacon/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@goodies-beacon/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@goodies-beacon/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@goodies-beacon/source-ebay':
         specifier: workspace:*
         version: link:../../packages/sources/ebay
