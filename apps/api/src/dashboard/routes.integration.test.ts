@@ -3,10 +3,12 @@ import {
   authSession,
   authUser,
   candidates,
+  costLedger,
   createDb,
   createItem,
   createPool,
   type Database,
+  fxRates,
   itemSaveSchema,
   type Logger,
   listings,
@@ -75,6 +77,11 @@ const read = async (): Promise<DashboardBody['dashboard']> => {
   return ((await res.json()) as DashboardBody).dashboard;
 };
 
+const spend = (costUsd: string) =>
+  db
+    .insert(costLedger)
+    .values({ role: 'reviewer', provider: 'openai', model: 'gpt-5-mini', costUsd });
+
 async function seedVerdict(decision: 'match' | 'uncertain' | 'reject'): Promise<void> {
   const [listing] = await db
     .insert(listings)
@@ -114,6 +121,10 @@ describe.skipIf(!databaseUrl)('the dashboard route', () => {
     await db.delete(seen);
     await db.delete(wantedItems);
     await db.delete(processHeartbeat);
+    // Both outlive whichever file ran before this one, and the spend panel reads both: the
+    // ledger for the dollars and the rates for the conversion into the pounds the cap is in.
+    await db.delete(costLedger);
+    await db.delete(fxRates);
     await db.delete(settingsTable);
 
     app = createApp({
@@ -237,5 +248,28 @@ describe.skipIf(!databaseUrl)('the dashboard route', () => {
     await writeSettings(db, { ai: { monthlyBudget: { amount: 40, currency: 'GBP' } } }, SECRET_KEY);
 
     expect((await read()).budget).toMatchObject({ ok: true, spentGbp: 0, capGbp: 40 });
+  });
+
+  it('converts the month’s dollars into the pounds the cap is written in', async () => {
+    await writeSettings(db, { ai: { monthlyBudget: { amount: 40, currency: 'GBP' } } }, SECRET_KEY);
+    await spend('12.500000');
+    await db
+      .insert(fxRates)
+      .values({ currency: 'USD', rateDate: '2026-09-16', unitsPerGbp: '1.25000000' });
+
+    expect((await read()).budget).toMatchObject({ ok: true, spentGbp: 10, capGbp: 40 });
+  });
+
+  /**
+   * The ledger is in dollars and the cap is in pounds, so a spend that cannot be converted is
+   * reported as unknown rather than as zero — P1-08's rule, which keeps reviews running when a
+   * rates service is unreachable rather than turning a cosmetic outage into a real one. The page
+   * renders "not known" for it, so the shape has to survive the route.
+   */
+  it('says the spend is not known when there is no rate to convert it with', async () => {
+    await writeSettings(db, { ai: { monthlyBudget: { amount: 40, currency: 'GBP' } } }, SECRET_KEY);
+    await spend('1.500000');
+
+    expect((await read()).budget).toMatchObject({ ok: true, spentGbp: null, capGbp: 40 });
   });
 });
