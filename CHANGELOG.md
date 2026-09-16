@@ -4,6 +4,32 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-12 Review worker pipeline. The `review` job from ARCHITECTURE.md §7, end to end: normalise,
+  the hard filters, the pre-filter, enrichment, media ingest, the vision review, the decision
+  rules, the stored verdict and the email. A candidate now goes from "a poll found this" to "you
+  have mail" without anyone refreshing a tab — which is the first point at which Goodies Beacon
+  does the thing it is for.
+- Every stage can stop the pipeline early, and that is where the cost control lives. A listing
+  over the price ceiling or carrying a negative keyword is rejected for nothing, with a verdict
+  recording why and its model columns left null so nothing pretends a model was consulted. Only
+  what survives the pre-filter reaches the model that actually costs money.
+- Progress is recorded on the candidate, so a re-delivered job resumes where it got to instead of
+  paying for the earlier stages again, and a candidate that already has a verdict is a no-op
+  however many times the job arrives.
+- A failure at any stage leaves the candidate visibly `failed` with the error on it, retried three
+  times with a widening gap. Reaching the monthly AI budget **defers** the review instead, so a
+  paused month does not dead-letter candidates that were never looked at.
+- The one notification Phase 1 sends: a plain-text email for a match or an uncertain on a
+  real-time item that came from a poll, naming the price, the summary, exactly what could not be
+  established, and links to both the listing and the candidate. A rejection, a digest-mode item
+  and a backfill candidate send nothing.
+- The notification row is claimed *before* the email is sent, which is what makes at-most-once
+  true: recording it afterwards would let a job that crashed between sending and recording send
+  again on its retry. An email that cannot be sent does not fail the review either — the verdict
+  is stored and the row is left unsent, which is the record worth being able to find.
+- A verdict now records the tokens and cost of judging that one listing, not just the month's
+  ledger entry. The two answer different questions, and retention prunes the ledger.
+
 - P1-11 Decision rules. The deterministic function from ARCHITECTURE.md §7 step 6: a hard
   criterion failing rejects, a soft one surfaces as uncertain, and an unknown does whichever the
   criterion (or the item) says it should. It is pure — no database, no clock, no model — so a

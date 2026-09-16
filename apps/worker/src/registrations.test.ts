@@ -40,14 +40,25 @@ describe('workerRegistrations', () => {
   });
 
   /**
-   * The review queue has to exist before P1-12's reviewer does, or a poll cannot send to it — but
-   * a placeholder handler would take each job and throw the candidate away, so it has none.
+   * Until P1-12 the review queue was created without a handler, so the jobs a poll sent waited
+   * rather than being taken by a placeholder and discarded. The reviewer now consumes it, and the
+   * backlog that accumulated is what it finds on first start.
    */
-  it('creates the review queue without consuming it', () => {
+  it('consumes the review queue, retrying three times with backoff', () => {
     const review = workerRegistrations(deps([])).find(({ name }) => name === REVIEW_QUEUE);
 
-    expect(review).toBeDefined();
-    expect(review?.handler).toBeUndefined();
+    expect(review?.handler).toBeDefined();
+    // P1-12: "retried three times with backoff".
+    expect(review?.queueOptions).toMatchObject({
+      retryLimit: 3,
+      retryBackoff: true,
+    });
+    expect(review?.queueOptions?.retryDelay).toBeGreaterThan(0);
+  });
+
+  /** A satellite worker polls and nothing else: reviews stay with the core worker (§6). */
+  it('leaves the review queue to the core worker when WORKER_SOURCES narrows it', () => {
+    expect(workerRegistrations(deps(['ebay'])).map(({ name }) => name)).not.toContain(REVIEW_QUEUE);
   });
 
   it('installs the reconciler on a schedule so a paused item stops polling without a restart', () => {

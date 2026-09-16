@@ -354,6 +354,22 @@ export {
   registerQueues,
 } from './queue/registry.js';
 export {
+  type NotifyDeps,
+  type NotifyInput,
+  notificationMessage,
+  notifyRealtime,
+} from './review/notify.js';
+export { type ReviewDeps, type ReviewOutcome, runReview } from './review/pipeline.js';
+export type {
+  NotificationMessage,
+  PrefilterPortRequest,
+  PrefilterPortResult,
+  ReviewPortImage,
+  ReviewPortRequest,
+  ReviewPortResult,
+  ReviewPorts,
+} from './review/ports.js';
+export {
   AI_PROVIDERS,
   type AiProvider,
   type AiSettings,

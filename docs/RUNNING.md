@@ -742,6 +742,59 @@ Every image in a prompt is one this instance has already fetched, checked and st
 handed to the provider to fetch, which would send a marketplace address out of the worker with
 none of the ingest's protections.
 
+### The review pipeline
+
+A poll drops each new candidate on the `review.candidate` queue and the worker takes it through
+§7 in order: the hard filters, the pre-filter, enrichment, the images, the vision review, the
+decision rules, the verdict, the email. Where a candidate got to is on the candidate itself:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c \
+  "select stage, count(*) from candidates group by stage order by count desc"
+```
+
+`failed` is the one to watch, and it carries its own reason rather than hiding in a log:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c \
+  "select id, error, updated_at from candidates where stage = 'failed' order by updated_at desc limit 20"
+```
+
+A failure is retried three times with a widening gap. A candidate still `failed` after that has a
+real problem — usually a provider key, a marketplace that changed, or an image host that has gone.
+Re-queueing it is safe at any time: a candidate that already has a verdict is a no-op, and one
+that failed starts again from the top, which costs a pre-filter call and nothing else.
+
+**Nothing is charged twice for the same review.** A review that succeeded has written its verdict
+and will not be repeated however often the job is re-delivered. Reaching the monthly budget defers
+a review rather than failing it, so a capped month leaves candidates queued rather than
+dead-lettered; they run when the month rolls over or when you raise the cap.
+
+### The real-time email
+
+Phase 1 sends one kind of notification: a plain-text email for a `match` or an `uncertain`, on an
+item set to **realtime**, for a candidate that came from a **poll**. A rejection sends nothing, a
+digest-mode item sends nothing, and a backfill sends nothing — a backfill sweeps everything
+already listed, and mailing it one listing at a time is how someone learns to ignore the mail.
+Digests and templates are the notifications phase.
+
+An uncertain email names exactly what could not be established, because that is the whole reason
+the verdict exists rather than being quietly dropped.
+
+At most one email is ever sent per candidate, enforced by a unique index rather than by care. The
+row is claimed before the email goes, so the failure mode is a *missing* email rather than a
+duplicate — deliberately, since a missed match is visible in the UI and a duplicate just teaches
+you to stop reading them. A row with no `sent_at` is one that was claimed but never delivered:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c \
+  "select candidate_id, created_at from notifications where sent_at is null order by created_at desc"
+```
+
+That list is normally empty. Entries in it mean SMTP was unreachable when a match came in; the
+verdicts are all still there, and an instance with no SMTP configured at all logs it once and
+records matches in the UI only.
+
 ### What a call costs, and the monthly cap
 
 Every call is recorded in `cost_ledger` with its role, model, tokens and cost. Prices come from a
