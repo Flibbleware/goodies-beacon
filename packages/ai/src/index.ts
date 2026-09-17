@@ -40,6 +40,7 @@ export {
   generateForRole,
   ModelOutputError,
   OBJECT_RETRIES,
+  RETRY_HEADROOM,
 } from './generate.js';
 export { type ProviderTestDeps, testProvider } from './health.js';
 export {

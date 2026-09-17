@@ -8,11 +8,12 @@ import {
   settings as settingsTable,
   writeSettings,
 } from '@goodies-beacon/core';
+import { NoObjectGeneratedError } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
 import type { Pool } from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { generateForRole, ModelOutputError, OBJECT_RETRIES } from './generate.js';
+import { generateForRole, ModelOutputError, OBJECT_RETRIES, RETRY_HEADROOM } from './generate.js';
 import * as providers from './providers.js';
 
 /**
@@ -311,5 +312,49 @@ describe.skipIf(!databaseUrl)('generateForRole against a real Postgres', () => {
       expect.objectContaining({ setting: 'temperature' }),
     );
     expect((globalThis as { AI_SDK_LOG_WARNINGS?: boolean }).AI_SDK_LOG_WARNINGS).toBe(false);
+  });
+
+  /**
+   * The retry used to be an exact repeat of the call that had just failed, which is useless
+   * against the common cause: a reasoning model that spent its whole output allowance thinking
+   * and had none left to answer in. It would fail identically and be billed for it.
+   */
+  it('gives the second attempt more room than the first', async () => {
+    const caps: (number | undefined)[] = [];
+    useStubModel(
+      new MockLanguageModelV3({
+        doGenerate: async (options) => {
+          caps.push(options.maxOutputTokens);
+          // What the SDK throws when the model answered with nothing usable.
+          throw new NoObjectGeneratedError({
+            message: 'no object generated',
+            cause: new Error('the model returned nothing usable'),
+            text: '',
+            response: { id: 'x', timestamp: new Date(), modelId: 'stub' },
+            usage: {
+              inputTokens: 1,
+              outputTokens: 1,
+              totalTokens: 2,
+              inputTokenDetails: {
+                noCacheTokens: 1,
+                cacheReadTokens: 0,
+                cacheWriteTokens: 0,
+              },
+              outputTokenDetails: { textTokens: 1, reasoningTokens: 0 },
+            },
+            finishReason: 'length',
+          });
+        },
+      }),
+    );
+
+    await expect(
+      generateForRole(
+        { db, logger, secretKey: SECRET_KEY },
+        { role: 'prefilter', schema, system: 'x', prompt: 'y', maxOutputTokens: 1_000 },
+      ),
+    ).rejects.toThrow(ModelOutputError);
+
+    expect(caps).toEqual([1_000, 1_000 * RETRY_HEADROOM]);
   });
 });

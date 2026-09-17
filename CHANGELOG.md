@@ -31,6 +31,19 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   every listing was kept and sent to the reviewer, so the stage that exists to avoid mid-tier
   prices was quietly charging them. Found by the new evaluation on its first run against OpenAI;
   the check had only ever been pointed at Gemini, which does not reason and answered inside 200.
+- **The default pre-filter model is now `google:gemini-3.5-flash-lite`**, not `openai:gpt-5-nano`.
+  Measured over twelve runs of the prompt evaluation, gpt-5-nano discarded a water-damaged but
+  genuine listing in four of them — always the same one — reasoning that a missing manual made it
+  "not the complete big-box set". That is a completeness judgement the pre-filter is told not to
+  make, and a wrongly discarded listing is never reviewed, never emailed and never noticed.
+  Gemini Flash-Lite did not do it once in eight runs, at the same cost per call. The defaults now
+  name three providers; every role is a single line in Settings, and a default that loses a third
+  of the listings you might have wanted is not worth keeping for tidiness.
+- A malformed-output retry now gets **twice the room** to answer in. The two causes of that
+  failure want opposite treatment, and for the common one — a reasoning model that spent its whole
+  output allowance thinking and had none left for the answer — repeating the identical call was
+  billed and doomed. The pre-filter's own ceiling is 4,000 rather than 2,000, from thirty-eight
+  measured calls rather than one.
 - The pre-filter and the reviewer now ask for **temperature 0**. Both ran at the provider's
   default of 1 — full sampling variance on what are classification tasks — which matters beyond
   the evaluation: the newest verdict is the authoritative one and Phase 5 re-reviews on demand, so

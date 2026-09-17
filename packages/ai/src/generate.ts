@@ -160,18 +160,34 @@ export class ModelOutputError extends Error {
 }
 
 /**
- * Runs the call, giving a malformed structured response one more go.
+ * How much more room the second attempt gets than the first.
+ *
+ * `NoObjectGeneratedError` has two causes and they want opposite treatment. A model that emitted
+ * something malformed may do better asked again; a *reasoning* model that spent its whole output
+ * allowance thinking and had none left for the answer will fail identically for ever, because the
+ * retry was an exact repeat of the call that just failed. That second case is the common one —
+ * P1-17 met it three times, at three different ceilings — so the retry is given more room, which
+ * costs nothing when the first attempt succeeds and turns a billed, doomed repeat into one that
+ * can work.
+ */
+export const RETRY_HEADROOM = 2;
+
+/**
+ * Runs the call, giving a malformed structured response one more go — with more room to answer in.
  *
  * Only `NoObjectGeneratedError` is retried here: everything else is either already retried by the
  * SDK or is not going to be helped by asking again. The second attempt is billed like the first,
  * which is why there is exactly one.
  */
-async function attempt<R>(call: () => Promise<R>, abortSignal?: AbortSignal): Promise<R> {
+async function attempt<R>(
+  call: (attemptNumber: number) => Promise<R>,
+  abortSignal?: AbortSignal,
+): Promise<R> {
   let last: unknown;
 
   for (let tries = 0; tries <= OBJECT_RETRIES; tries += 1) {
     try {
-      return await call();
+      return await call(tries);
     } catch (error) {
       if (!NoObjectGeneratedError.isInstance(error) || abortSignal?.aborted) throw error;
       last = error;
@@ -197,15 +213,17 @@ export async function generateForRole<T>(
       ? request.prompt
       : [{ role: 'user' as const, content: [...request.prompt] }];
 
+  const cap = request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
+
   try {
     const result = await attempt(
-      () =>
+      (tries) =>
         generateObject({
           model: role.languageModel,
           schema: request.schema,
           system: request.system,
           ...(typeof prompt === 'string' ? { prompt } : { messages: prompt }),
-          maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          maxOutputTokens: tries === 0 ? cap : cap * RETRY_HEADROOM,
           ...(request.temperature === undefined ? {} : { temperature: request.temperature }),
           maxRetries: TRANSPORT_RETRIES,
           ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),

@@ -54,8 +54,13 @@ export const TITLE_LIMIT = 200;
  *
  * A ceiling rather than a target: a model that does not reason still emits its one sentence and
  * costs the same as it always did.
+ *
+ * Four thousand, not the two thousand this was first set to. Two thousand came from a single
+ * measurement of 614; thirty-eight measured calls later the spread is 361 to 1,249, which is a
+ * long enough tail that 2,000 lost a case to it in CI. Three times the observed maximum is the
+ * headroom, and `RETRY_HEADROOM` doubles it again on a second attempt if even that is short.
  */
-const MAX_OUTPUT_TOKENS = 2000;
+const MAX_OUTPUT_TOKENS = 4000;
 
 export interface PrefilterListing {
   title: string;

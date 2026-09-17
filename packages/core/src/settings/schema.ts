@@ -96,7 +96,20 @@ export const modelRefSchema = z
  */
 export const DEFAULT_AI_ROLES: Record<(typeof AI_ROLES)[number], string> = {
   interviewer: 'anthropic:claude-opus-5',
-  prefilter: 'openai:gpt-5-nano',
+  /**
+   * Not `openai:gpt-5-nano`, which it was until P1-17 measured it: across twelve runs of the
+   * prompt evaluation it discarded a water-damaged but genuine listing in four of them, reasoning
+   * that a missing manual made it "not the complete big-box set". That is a completeness
+   * judgement, which §7 step 3 tells this stage in as many words not to make, and a wrongly
+   * discarded listing is never reviewed, never emailed and never noticed. `gemini-3.5-flash-lite`
+   * did not do it once, at the same cost per call.
+   *
+   * It does mean the defaults now name three providers. Every role is independently configurable
+   * (§9), so anyone minding that changes one line in Settings — but the default has to be a model
+   * that does the job, and a third of runs losing the listing the collector might have wanted is
+   * not doing the job.
+   */
+  prefilter: 'google:gemini-3.5-flash-lite',
   reviewer: 'openai:gpt-5-mini',
 };
 

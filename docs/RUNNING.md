@@ -622,7 +622,7 @@ Three roles are configured independently, each as `provider:model` in Settings:
 | Role | What it does | Default |
 |---|---|---|
 | `interviewer` | Builds and amends specs in chat | `anthropic:claude-opus-5` |
-| `prefilter` | Reads every new listing, cheaply | `openai:gpt-5-nano` |
+| `prefilter` | Reads every new listing, cheaply | `google:gemini-3.5-flash-lite` |
 | `reviewer` | Looks at the photos and judges | `openai:gpt-5-mini` |
 
 Providers are Anthropic, OpenAI, Google, OpenRouter and Ollama. A key goes in Settings, where it
@@ -669,9 +669,15 @@ cheapest-tier model, and under 1.5p on anything you would sensibly put in this r
 at twelve requests a minute so it does not trip a free tier's limit, which takes about a minute
 and a half; `--rpm` raises that.
 
-Gemini 3.1 Flash-Lite scored 19/19 on 15 September 2026, and GPT-5 nano and Gemini 3.5 Flash-Lite
-both scored 19/19 on 17 September 2026 for well under a penny each. Anything with a **wrong
-discard** is not fit for this role whatever its total, because that is the mistake nothing reports.
+Anything with a **wrong discard** is not fit for this role whatever its total, because that is the
+mistake nothing reports — and that is not a hypothetical. Measured over twelve runs on 17 September
+2026, **GPT-5 nano discarded a water-damaged but genuine big box in four of them**, always the same
+listing, reasoning that a missing manual made it "not the complete big-box set". It is not fit for
+this role and is no longer the default. Gemini 3.5 Flash-Lite went eight runs without doing it and
+GPT-5 mini two, at 19/19; Gemini 3.1 Flash-Lite scored 19/19 on 15 September 2026.
+
+A single clean run proves very little here. Run any candidate model several times before trusting
+it: two of these three looked identical after one run.
 
 **If every case comes back "could not be run", check the output ceiling before the prompt.** A
 reasoning model is charged for its hidden reasoning against the same `maxOutputTokens` as its

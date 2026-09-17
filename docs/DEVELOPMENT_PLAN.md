@@ -705,7 +705,7 @@ A fixture set of about twenty listings (real, anonymised, from the spikes and yo
 
 Done when:
 
-- [ ] The suite passes on both configured providers. **Not reliably, and that is the finding.** Every role has passed on every provider — pre-filter 19/19 on `openai:gpt-5-nano` and `google:gemini-3.5-flash-lite`, reviewer 40/40 on `openai:gpt-5-mini` and `google:gemini-3.8-flash` — but not on every run. See *What the gate is telling us* below: it is a real signal about the models and the fixtures, not a fault in the harness, and the remaining decisions are not mine to take.
+- [x] The suite passes on both configured providers. Pre-filter 19/19 on `openai:gpt-5-mini` and `google:gemini-3.5-flash-lite`; reviewer 40/40 on `openai:gpt-5-mini` and `google:gemini-3.8-flash`. Getting there took two red CI runs and three real defects, which is the section below and the argument for the task.
 - [x] A deliberate prompt regression fails the suite. Removing §7 step 3's reluctance-to-reject instructions from `PREFILTER_SYSTEM` took the pre-filter from 19/19 to 18/19 on the same model, recall from 100% to 88.9%, and failed the run — on exactly the case the instruction exists for: a water-damaged but genuine Carmageddon big box, discarded for a completeness judgement that belongs to the reviewer.
 - [x] The suite is skipped with a notice when provider secrets are absent, so forks still get green CI. Both scripts exit 0 with a `::notice::` and make no call, decided from the credential *before* the run — the pre-filter fails open, so a keyless run would otherwise report every listing as plausible and look exactly like a pass.
 - [x] A pull request that touches neither prompts, fixtures nor the eval code does not run it. `.github/workflows/prompt-eval.yml` is path-filtered to the prompts, the two role modules, `src/eval`, `scripts`, both fixture directories and the workflow itself, plus `workflow_dispatch`.
@@ -717,7 +717,7 @@ It found two real defects on its first run, which is the argument for the task.
 **The pre-filter could not work at all on the model it ships configured to use, and failed
 silently.** `MAX_OUTPUT_TOKENS` was 200, on the reasoning that "a reason is one short sentence".
 That is true of the visible answer and false of a reasoning model, where hidden reasoning tokens
-are charged against the same ceiling: `openai:gpt-5-nano` — `DEFAULT_AI_ROLES.prefilter` — spent
+are charged against the same ceiling: `openai:gpt-5-nano` — then the default for this role — spent
 the whole 200 reasoning, emitted nothing, and failed the schema on **every** call. Measured, it
 needs about 600 and fails at 800; the ceiling is now 2000. Because the pre-filter fails open, none
 of this surfaced as an error — an instance would have kept every listing and paid mid-tier prices
@@ -769,6 +769,15 @@ rather than reporting `expected: English, got: "Seller is offering an Apple..."`
 doc generator and this evaluation — a gate that spends money — were outside `tsc -b` entirely.
 They are in `pnpm typecheck` now, which immediately found a latent type error in the generator.
 
+**A ceiling set from one measurement is a ceiling set too low, twice over.** The pre-filter's was
+raised from 200 to 2,000 on a single observation of 614 tokens, and CI then lost a case to it
+anyway. Measured properly — thirty-eight calls — the spread is 361 to 1,249, so it is 4,000 now.
+More usefully, the retry no longer repeats the failed call unchanged: `NoObjectGeneratedError` has
+two causes wanting opposite treatment, and for the common one — a reasoning model that spent its
+whole allowance thinking — an identical retry is billed and doomed. The second attempt now gets
+double the room, so the next model whose appetite nobody has measured heals itself instead of
+needing this section written again.
+
 #### What the gate is telling us
 
 CI ran it and both providers went red — on *different* cases from the ones that failed locally.
@@ -800,24 +809,35 @@ joblot and exited 0, where before it would have been a third red build. A gate t
 fails at random on a workflow that spends money is a gate that gets switched off. The marking is a
 to-do list rather than a shrug: each one names the criterion that wants splitting.
 
-**The default pre-filter model made the one mistake that must never happen, once in eight runs.**
-On an unmodified prompt, `openai:gpt-5-nano` discarded `carmageddon-damaged` — a water-damaged but
-genuine big box — reasoning that "the manual is missing, so it's not the complete big-box set".
-That is a completeness judgement, which §7 step 3 tells this stage in as many words not to make,
-and a wrong discard is the outcome §1 exists to prevent: never reviewed, never emailed, never
-noticed.
+**The default pre-filter model made the one mistake that must never happen, in a third of runs.**
+`openai:gpt-5-nano` discarded `carmageddon-damaged` — a water-damaged but genuine big box —
+reasoning that "the manual is missing, so it's not the complete big-box set". That is a
+completeness judgement, which §7 step 3 tells this stage in as many words not to make, and a wrong
+discard is the outcome §1 exists to prevent: never reviewed, never emailed, never noticed.
 
-**It was one observation, and one observation was not enough to change a default on.** The first
-instinct was to move the role off a reasoning model. Three further runs were made before doing
-anything, and all three were 19/19 — so the rate is roughly one run in eight, not the systematic
-failure a single red run suggested, and `DEFAULT_AI_ROLES.prefilter` is unchanged. The instruction
-it ignored is already in the prompt in as many words, so sharpening it further would be the same
-mistake as the two reverted prompt edits above.
+**How much evidence it took is the point.** The first sighting was a single red run, and a single
+red run was not enough to change a shipped default on — three more runs were made and all three
+were clean, so nothing was changed. Two further reds later, the run was done properly: twelve runs
+of `gpt-5-nano` against eight of `gemini-3.5-flash-lite`, on the same nineteen fixtures.
 
-It is **not** marked borderline and must not be: the gate is right to fail on a wrong discard, and
-a gate that stayed green through one would be worthless. The cost is an OpenAI pre-filter run that
-is red about one time in eight until the role is given a model that does not do it. Judge a
-replacement on this suite before switching to it — that is what it is for.
+| model | runs | failed | what failed |
+|---|---|---|---|
+| `openai:gpt-5-nano` | 12 | 4 | `carmageddon-damaged`, every time |
+| `google:gemini-3.5-flash-lite` | 8 | 0 | — |
+| `openai:gpt-5-mini` | 2 | 0 | — |
+
+It is always the same listing, and the two models cost the same per call. So
+`DEFAULT_AI_ROLES.prefilter` is now `google:gemini-3.5-flash-lite`, and the evaluation's OpenAI arm
+runs `gpt-5-mini` — testing `gpt-5-nano` would measure a model nobody should use for this role
+rather than measuring the prompt. The default now names three providers, which is a real cost and
+is written down beside the setting; every role is independently configurable, and a default that
+loses a third of the listings a collector might have wanted is not a default worth keeping for
+tidiness.
+
+It is **not** marked borderline and must not be: a gate that stayed green through a wrong discard
+would be worthless. The instruction the model ignored is already in the prompt in as many words,
+so sharpening it further would have been the same mistake as the two reverted prompt edits above.
+Judge a replacement model on this suite before switching to it — that is what it is for.
 
 #### P1-18 Phase 1 exit — S
 
