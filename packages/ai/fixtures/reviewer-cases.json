@@ -18,7 +18,10 @@
           "disc-readable": "pass"
         },
         "shipsToUk": "unknown",
-        "summaryMentions": ["manual", "disc"]
+        "summaryMentions": [
+          "manual",
+          "disc"
+        ]
       }
     },
     {
@@ -54,7 +57,10 @@
           "no-water-damage": "fail"
         },
         "shipsToUk": "unknown",
-        "summaryMentions": ["water", "mould"]
+        "summaryMentions": [
+          "water",
+          "mould"
+        ]
       }
     },
     {
@@ -104,14 +110,19 @@
           "complete-machine": "pass"
         },
         "shipsToUk": "no",
-        "summaryMentions": ["Performa"],
+        "summaryMentions": [
+          "Performa"
+        ],
         "summaryInEnglish": true
+      },
+      "borderlineCriteria": {
+        "complete-machine": "The seller writes 本体のみ (unit only) and says no keyboard or mouse is included. A working all-in-one is plainly not the stripped case, bare board or loose parts the criterion excludes, so pass is right — but gpt-5-mini reads 'unit only' as incompleteness about half the time. Splitting the criterion, or saying in it that peripherals do not count, would settle it."
       }
     },
     {
       "id": "performa-parts-only",
       "spec": "power-mac-5500",
-      "why": "A hard fail with `onUnknown: reject` on the criterion that fails. The machine is a stripped case, which is exactly what the spec excludes. `all-in-one` is deliberately not asserted here: for a shell with the CRT removed the criterion admits two readings \u2014 it is the all-in-one form factor rather than a tower, but it has no screen built into it either \u2014 and a fixture should not encode an arbitrary choice between them. That ambiguity is the spec author's to fix, not the reviewer's: a criterion that bundles a form-factor test with a component-presence test cannot be answered cleanly for a partial item.",
+      "why": "A hard fail with `onUnknown: reject` on the criterion that fails. The machine is a stripped case, which is exactly what the spec excludes. `all-in-one` is deliberately not asserted here: for a shell with the CRT removed the criterion admits two readings — it is the all-in-one form factor rather than a tower, but it has no screen built into it either — and a fixture should not encode an arbitrary choice between them. That ambiguity is the spec author's to fix, not the reviewer's: a criterion that bundles a form-factor test with a component-presence test cannot be answered cleanly for a partial item.",
       "title": "Apple Macintosh Performa 5200 case only - no internals",
       "description": "Empty Performa 5200 all-in-one case. The CRT, logic board, drives and power supply have all been removed - this is the plastic shell and the front bezel only. Good for a retro PC conversion project. Case has yellowed but is not cracked.",
       "images": [],

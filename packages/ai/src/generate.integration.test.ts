@@ -241,4 +241,75 @@ describe.skipIf(!databaseUrl)('generateForRole against a real Postgres', () => {
     expect(calls).toBe(2);
     expect(result.object).toEqual({ plausible: true, reason: 'big box' });
   });
+
+  /**
+   * P1-17 pinned both classifier roles to temperature 0, so the request has to carry it — a
+   * classifier at the provider's default of 1 answers the same listing differently on different
+   * days, and §4 makes a re-review authoritative.
+   */
+  it('passes the sampling temperature the caller asked for', async () => {
+    let seen: number | undefined;
+    useStubModel(
+      new MockLanguageModelV3({
+        doGenerate: async (options) => {
+          seen = options.temperature;
+          return {
+            content: [{ type: 'text', text: '{"plausible":true,"reason":"big box"}' }],
+            finishReason: { unified: 'stop' as const, raw: 'stop' },
+            usage: {
+              inputTokens: { total: 10, noCache: 10, cacheRead: 0, cacheWrite: 0 },
+              outputTokens: { total: 5, text: 5, reasoning: 0 },
+            },
+            warnings: [],
+          };
+        },
+      }),
+    );
+
+    await generateForRole(
+      { db, logger, secretKey: SECRET_KEY },
+      { role: 'prefilter', schema, system: 'x', prompt: 'y', temperature: 0 },
+    );
+
+    expect(seen).toBe(0);
+  });
+
+  /**
+   * A provider that refuses a setting warns rather than failing — OpenAI's reasoning models do
+   * exactly that with `temperature`. The SDK prints those to the console, which goes round pino
+   * and ignores `LOG_LEVEL`, so they are turned off and re-emitted through the logger instead.
+   */
+  it('reports a warning through the logger rather than past it', async () => {
+    const debug = vi.fn();
+    useStubModel(
+      new MockLanguageModelV3({
+        doGenerate: async () => ({
+          content: [{ type: 'text', text: '{"plausible":true,"reason":"big box"}' }],
+          finishReason: { unified: 'stop' as const, raw: 'stop' },
+          usage: {
+            inputTokens: { total: 10, noCache: 10, cacheRead: 0, cacheWrite: 0 },
+            outputTokens: { total: 5, text: 5, reasoning: 0 },
+          },
+          warnings: [
+            {
+              type: 'unsupported' as const,
+              feature: 'temperature',
+              details: 'temperature is not supported for reasoning models',
+            },
+          ],
+        }),
+      }),
+    );
+
+    await generateForRole(
+      { db, logger: { ...logger, debug }, secretKey: SECRET_KEY },
+      { role: 'prefilter', schema, system: 'x', prompt: 'y', temperature: 0 },
+    );
+
+    expect(debug).toHaveBeenCalledWith(
+      'the provider did not accept part of the request',
+      expect.objectContaining({ setting: 'temperature' }),
+    );
+    expect((globalThis as { AI_SDK_LOG_WARNINGS?: boolean }).AI_SDK_LOG_WARNINGS).toBe(false);
+  });
 });

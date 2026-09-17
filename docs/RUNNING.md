@@ -772,6 +772,20 @@ input.
 The budget fails rather than passing early on purpose: the cases it never asked about are not
 evidence that the prompt is fine.
 
+**A case can be marked borderline**, which means it is graded and reported but cannot fail the
+build. That is for listings with two defensible answers — a joblot in which the wanted item is one
+of six, or whether a Japanese "unit only" machine is a complete one — where asserting either
+answer measures the model's sampling rather than the prompt. It is not a way to silence an
+inconvenient failure: a wrong discard is never borderline, because that is the mistake nothing
+else reports. Each marking names the criterion that wants splitting in the spec.
+
+**Both classifier roles ask for `temperature: 0`**, so the same listing is judged the same way as
+far as the model allows — which matters beyond the eval, because a re-review is meant to be a
+second look rather than a second roll of the dice. It is a request, not a guarantee: OpenAI's
+reasoning models refuse the setting and the SDK drops it, and Gemini still varies because thinking
+is sampled whatever the temperature says. So a run can still be red on one case and green on the
+next. The eval is reporting that, not causing it.
+
 **A provider with no key configured skips, with a notice, and exits zero**, so a fork gets a green
 build. That is decided from the credential before anything runs, and it has to be: the pre-filter
 fails open by design, so a run with no key would report every listing as plausible, find no wrong

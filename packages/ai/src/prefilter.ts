@@ -4,7 +4,12 @@ import {
   prefilterOutputSchema,
   type WantedSpec,
 } from '@goodies-beacon/core';
-import { type GenerateDeps, generateForRole, ModelOutputError } from './generate.js';
+import {
+  CLASSIFIER_TEMPERATURE,
+  type GenerateDeps,
+  generateForRole,
+  ModelOutputError,
+} from './generate.js';
 import type { Usage } from './pricing.js';
 import {
   buildPrefilterPrompt,
@@ -135,6 +140,7 @@ export async function runPrefilter(
       system: PREFILTER_SYSTEM,
       prompt,
       maxOutputTokens: MAX_OUTPUT_TOKENS,
+      temperature: CLASSIFIER_TEMPERATURE,
       wantedItemId: request.wantedItemId ?? null,
       candidateId: request.candidateId ?? null,
       ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),

@@ -33,6 +33,7 @@ export {
   tally,
 } from './eval/score.js';
 export {
+  CLASSIFIER_TEMPERATURE,
   type GenerateDeps,
   type GenerateRequest,
   type GenerateResult,

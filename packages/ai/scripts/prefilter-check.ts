@@ -69,6 +69,17 @@ interface Case {
   why: string;
   title: string;
   description: string;
+  /**
+   * Set when the fixture is deliberately near the line, with the reason. Graded and reported like
+   * any other case, but a disagreement does not fail the run.
+   *
+   * Some listings genuinely have two defensible answers — a bundle in which the wanted item is a
+   * named part is the standing example — and a model at its default sampling temperature will
+   * give both across runs. Asserting one of them measures the dice rather than the prompt, and a
+   * gate that fails at random on a workflow that spends money is a gate that gets switched off.
+   * Marking it keeps the case and its drift visible without making the build a coin toss.
+   */
+  borderline?: string;
 }
 
 const fixtures = fileURLToPath(new URL('../fixtures/prefilter-cases.json', import.meta.url));
@@ -162,12 +173,16 @@ const correct = graded.filter(
  * In precision and recall, keeping is the positive class — so **recall is the number that must be
  * 1.0** and precision is the one worth watching drift on.
  */
-const wronglyDiscarded = graded.filter(
-  (outcome) => outcome.entry.expect === 'plausible' && !outcome.plausible,
+const wrong = graded.filter(
+  (outcome) => outcome.plausible !== (outcome.entry.expect === 'plausible'),
 );
-const wronglyKept = graded.filter(
-  (outcome) => outcome.entry.expect === 'reject' && outcome.plausible,
+const wronglyDiscarded = wrong.filter(
+  (outcome) => outcome.entry.expect === 'plausible' && !outcome.entry.borderline,
 );
+const wronglyKept = wrong.filter(
+  (outcome) => outcome.entry.expect === 'reject' && !outcome.entry.borderline,
+);
+const disagreed = wrong.filter((outcome) => outcome.entry.borderline);
 const spent = outcomes.reduce((total, outcome) => total + outcome.costUsd, 0);
 const couldNotRun = outcomes.length - graded.length + (cases.length - outcomes.length);
 
@@ -187,6 +202,9 @@ console.log(
 );
 console.log(`  wrongly discarded: ${wronglyDiscarded.length}  (the mistake that hides)`);
 console.log(`  wrongly kept:      ${wronglyKept.length}  (the cheap mistake)`);
+if (disagreed.length > 0) {
+  console.log(`  borderline:        ${disagreed.length}  (reported, not a failure)`);
+}
 console.log(`  spent:             $${spent.toFixed(5)}`);
 
 if (couldNotRun > 0) console.log(`  could not run:     ${couldNotRun}`);
@@ -194,6 +212,11 @@ if (couldNotRun > 0) console.log(`  could not run:     ${couldNotRun}`);
 for (const outcome of wronglyDiscarded) {
   console.log(
     `\n  DISCARDED "${outcome.entry.title}"\n    expected plausible: ${outcome.entry.why}\n    model said: ${outcome.reason}`,
+  );
+}
+for (const outcome of disagreed) {
+  console.log(
+    `\n  BORDERLINE "${outcome.entry.title}"\n    expected ${outcome.entry.expect}: ${outcome.entry.borderline}\n    model said: ${outcome.reason}`,
   );
 }
 for (const outcome of wronglyKept) {
@@ -226,7 +249,14 @@ const run: EvalRun = {
   score: measured,
   couldNotRun,
   spentUsd: spent,
-  failures: wronglyKept.map((outcome) => `kept ${outcome.entry.id}: ${outcome.reason}`),
+  failures: [
+    ...wronglyKept.map((outcome) => `kept ${outcome.entry.id}: ${outcome.reason}`),
+    ...disagreed.map(
+      (outcome) =>
+        `borderline — ${outcome.entry.id} came back ` +
+        `${outcome.plausible ? 'plausible' : 'reject'}: ${outcome.entry.borderline}`,
+    ),
+  ],
   fatal,
 };
 

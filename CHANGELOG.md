@@ -31,6 +31,21 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   every listing was kept and sent to the reviewer, so the stage that exists to avoid mid-tier
   prices was quietly charging them. Found by the new evaluation on its first run against OpenAI;
   the check had only ever been pointed at Gemini, which does not reason and answered inside 200.
+- The pre-filter and the reviewer now ask for **temperature 0**. Both ran at the provider's
+  default of 1 — full sampling variance on what are classification tasks — which matters beyond
+  the evaluation: the newest verdict is the authoritative one and Phase 5 re-reviews on demand, so
+  a re-review at full temperature was partly a dice roll rather than a second look. It is a
+  request rather than a guarantee, and measurement says so: OpenAI's reasoning models refuse the
+  setting, and Gemini still varies because thinking is sampled whatever the temperature says.
+- The AI SDK's own warnings went straight to the console, round pino, ignoring `LOG_LEVEL` and
+  producing an unstructured line per call. They now come through the logger at debug level, once
+  per model per warning per process.
+- A fixture can now mark an expectation **borderline**: graded and reported, counted in precision
+  and recall, but not able to fail the build. Two do — a joblot naming the wanted game among five
+  others, and whether a Japanese "unit only" all-in-one counts as a complete machine. Both have
+  two defensible answers, so asserting one measured the sampling rather than the prompt, and a
+  gate that fails at random on a workflow that spends money is a gate that gets switched off. Each
+  marking names the criterion that wants splitting, so it reads as a to-do rather than a shrug.
 - Fixed: **the reviewer failed a review now and then for no visible reason.** Its output ceiling
   was the 4096 default, and a thinking model's hidden reasoning comes out of the same allowance:
   `gemini-3.8-flash` ranged from about 1,300 tokens to over 4,000 on the *same* listing, failing

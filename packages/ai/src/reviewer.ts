@@ -7,7 +7,12 @@ import {
   reviewerOutputSchema,
   type WantedSpec,
 } from '@goodies-beacon/core';
-import { type GenerateDeps, generateForRole, ModelOutputError } from './generate.js';
+import {
+  CLASSIFIER_TEMPERATURE,
+  type GenerateDeps,
+  generateForRole,
+  ModelOutputError,
+} from './generate.js';
 import { buildReviewPrompt, countImages, type LabelledImage } from './images.js';
 import { boundDescription } from './prefilter.js';
 import type { Usage } from './pricing.js';
@@ -243,6 +248,7 @@ export async function runReviewer(
         system: REVIEWER_SYSTEM,
         prompt: parts,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        temperature: CLASSIFIER_TEMPERATURE,
         wantedItemId: request.wantedItemId ?? null,
         candidateId: request.candidateId ?? null,
         ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),

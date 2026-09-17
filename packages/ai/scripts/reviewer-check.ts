@@ -89,6 +89,16 @@ interface Case {
     summaryMentions: string[];
     summaryInEnglish?: boolean;
   };
+  /**
+   * Criteria this case grades and reports but will not fail the run over, with the reason.
+   *
+   * Some criteria genuinely have two defensible answers for a given listing — usually because the
+   * criterion bundles several tests and the seller addresses one of them — and a model at its
+   * default sampling temperature gives both across runs. Asserting one measures the dice rather
+   * than the prompt. A criterion that needs this is a criterion worth splitting in the spec; the
+   * marking says which ones, so the list is a to-do rather than a shrug.
+   */
+  borderlineCriteria?: Record<string, string>;
 }
 
 const fixtures = fileURLToPath(new URL('../fixtures/reviewer-cases.json', import.meta.url));
@@ -117,9 +127,13 @@ interface Wrong {
   what: string;
   expected: string;
   got: string;
+  /** Present when the case marked this criterion as having two defensible answers. */
+  borderline?: string;
 }
 
 const wrong: Wrong[] = [];
+/** Graded and reported, but not fatal — see `borderlineCriteria`. */
+const soft: Wrong[] = [];
 const failed: { entry: Case; error: string }[] = [];
 /** Expected against actual *decision*, so the run is scored on what the collector would see. */
 const decisions: { expected: boolean; actual: boolean }[] = [];
@@ -172,7 +186,16 @@ await withModel(db, 'reviewer', options.model, secretKey, async () => {
     for (const [criterionId, expected] of Object.entries(entry.expect.criteria)) {
       checks += 1;
       const got = byId.get(criterionId)?.result ?? 'missing';
-      if (got !== expected) wrong.push({ entry, what: criterionId, expected, got });
+      if (got !== expected) {
+        const borderline = entry.borderlineCriteria?.[criterionId];
+        (borderline ? soft : wrong).push({
+          entry,
+          what: criterionId,
+          expected,
+          got,
+          ...(borderline ? { borderline } : {}),
+        });
+      }
     }
 
     checks += 1;
@@ -252,6 +275,7 @@ console.log(
     `   recall: ${measured.recall === null ? '—' : (measured.recall * 100).toFixed(1)}%`,
 );
 console.log(`  spent: $${spent.toFixed(5)}`);
+if (soft.length > 0) console.log(`  borderline: ${soft.length} (reported, not a failure)`);
 
 const couldNotRun = failed.length + (cases.length - decisions.length - failed.length);
 if (couldNotRun > 0) console.log(`  could not run: ${couldNotRun}`);
@@ -259,6 +283,11 @@ if (couldNotRun > 0) console.log(`  could not run: ${couldNotRun}`);
 for (const item of wrong) {
   console.log(
     `\n  ${item.entry.id} — ${item.what}\n    expected: ${item.expected}\n    got:      ${item.got}\n    why the case exists: ${item.entry.why}`,
+  );
+}
+for (const item of soft) {
+  console.log(
+    `\n  BORDERLINE ${item.entry.id} — ${item.what}\n    expected: ${item.expected}\n    got:      ${item.got}\n    why it is borderline: ${item.borderline}`,
   );
 }
 for (const item of failed) {
@@ -279,7 +308,10 @@ const run: EvalRun = {
   score: measured,
   couldNotRun,
   spentUsd: spent,
-  failures: [],
+  failures: soft.map(
+    (item) =>
+      `borderline — ${item.entry.id} ${item.what}: expected ${item.expected}, got ${item.got}`,
+  ),
   fatal,
 };
 

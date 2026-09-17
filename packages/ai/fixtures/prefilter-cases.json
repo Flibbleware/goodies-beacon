@@ -78,6 +78,7 @@
       "spec": "carmageddon",
       "expect": "plausible",
       "why": "A bundle where it is a named part is worth a look; the reviewer decides. Deliberately near the line.",
+      "borderline": "A joblot naming the wanted game among five others is genuinely two-sided: it is a listing for the game and it is a listing for something else. Gemini 3.5 Flash-Lite kept it twice and discarded it once, and gpt-5-nano keeps it — so asserting either answer measures the sampling rather than the prompt.",
       "title": "Joblot 6 x PC Big Box Games inc Carmageddon Quake Doom",
       "description": "Six big box PC games including Carmageddon, Quake and Doom. All complete with manuals."
     },
