@@ -22,12 +22,25 @@ export {
   withBudgetGuard,
 } from './budget.js';
 export {
+  assertBudget,
+  BudgetSpentError,
+  type Confusion,
+  EMPTY,
+  type EvalRun,
+  markdownSummary,
+  type Score,
+  score,
+  tally,
+} from './eval/score.js';
+export {
+  CLASSIFIER_TEMPERATURE,
   type GenerateDeps,
   type GenerateRequest,
   type GenerateResult,
   generateForRole,
   ModelOutputError,
   OBJECT_RETRIES,
+  RETRY_HEADROOM,
 } from './generate.js';
 export { type ProviderTestDeps, testProvider } from './health.js';
 export {

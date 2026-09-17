@@ -49,6 +49,8 @@ export interface GenerateRequest<T> {
   candidateId?: string | null;
   /** Bounds a runaway generation; a structured verdict is small. */
   maxOutputTokens?: number;
+  /** Sampling temperature. Omit to take the provider's default, which is usually 1. */
+  temperature?: number;
   abortSignal?: AbortSignal;
 }
 
@@ -91,7 +93,64 @@ export const OBJECT_RETRIES = 1;
 /** The SDK's own retry, for the failures it *does* consider retryable. */
 const TRANSPORT_RETRIES = 1;
 
+/**
+ * Only for a caller that names no ceiling of its own. Both roles that exist do — and both had to,
+ * because a *reasoning* model is charged for its hidden reasoning against this same allowance, so
+ * a number chosen by looking at how long the answer is will be far too small. Whatever asks next
+ * should measure before it trusts this (P1-17 found both existing roles the hard way).
+ */
 const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
+
+/**
+ * What the pre-filter and the reviewer ask for, because both are classifiers rather than writers.
+ *
+ * Neither had a temperature until P1-17, so both ran at the provider's default of 1 — and a
+ * classifier at 1 gives different answers to the same listing on different days. That is not only
+ * an evaluation problem: §4 makes the newest verdict authoritative and Phase 5 re-reviews a
+ * candidate on demand, so a re-review at full sampling temperature is partly a dice roll rather
+ * than a second, better-informed look.
+ *
+ * It is a request, not a guarantee. A reasoning model refuses it — OpenAI's answer is "temperature
+ * is not supported for reasoning models" — and the SDK drops it and warns. Sending it anyway is
+ * still right: it is provider-neutral (§9), it takes effect everywhere it can, and the warning is
+ * now routed through this package's logger rather than printed past it.
+ */
+export const CLASSIFIER_TEMPERATURE = 0;
+
+/**
+ * The SDK prints its warnings straight to the console, which goes round pino, ignores `LOG_LEVEL`
+ * and produces an unstructured line per call in production. They are worth having, so they are
+ * turned off here and re-emitted through the logger below instead.
+ */
+(globalThis as { AI_SDK_LOG_WARNINGS?: boolean }).AI_SDK_LOG_WARNINGS = false;
+
+/** One line per model per warning per process: a poll of 500 listings must not log 500 times. */
+const warned = new Set<string>();
+
+function logWarnings(logger: Logger, role: ResolvedRole, warnings: unknown): void {
+  if (!Array.isArray(warnings)) return;
+
+  // `feature` in the current provider spec, `setting` in older ones; read whichever is there
+  // rather than tying the log line to one version of a field nobody outside the SDK sees.
+  for (const warning of warnings as {
+    type?: string;
+    feature?: string;
+    setting?: string;
+    details?: string;
+  }[]) {
+    const subject = warning.feature ?? warning.setting;
+    const key = `${role.provider}:${role.model}:${warning.type}:${subject ?? ''}`;
+    if (warned.has(key)) continue;
+    warned.add(key);
+
+    logger.debug('the provider did not accept part of the request', {
+      model: `${role.provider}:${role.model}`,
+      type: warning.type ?? 'unknown',
+      ...(subject ? { setting: subject } : {}),
+      ...(warning.details ? { details: warning.details } : {}),
+    });
+  }
+}
 
 export class ModelOutputError extends Error {
   override readonly name = 'ModelOutputError';
@@ -101,18 +160,34 @@ export class ModelOutputError extends Error {
 }
 
 /**
- * Runs the call, giving a malformed structured response one more go.
+ * How much more room the second attempt gets than the first.
+ *
+ * `NoObjectGeneratedError` has two causes and they want opposite treatment. A model that emitted
+ * something malformed may do better asked again; a *reasoning* model that spent its whole output
+ * allowance thinking and had none left for the answer will fail identically for ever, because the
+ * retry was an exact repeat of the call that just failed. That second case is the common one —
+ * P1-17 met it three times, at three different ceilings — so the retry is given more room, which
+ * costs nothing when the first attempt succeeds and turns a billed, doomed repeat into one that
+ * can work.
+ */
+export const RETRY_HEADROOM = 2;
+
+/**
+ * Runs the call, giving a malformed structured response one more go — with more room to answer in.
  *
  * Only `NoObjectGeneratedError` is retried here: everything else is either already retried by the
  * SDK or is not going to be helped by asking again. The second attempt is billed like the first,
  * which is why there is exactly one.
  */
-async function attempt<R>(call: () => Promise<R>, abortSignal?: AbortSignal): Promise<R> {
+async function attempt<R>(
+  call: (attemptNumber: number) => Promise<R>,
+  abortSignal?: AbortSignal,
+): Promise<R> {
   let last: unknown;
 
   for (let tries = 0; tries <= OBJECT_RETRIES; tries += 1) {
     try {
-      return await call();
+      return await call(tries);
     } catch (error) {
       if (!NoObjectGeneratedError.isInstance(error) || abortSignal?.aborted) throw error;
       last = error;
@@ -138,20 +213,25 @@ export async function generateForRole<T>(
       ? request.prompt
       : [{ role: 'user' as const, content: [...request.prompt] }];
 
+  const cap = request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
+
   try {
     const result = await attempt(
-      () =>
+      (tries) =>
         generateObject({
           model: role.languageModel,
           schema: request.schema,
           system: request.system,
           ...(typeof prompt === 'string' ? { prompt } : { messages: prompt }),
-          maxOutputTokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          maxOutputTokens: tries === 0 ? cap : cap * RETRY_HEADROOM,
+          ...(request.temperature === undefined ? {} : { temperature: request.temperature }),
           maxRetries: TRANSPORT_RETRIES,
           ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),
         }),
       request.abortSignal,
     );
+
+    logWarnings(deps.logger, role, result.warnings);
 
     const entry: LedgerEntry = {
       role: request.role,

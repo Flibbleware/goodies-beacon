@@ -47,7 +47,7 @@
     },
     {
       "id": "disc-readable",
-      "text": "The disc looks free of deep scratches that would stop it reading",
+      "text": "The disc is free of deep scratches that would stop it reading",
       "kind": "soft",
       "quantifiable": false,
       "onUnknown": "surface"

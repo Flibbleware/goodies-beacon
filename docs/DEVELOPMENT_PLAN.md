@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.33; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.34; section numbers below refer to it.*
 
-Version 1.11 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.12 — 17 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -705,10 +705,139 @@ A fixture set of about twenty listings (real, anonymised, from the spikes and yo
 
 Done when:
 
-- [ ] The suite passes on both configured providers.
-- [ ] A deliberate prompt regression (e.g. removing the quantifiable/soft instruction) fails the suite.
-- [ ] The suite is skipped with a notice when provider secrets are absent, so forks still get green CI.
-- [ ] A pull request that touches neither prompts, fixtures nor the eval code does not run it.
+- [x] The suite passes on both configured providers. Pre-filter 19/19 on `openai:gpt-5-mini` and `google:gemini-3.5-flash-lite`; reviewer 40/40 on `openai:gpt-5-mini` and `google:gemini-3.8-flash`. Getting there took two red CI runs and three real defects, which is the section below and the argument for the task.
+- [x] A deliberate prompt regression fails the suite. Removing §7 step 3's reluctance-to-reject instructions from `PREFILTER_SYSTEM` took the pre-filter from 19/19 to 18/19 on the same model, recall from 100% to 88.9%, and failed the run — on exactly the case the instruction exists for: a water-damaged but genuine Carmageddon big box, discarded for a completeness judgement that belongs to the reviewer.
+- [x] The suite is skipped with a notice when provider secrets are absent, so forks still get green CI. Both scripts exit 0 with a `::notice::` and make no call, decided from the credential *before* the run — the pre-filter fails open, so a keyless run would otherwise report every listing as plausible and look exactly like a pass.
+- [x] A pull request that touches neither prompts, fixtures nor the eval code does not run it. `.github/workflows/prompt-eval.yml` is path-filtered to the prompts, the two role modules, `src/eval`, `scripts`, both fixture directories and the workflow itself, plus `workflow_dispatch`.
+
+#### What P1-17 found
+
+It found two real defects on its first run, which is the argument for the task.
+
+**The pre-filter could not work at all on the model it ships configured to use, and failed
+silently.** `MAX_OUTPUT_TOKENS` was 200, on the reasoning that "a reason is one short sentence".
+That is true of the visible answer and false of a reasoning model, where hidden reasoning tokens
+are charged against the same ceiling: `openai:gpt-5-nano` — then the default for this role — spent
+the whole 200 reasoning, emitted nothing, and failed the schema on **every** call. Measured, it
+needs about 600 and fails at 800; the ceiling is now 2000. Because the pre-filter fails open, none
+of this surfaced as an error — an instance would have kept every listing and paid mid-tier prices
+to review all of them, which is §7 step 3's cost control not merely absent but inverted. It had
+only ever been checked against Gemini, which does not reason and answered inside 200.
+
+**The reviewer's ceiling was the same problem one size down.** It took `generate.ts`'s 4096
+default, and `google:gemini-3.8-flash` — a thinking model — failed a case outright with the same
+schema error. Measured on the case that failed, its reasoning ranges from about 1,300 tokens to
+over 4,000 for the same input: three attempts gave 3,127, a failure, and 1,331. That is a reviewer
+that dead-letters a candidate now and then for no reason visible from outside. The ceiling is 8,000
+now, roughly twice the largest run measured, and a failed call is billed anyway while producing
+nothing — so raising it cannot be the more expensive choice.
+
+**Two criteria disagreed between providers, and both were the spec's fault rather than the
+prompt's.** `disc-readable` read "The disc **looks** free of deep scratches" — a visual test, put
+to a fixture set that has no photographs — so OpenAI accepted the seller's statement and Gemini
+said `unknown`. Dropping the one word settles it: a statement is squarely on point for "the disc
+is free of scratches", and both providers now pass. `crt-condition` bundles three tests — burned
+in, cracked, badly discoloured — where the Japanese seller answers only the first; gpt-5-mini gave
+`pass` twice and `unknown` twice across four runs. That case exists to test the translation, so it
+no longer asserts that criterion at all: the assertion was measuring a model's temperament on an
+ambiguous criterion rather than anything about the prompt. **The criterion itself is still worth
+splitting in the example spec**, which is a change to what a shipped worked example teaches and so
+is a task of its own.
+
+**Two attempts to fix those in the prompt were made and reverted, which is the lesson.** Telling
+the reviewer that an explicit statement is evidence fixed `disc-readable` on Gemini and broke
+`contents-complete` on OpenAI; a second clarification fixed that and broke `complete-machine`.
+RUNNING.md had already written the rule down — "a criterion that bundles two tests cannot be
+answered cleanly, and that is worth fixing in the spec rather than arguing with the reviewer
+about" — and every one of these was a bundled or mis-worded criterion. The prompt is unchanged.
+
+**Three fixtures claimed photographs that do not exist.** The reviewer fixture set is text-only by
+design, and three descriptions said things were "pictured together" or "photographed from the
+front". For two cases that expected `unknown` it made no difference; for `carmageddon-clear-pass`
+it was load-bearing, and a model that noticed the listing contradicting itself was right to. The
+claims are gone.
+
+**The English-summary check was a coin toss.** One run of `performa-japanese` quoted a Japanese
+phrase inside an otherwise-English summary and failed; the next did not. Any CJK at all was the
+wrong test: an untranslated summary is essentially all Japanese, while one that is English apart
+from the seller's own word for the condition is doing its job, arguably better than one that
+paraphrases the quote away. `summaryIsEnglish` now allows up to a tenth of the characters, which
+separates the two cleanly and is unit-tested for nothing — and it names the offending characters
+rather than reporting `expected: English, got: "Seller is offering an Apple..."`.
+
+**`scripts/` was typechecked by nothing.** Each package's tsconfig includes only `src`, so the API
+doc generator and this evaluation — a gate that spends money — were outside `tsc -b` entirely.
+They are in `pnpm typecheck` now, which immediately found a latent type error in the generator.
+
+**A ceiling set from one measurement is a ceiling set too low, twice over.** The pre-filter's was
+raised from 200 to 2,000 on a single observation of 614 tokens, and CI then lost a case to it
+anyway. Measured properly — thirty-eight calls — the spread is 361 to 1,249, so it is 4,000 now.
+More usefully, the retry no longer repeats the failed call unchanged: `NoObjectGeneratedError` has
+two causes wanting opposite treatment, and for the common one — a reasoning model that spent its
+whole allowance thinking — an identical retry is billed and doomed. The second attempt now gets
+double the room, so the next model whose appetite nobody has measured heals itself instead of
+needing this section written again.
+
+#### What the gate is telling us
+
+CI ran it and both providers went red — on *different* cases from the ones that failed locally.
+That is the important result, and it is worth separating into three things, because only one of
+them is a fault in the evaluation itself.
+
+**Nothing pinned the sampling temperature, anywhere, and pinning it did not fix the flakiness.**
+`generateObject` was called without one, so every pre-filter and every review ran at the
+provider's default of 1 — full sampling variance on what are classification tasks. Both classifier
+roles now ask for 0, which is right on its own terms: §4 makes the newest verdict authoritative
+and Phase 5 re-reviews on demand, so a re-review at full temperature is partly a dice roll rather
+than a second look.
+
+**It buys less than it looks like it should, and the measurement says so.** OpenAI's reasoning
+models refuse the setting outright — the SDK warns "temperature is not supported for reasoning
+models" and drops it — and `google:gemini-3.5-flash-lite` at 0 still gave two *different* answers
+across two consecutive runs of the same nineteen fixtures. Both default models think before they
+answer, and thinking is sampled whatever the temperature says. So this is a correctness fix for
+re-reviews, not a cure for a flaky gate, and it is written down that way so nobody re-derives the
+hope later.
+
+**Two fixtures assert an answer to a question with two defensible answers.** `carmageddon-in-bundle`
+is a joblot naming the wanted game among five others; its own note already said "deliberately near
+the line". `performa-japanese / complete-machine` turns on whether 本体のみ — "unit only", no
+keyboard or mouse — makes a working all-in-one incomplete. Both now carry a `borderline` marking:
+graded, counted in precision and recall, reported in the summary, and **not fatal**. It earns its
+keep immediately: of the two Gemini pre-filter runs made after the change, one disagreed on the
+joblot and exited 0, where before it would have been a third red build. A gate that
+fails at random on a workflow that spends money is a gate that gets switched off. The marking is a
+to-do list rather than a shrug: each one names the criterion that wants splitting.
+
+**The default pre-filter model made the one mistake that must never happen, in a third of runs.**
+`openai:gpt-5-nano` discarded `carmageddon-damaged` — a water-damaged but genuine big box —
+reasoning that "the manual is missing, so it's not the complete big-box set". That is a
+completeness judgement, which §7 step 3 tells this stage in as many words not to make, and a wrong
+discard is the outcome §1 exists to prevent: never reviewed, never emailed, never noticed.
+
+**How much evidence it took is the point.** The first sighting was a single red run, and a single
+red run was not enough to change a shipped default on — three more runs were made and all three
+were clean, so nothing was changed. Two further reds later, the run was done properly: twelve runs
+of `gpt-5-nano` against eight of `gemini-3.5-flash-lite`, on the same nineteen fixtures.
+
+| model | runs | failed | what failed |
+|---|---|---|---|
+| `openai:gpt-5-nano` | 12 | 4 | `carmageddon-damaged`, every time |
+| `google:gemini-3.5-flash-lite` | 8 | 0 | — |
+| `openai:gpt-5-mini` | 2 | 0 | — |
+
+It is always the same listing, and the two models cost the same per call. So
+`DEFAULT_AI_ROLES.prefilter` is now `google:gemini-3.5-flash-lite`, and the evaluation's OpenAI arm
+runs `gpt-5-mini` — testing `gpt-5-nano` would measure a model nobody should use for this role
+rather than measuring the prompt. The default now names three providers, which is a real cost and
+is written down beside the setting; every role is independently configurable, and a default that
+loses a third of the listings a collector might have wanted is not a default worth keeping for
+tidiness.
+
+It is **not** marked borderline and must not be: a gate that stayed green through a wrong discard
+would be worthless. The instruction the model ignored is already in the prompt in as many words,
+so sharpening it further would have been the same mistake as the two reverted prompt edits above.
+Judge a replacement model on this suite before switching to it — that is what it is for.
 
 #### P1-18 Phase 1 exit — S
 

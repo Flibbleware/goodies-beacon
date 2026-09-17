@@ -7,7 +7,12 @@ import {
   reviewerOutputSchema,
   type WantedSpec,
 } from '@goodies-beacon/core';
-import { type GenerateDeps, generateForRole, ModelOutputError } from './generate.js';
+import {
+  CLASSIFIER_TEMPERATURE,
+  type GenerateDeps,
+  generateForRole,
+  ModelOutputError,
+} from './generate.js';
 import { buildReviewPrompt, countImages, type LabelledImage } from './images.js';
 import { boundDescription } from './prefilter.js';
 import type { Usage } from './pricing.js';
@@ -114,6 +119,21 @@ export class ReviewFailedError extends Error {
     this.malformedOutput = details.malformedOutput;
   }
 }
+
+/**
+ * The ceiling on everything the model emits, reasoning included — which is the part that bites.
+ *
+ * This took `generate.ts`'s 4096 default until P1-17's evaluation measured it. A thinking model's
+ * hidden reasoning is charged against the same allowance as the answer, and `gemini-3.8-flash`
+ * spends anywhere between about 1,300 and over 4,000 on one eight-criterion review: the same case
+ * ran twice and failed once in three attempts, which is a reviewer that dead-letters a candidate
+ * now and then for no reason anybody could see from the outside.
+ *
+ * Eight thousand is roughly twice the largest run measured. It is a ceiling and not a target, so a
+ * model that answers in 1,300 still costs what it did — and a call that fails is billed anyway
+ * while producing nothing, so raising it cannot be the more expensive choice.
+ */
+const MAX_OUTPUT_TOKENS = 8000;
 
 /** The same bounding as the pre-filter's, at the reviewer's larger budget. */
 export function boundReviewDescription(
@@ -227,6 +247,8 @@ export async function runReviewer(
         schema: reviewerOutputSchema,
         system: REVIEWER_SYSTEM,
         prompt: parts,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        temperature: CLASSIFIER_TEMPERATURE,
         wantedItemId: request.wantedItemId ?? null,
         candidateId: request.candidateId ?? null,
         ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),

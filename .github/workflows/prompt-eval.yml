@@ -1,0 +1,123 @@
+name: Prompt evaluation
+
+# This workflow spends real money, so it does not run on every pull request (P1-17). It runs when
+# something it judges has changed — the prompts, the fixtures, or the evaluation code itself — and
+# on demand from the Actions tab. An unrelated change does not pay for it.
+on:
+  pull_request:
+    paths:
+      - 'packages/ai/src/prompts/**'
+      - 'packages/ai/src/prefilter.ts'
+      - 'packages/ai/src/reviewer.ts'
+      - 'packages/ai/src/eval/**'
+      - 'packages/ai/scripts/**'
+      - 'packages/ai/fixtures/**'
+      - 'packages/core/src/domain/fixtures/**'
+      - '.github/workflows/prompt-eval.yml'
+  push:
+    branches: [main, 'development/**']
+    paths:
+      - 'packages/ai/src/prompts/**'
+      - 'packages/ai/src/prefilter.ts'
+      - 'packages/ai/src/reviewer.ts'
+      - 'packages/ai/src/eval/**'
+      - 'packages/ai/scripts/**'
+      - 'packages/ai/fixtures/**'
+      - 'packages/core/src/domain/fixtures/**'
+      - '.github/workflows/prompt-eval.yml'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: US dollars each role may spend per provider
+        required: false
+        default: '0.25'
+
+concurrency:
+  group: prompt-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evaluate:
+    name: ${{ matrix.provider }}
+    runs-on: ubuntu-latest
+
+    # Two providers, because §9's promise is that switching provider is a settings change. A prompt
+    # that works on one and not the other breaks that promise, and only a run against both finds
+    # it. They are separate jobs so one provider's outage or rate limit does not mask the other's
+    # result; `fail-fast: false` is what keeps the second running when the first fails.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # `gpt-5-mini` for the pre-filter, not `gpt-5-nano`: the latter fails a third of these
+          # runs by discarding a listing it should have kept (see `DEFAULT_AI_ROLES`), so testing
+          # it would measure a model nobody should use for this role rather than the prompt.
+          - provider: openai
+            prefilter: openai:gpt-5-mini
+            reviewer: openai:gpt-5-mini
+            rpm: 60
+          # Both names are in `pricing.ts`. An unpriced model records its cost as unknown by
+          # design (§9), which would leave `--budget` with nothing to count.
+          - provider: google
+            prefilter: google:gemini-3.5-flash-lite
+            reviewer: google:gemini-3.8-flash
+            # Google's free tier is measured per minute and the reviewer-tier models are the
+            # tightest; a faster run reports rate limits as failures of the prompt.
+            rpm: 10
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: goodies_beacon
+          POSTGRES_PASSWORD: goodies_beacon
+          POSTGRES_DB: goodies_beacon_eval
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goodies_beacon"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # The scripts read the role from Settings, which lives in the database — the same path a
+      # real review takes. A throwaway database per run is what makes that safe to override.
+      DATABASE_URL: postgres://goodies_beacon:goodies_beacon@localhost:5432/goodies_beacon_eval
+      GOODIES_BEACON_HOST: eval.invalid
+      GOODIES_BEACON_SECRET_KEY: ${{ secrets.GOODIES_BEACON_SECRET_KEY || 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+      BUDGET: ${{ github.event.inputs.budget || '0.25' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up workspace
+        uses: ./.github/actions/setup
+
+      - name: Build workspace packages
+        run: pnpm -r --filter './packages/**' build
+
+      - name: Migrate the throwaway database
+        run: pnpm db:migrate
+
+      # Both scripts skip themselves with a notice when the provider has no credential, so a fork
+      # without secrets gets a green build rather than a wall of red it cannot do anything about.
+      - name: Pre-filter
+        run: >-
+          pnpm --filter @goodies-beacon/ai prefilter-check --
+          --model ${{ matrix.prefilter }}
+          --rpm ${{ matrix.rpm }}
+          --budget $BUDGET
+
+      # Runs even when the pre-filter failed: the two prompts are judged separately and knowing
+      # only that the first one broke is half an answer.
+      - name: Reviewer
+        if: ${{ !cancelled() }}
+        run: >-
+          pnpm --filter @goodies-beacon/ai reviewer-check --
+          --model ${{ matrix.reviewer }}
+          --rpm ${{ matrix.rpm }}
+          --budget $BUDGET

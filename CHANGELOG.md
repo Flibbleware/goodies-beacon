@@ -4,6 +4,80 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-17 Prompt eval suite in CI. The fixture cases P1-09 and P1-10 left behind — nineteen
+  pre-filter listings and eight reviewer listings across both example specs — are now a gate:
+  `.github/workflows/prompt-eval.yml` runs them against two providers and fails the build on a
+  regression, with precision, recall, the case counts and the spend in the job summary.
+- It is its own workflow rather than a step of CI, because it calls real models. It runs when the
+  prompts, the fixtures, the example specs or the evaluation code change, and on demand from the
+  Actions tab; an unrelated change does not pay for it.
+- Each run takes a budget in dollars, checked before every call. Reaching it **fails** the run
+  rather than passing early: the cases it never asked about are not evidence that the prompt is
+  fine.
+- A provider with no key skips with a notice and exits zero, so a fork gets a green build. That is
+  decided from the credential before anything runs — the pre-filter fails open by design, so a
+  keyless run would report every listing as plausible, find no wrong discards, and look exactly
+  like a pass.
+- The pre-filter is scored with keeping as the positive class, so recall is the number that must
+  be perfect — a wrong discard is the mistake nothing else reports. The reviewer is scored on
+  whether the listing would have reached you, by putting both the expected criteria and the
+  model's answers through the decision rules, so the prompt is measured against the product's own
+  output rather than a second opinion about what the rules would say.
+- Fixed: **the pre-filter could not work at all on the model it ships configured to use.** Its
+  output ceiling was 200 tokens, on the reasoning that a one-sentence answer needs no more — true
+  of the visible answer, false of a reasoning model, where hidden reasoning tokens come out of the
+  same allowance. `openai:gpt-5-nano`, the default for the role, spent all 200 reasoning, returned
+  nothing and failed on every call. And because the stage fails open by design, nothing said so:
+  every listing was kept and sent to the reviewer, so the stage that exists to avoid mid-tier
+  prices was quietly charging them. Found by the new evaluation on its first run against OpenAI;
+  the check had only ever been pointed at Gemini, which does not reason and answered inside 200.
+- **The default pre-filter model is now `google:gemini-3.5-flash-lite`**, not `openai:gpt-5-nano`.
+  Measured over twelve runs of the prompt evaluation, gpt-5-nano discarded a water-damaged but
+  genuine listing in four of them — always the same one — reasoning that a missing manual made it
+  "not the complete big-box set". That is a completeness judgement the pre-filter is told not to
+  make, and a wrongly discarded listing is never reviewed, never emailed and never noticed.
+  Gemini Flash-Lite did not do it once in eight runs, at the same cost per call. The defaults now
+  name three providers; every role is a single line in Settings, and a default that loses a third
+  of the listings you might have wanted is not worth keeping for tidiness.
+- A malformed-output retry now gets **twice the room** to answer in. The two causes of that
+  failure want opposite treatment, and for the common one — a reasoning model that spent its whole
+  output allowance thinking and had none left for the answer — repeating the identical call was
+  billed and doomed. The pre-filter's own ceiling is 4,000 rather than 2,000, from thirty-eight
+  measured calls rather than one.
+- The pre-filter and the reviewer now ask for **temperature 0**. Both ran at the provider's
+  default of 1 — full sampling variance on what are classification tasks — which matters beyond
+  the evaluation: the newest verdict is the authoritative one and Phase 5 re-reviews on demand, so
+  a re-review at full temperature was partly a dice roll rather than a second look. It is a
+  request rather than a guarantee, and measurement says so: OpenAI's reasoning models refuse the
+  setting, and Gemini still varies because thinking is sampled whatever the temperature says.
+- The AI SDK's own warnings went straight to the console, round pino, ignoring `LOG_LEVEL` and
+  producing an unstructured line per call. They now come through the logger at debug level, once
+  per model per warning per process.
+- A fixture can now mark an expectation **borderline**: graded and reported, counted in precision
+  and recall, but not able to fail the build. Two do — a joblot naming the wanted game among five
+  others, and whether a Japanese "unit only" all-in-one counts as a complete machine. Both have
+  two defensible answers, so asserting one measured the sampling rather than the prompt, and a
+  gate that fails at random on a workflow that spends money is a gate that gets switched off. Each
+  marking names the criterion that wants splitting, so it reads as a to-do rather than a shrug.
+- Fixed: **the reviewer failed a review now and then for no visible reason.** Its output ceiling
+  was the 4096 default, and a thinking model's hidden reasoning comes out of the same allowance:
+  `gemini-3.8-flash` ranged from about 1,300 tokens to over 4,000 on the *same* listing, failing
+  roughly one attempt in three. That is a candidate dead-lettered at random. The ceiling is 8,000
+  now — and a failed call is billed anyway while producing nothing, so this cannot be the dearer
+  choice.
+- Two of the worked example specs' criteria were settled rather than argued with. "The disc
+  **looks** free of deep scratches" was a visual test asked of listings that have no photographs,
+  so one provider took the seller's word and the other said unknown; the word is gone. The CRT
+  criterion bundles three tests where a seller answers one, and the Japanese fixture no longer
+  asserts it — that case exists to test the translation, and the assertion was measuring a model's
+  temperament rather than the prompt. **No prompt was changed**: two attempts to fix these in the
+  prompt each fixed one criterion and broke another, which is the documented reason to fix the
+  spec instead.
+- Fixed: **`scripts/` was typechecked by nothing at all.** Each package's tsconfig includes only
+  `src`, so the API doc generator and the prompt evaluation — a gate that spends money — were
+  outside `tsc -b` entirely. They are in `pnpm typecheck` now, which immediately found a latent
+  type error in the doc generator.
+
 - P1-16 Dashboard. The page a session lands on now answers the questions worth asking first: what
   was judged today, what is being watched, whether the marketplaces are answering, what the month
   has cost against the cap, and whether the processes are alive. It is one request, so the panels
