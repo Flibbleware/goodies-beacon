@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.33; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.34; section numbers below refer to it.*
 
-Version 1.11 — 16 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.12 — 17 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -705,10 +705,69 @@ A fixture set of about twenty listings (real, anonymised, from the spikes and yo
 
 Done when:
 
-- [ ] The suite passes on both configured providers.
-- [ ] A deliberate prompt regression (e.g. removing the quantifiable/soft instruction) fails the suite.
-- [ ] The suite is skipped with a notice when provider secrets are absent, so forks still get green CI.
-- [ ] A pull request that touches neither prompts, fixtures nor the eval code does not run it.
+- [x] The suite passes on both configured providers. Pre-filter 19/19 on `openai:gpt-5-nano` and `google:gemini-3.5-flash-lite`; reviewer 40/40 on `openai:gpt-5-mini` and `google:gemini-3.8-flash`. It did not, at first, and what it took to get there is the rest of this section.
+- [x] A deliberate prompt regression fails the suite. Removing §7 step 3's reluctance-to-reject instructions from `PREFILTER_SYSTEM` took the pre-filter from 19/19 to 18/19 on the same model, recall from 100% to 88.9%, and failed the run — on exactly the case the instruction exists for: a water-damaged but genuine Carmageddon big box, discarded for a completeness judgement that belongs to the reviewer.
+- [x] The suite is skipped with a notice when provider secrets are absent, so forks still get green CI. Both scripts exit 0 with a `::notice::` and make no call, decided from the credential *before* the run — the pre-filter fails open, so a keyless run would otherwise report every listing as plausible and look exactly like a pass.
+- [x] A pull request that touches neither prompts, fixtures nor the eval code does not run it. `.github/workflows/prompt-eval.yml` is path-filtered to the prompts, the two role modules, `src/eval`, `scripts`, both fixture directories and the workflow itself, plus `workflow_dispatch`.
+
+#### What P1-17 found
+
+It found two real defects on its first run, which is the argument for the task.
+
+**The pre-filter could not work at all on the model it ships configured to use, and failed
+silently.** `MAX_OUTPUT_TOKENS` was 200, on the reasoning that "a reason is one short sentence".
+That is true of the visible answer and false of a reasoning model, where hidden reasoning tokens
+are charged against the same ceiling: `openai:gpt-5-nano` — `DEFAULT_AI_ROLES.prefilter` — spent
+the whole 200 reasoning, emitted nothing, and failed the schema on **every** call. Measured, it
+needs about 600 and fails at 800; the ceiling is now 2000. Because the pre-filter fails open, none
+of this surfaced as an error — an instance would have kept every listing and paid mid-tier prices
+to review all of them, which is §7 step 3's cost control not merely absent but inverted. It had
+only ever been checked against Gemini, which does not reason and answered inside 200.
+
+**The reviewer's ceiling was the same problem one size down.** It took `generate.ts`'s 4096
+default, and `google:gemini-3.8-flash` — a thinking model — failed a case outright with the same
+schema error. Measured on the case that failed, its reasoning ranges from about 1,300 tokens to
+over 4,000 for the same input: three attempts gave 3,127, a failure, and 1,331. That is a reviewer
+that dead-letters a candidate now and then for no reason visible from outside. The ceiling is 8,000
+now, roughly twice the largest run measured, and a failed call is billed anyway while producing
+nothing — so raising it cannot be the more expensive choice.
+
+**Two criteria disagreed between providers, and both were the spec's fault rather than the
+prompt's.** `disc-readable` read "The disc **looks** free of deep scratches" — a visual test, put
+to a fixture set that has no photographs — so OpenAI accepted the seller's statement and Gemini
+said `unknown`. Dropping the one word settles it: a statement is squarely on point for "the disc
+is free of scratches", and both providers now pass. `crt-condition` bundles three tests — burned
+in, cracked, badly discoloured — where the Japanese seller answers only the first; gpt-5-mini gave
+`pass` twice and `unknown` twice across four runs. That case exists to test the translation, so it
+no longer asserts that criterion at all: the assertion was measuring a model's temperament on an
+ambiguous criterion rather than anything about the prompt. **The criterion itself is still worth
+splitting in the example spec**, which is a change to what a shipped worked example teaches and so
+is a task of its own.
+
+**Two attempts to fix those in the prompt were made and reverted, which is the lesson.** Telling
+the reviewer that an explicit statement is evidence fixed `disc-readable` on Gemini and broke
+`contents-complete` on OpenAI; a second clarification fixed that and broke `complete-machine`.
+RUNNING.md had already written the rule down — "a criterion that bundles two tests cannot be
+answered cleanly, and that is worth fixing in the spec rather than arguing with the reviewer
+about" — and every one of these was a bundled or mis-worded criterion. The prompt is unchanged.
+
+**Three fixtures claimed photographs that do not exist.** The reviewer fixture set is text-only by
+design, and three descriptions said things were "pictured together" or "photographed from the
+front". For two cases that expected `unknown` it made no difference; for `carmageddon-clear-pass`
+it was load-bearing, and a model that noticed the listing contradicting itself was right to. The
+claims are gone.
+
+**The English-summary check was a coin toss.** One run of `performa-japanese` quoted a Japanese
+phrase inside an otherwise-English summary and failed; the next did not. Any CJK at all was the
+wrong test: an untranslated summary is essentially all Japanese, while one that is English apart
+from the seller's own word for the condition is doing its job, arguably better than one that
+paraphrases the quote away. `summaryIsEnglish` now allows up to a tenth of the characters, which
+separates the two cleanly and is unit-tested for nothing — and it names the offending characters
+rather than reporting `expected: English, got: "Seller is offering an Apple..."`.
+
+**`scripts/` was typechecked by nothing.** Each package's tsconfig includes only `src`, so the API
+doc generator and this evaluation — a gate that spends money — were outside `tsc -b` entirely.
+They are in `pnpm typecheck` now, which immediately found a latent type error in the generator.
 
 #### P1-18 Phase 1 exit — S
 

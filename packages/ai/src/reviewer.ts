@@ -115,6 +115,21 @@ export class ReviewFailedError extends Error {
   }
 }
 
+/**
+ * The ceiling on everything the model emits, reasoning included — which is the part that bites.
+ *
+ * This took `generate.ts`'s 4096 default until P1-17's evaluation measured it. A thinking model's
+ * hidden reasoning is charged against the same allowance as the answer, and `gemini-3.8-flash`
+ * spends anywhere between about 1,300 and over 4,000 on one eight-criterion review: the same case
+ * ran twice and failed once in three attempts, which is a reviewer that dead-letters a candidate
+ * now and then for no reason anybody could see from the outside.
+ *
+ * Eight thousand is roughly twice the largest run measured. It is a ceiling and not a target, so a
+ * model that answers in 1,300 still costs what it did — and a call that fails is billed anyway
+ * while producing nothing, so raising it cannot be the more expensive choice.
+ */
+const MAX_OUTPUT_TOKENS = 8000;
+
 /** The same bounding as the pre-filter's, at the reviewer's larger budget. */
 export function boundReviewDescription(
   description: string | null | undefined,
@@ -227,6 +242,7 @@ export async function runReviewer(
         schema: reviewerOutputSchema,
         system: REVIEWER_SYSTEM,
         prompt: parts,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         wantedItemId: request.wantedItemId ?? null,
         candidateId: request.candidateId ?? null,
         ...(request.abortSignal ? { abortSignal: request.abortSignal } : {}),

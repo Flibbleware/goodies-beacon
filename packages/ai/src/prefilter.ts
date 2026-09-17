@@ -31,8 +31,26 @@ export const DESCRIPTION_LIMIT = 1_500;
  */
 export const TITLE_LIMIT = 200;
 
-/** Bounds the output too: a reason is one short sentence, and nothing here needs more. */
-const MAX_OUTPUT_TOKENS = 200;
+/**
+ * The ceiling on everything the model emits, which is **not** the same as the length of the
+ * answer — and the difference is what made the pre-filter unusable on the model it ships
+ * configured to use.
+ *
+ * This was 200 until P1-17, on the reasoning that "a reason is one short sentence, and nothing
+ * here needs more". That is true of the visible output and false of a reasoning model, where
+ * hidden reasoning tokens are charged against the same ceiling: `openai:gpt-5-nano` — the default
+ * for this role — spent the whole 200 on reasoning, emitted nothing, and failed the schema on
+ * *every* call. Measured against the fixture set, it needs about 600 and fails at 800.
+ *
+ * Because the pre-filter fails open (§7 step 3), none of that surfaced as an error: an instance
+ * kept every listing and sent all of them to the reviewer, paying mid-tier prices for the stage
+ * that exists to avoid them. P1-17's evaluation found it on its first run against OpenAI; the
+ * check had only ever been run against Gemini, which does not reason and answered inside 200.
+ *
+ * A ceiling rather than a target: a model that does not reason still emits its one sentence and
+ * costs the same as it always did.
+ */
+const MAX_OUTPUT_TOKENS = 2000;
 
 export interface PrefilterListing {
   title: string;

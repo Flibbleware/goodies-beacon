@@ -7,7 +7,7 @@
       "spec": "carmageddon",
       "why": "A clear pass. Every criterion is settled by the description, in the direction the collector wants.",
       "title": "Carmageddon PC CD-ROM Big Box 1997 Complete",
-      "description": "Original 1997 big box release of the first Carmageddon, not the sequel and not the Splat Pack. Box, manual and disc are all present and pictured together. The box is clean with sharp corners, no water marks, no crushing, no mould. The disc has been checked under a lamp and is free of scratches; it installed and ran fine last week.",
+      "description": "Original 1997 big box release of the first Carmageddon, not the sequel and not the Splat Pack. Box, manual and disc are all present; I have had all three out on the desk. The box is clean with sharp corners, no water marks, no crushing, no mould. The disc has been checked under a lamp and is free of scratches; it installed and ran fine last week.",
       "images": [],
       "expect": {
         "criteria": {
@@ -62,7 +62,7 @@
       "spec": "carmageddon",
       "why": "The unknown case. The seller says nothing about the manual or the disc and shows only the front of the box. A model that reasons from what is usually included answers 'pass' here, which is the failure this stage is written against.",
       "title": "Carmageddon big box PC",
-      "description": "Carmageddon big box for PC, 1997. Front of the box photographed. Selling from a house clearance, no other information available, sold as seen.",
+      "description": "Carmageddon big box for PC, 1997. Selling from a house clearance, no other information available, sold as seen.",
       "images": [],
       "expect": {
         "criteria": {
@@ -93,7 +93,7 @@
     {
       "id": "performa-japanese",
       "spec": "power-mac-5500",
-      "why": "A Japanese listing. §7 step 5 makes the English summary the translation, so the test is that the summary comes back in English and carries what the listing actually said. `crt-condition` is expected unknown rather than pass on purpose: the seller denies burn-in and says nothing about cracks or discolouration, which the criterion also asks about, and no photograph settles them. This case was first written expecting pass and the model was right to disagree.",
+      "why": "A Japanese listing. §7 step 5 makes the English summary the translation, so the test is that the summary comes back in English and carries what the listing actually said. `crt-condition` is deliberately **not** asserted. It bundles three tests — burned in, cracked, badly discoloured — and this seller answers only the first, so `pass` and `unknown` are both defensible readings and gpt-5-mini gave each of them twice across four runs (P1-17). Asserting it measured a model's temperament on an ambiguous criterion rather than anything about the prompt, and made the gate a coin toss. The criterion itself is worth splitting in the spec; until it is, this case tests what it exists to test.",
       "title": "Apple Macintosh Performa 5430 一体型 ジャンク品 動作未確認",
       "description": "アップル マッキントッシュ パフォーマ 5430 の一体型デスクトップです。画面と本体が一体になっています。通電は確認しましたが、動作は未確認のためジャンク品として出品します。ブラウン管に焼き付きはありません。キーボードとマウスは付属しません。本体のみです。日本国内のみ発送、海外発送は行いません。",
       "images": [],
@@ -101,8 +101,7 @@
         "criteria": {
           "all-in-one": "pass",
           "model-family": "pass",
-          "complete-machine": "pass",
-          "crt-condition": "unknown"
+          "complete-machine": "pass"
         },
         "shipsToUk": "no",
         "summaryMentions": ["Performa"],
@@ -129,7 +128,7 @@
       "spec": "power-mac-5500",
       "why": "Two soft criteria that only a photograph of the inside could settle, and there is none. Both must come back unknown rather than being guessed from 'good condition'.",
       "title": "Power Macintosh 5500/225 all in one, working",
-      "description": "Power Macintosh 5500/225 all-in-one, boots to the desktop from the internal drive. Good condition for its age. I have not opened the case so I cannot say what is inside. Photographed from the front and the left side.",
+      "description": "Power Macintosh 5500/225 all-in-one, boots to the desktop from the internal drive. Good condition for its age. I have not opened the case so I cannot say what is inside.",
       "images": [],
       "expect": {
         "criteria": {

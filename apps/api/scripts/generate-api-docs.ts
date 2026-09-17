@@ -33,11 +33,22 @@ function routesOf(): Route[] {
   const app = createApp({
     db: {} as Database,
     logger: createSilentLogger(),
+    // Nothing here is used: the app is built only to be asked what routes it mounted, and no
+    // handler runs. It has to satisfy the type all the same, which is how the omission survived
+    // until P1-17 put `scripts/` under `pnpm typecheck`.
     config: {
       host: 'beacon.example.co.uk',
       secretKey: 'IqQ8Xn1rWQhTsm9gOZ4vKdLpEbYxAcRuNjFkHt2SwVo=',
       version: 'dev',
       sha: 'unknown',
+      mediaDir: '/data/media',
+      ai: {
+        anthropicApiKey: undefined,
+        openaiApiKey: undefined,
+        googleGenerativeAiApiKey: undefined,
+        openrouterApiKey: undefined,
+        ollamaBaseUrl: undefined,
+      },
     },
     // No webRoot, so the web app's catch-all does not swamp the table; it is not part of the API.
   });

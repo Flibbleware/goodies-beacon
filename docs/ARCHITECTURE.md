@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.33 — 16 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.34 — 16 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -469,7 +469,7 @@ React + Vite, TanStack Router and Query, Tailwind. Pages:
 | Email | Nodemailer + React Email templates | Templates in the same language |
 | Images | sharp (resize, re-encode, and a difference hash) | Ingest pipeline. `blockhash` was named here until v1.25 and is not used: its only release is from 2019, it has no type definitions, and it needs raw pixels — which means sharp regardless. A dHash against sharp is twenty lines with no supply-chain surface, and P1-05 measured it separating a resized copy (5–7 bits of 64) from a different photograph (18–46) |
 | Lint + format | Biome, with lefthook pre-commit | One fast tool instead of ESLint + Prettier; `biome ci` in Actions |
-| Testing | Vitest 4.1; Playwright for UI smoke tests; recorded HTTP fixtures per adapter; prompt eval fixtures | Adapter and prompt tests run offline without credentials |
+| Testing | Vitest 4.1; Playwright for UI smoke tests; recorded HTTP fixtures per adapter; prompt eval fixtures | Adapter tests run offline without credentials; the prompt evaluation needs keys and is its own workflow (§16) |
 | Packaging | pnpm 11 workspaces, single multi-stage Dockerfile on `node:24-trixie-slim`, GitHub Actions → GHCR image | One `docker compose up` for users |
 
 ```
@@ -502,7 +502,9 @@ goodies-beacon/
 
 **Dependency policy.** Exact versions, pinned. New or upgraded dependencies use the newest major line that has been generally available for at least a month; never pre-releases, and never a `.0` release younger than a month while the previous line is still maintained. Renovate proposes upgrades weekly; they merge only with green CI.
 
-**Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages → `vitest` (unit tests, integration tests against a Postgres service, adapter tests against recorded HTTP fixtures, prompt evals against a fixture set of listings with expected verdicts, run against two providers so a prompt regression is caught) → Vite build of the web app, and a check that `docs/API.md` still matches the route table → a Playwright smoke test against the built API serving the built web app, on a Postgres service → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA; pushes to the integration branch push `dev` and the commit SHA, so a manual deploy always has a built image to pull. Renovate keeps dependencies current.
+**Continuous integration** (`.github/workflows/ci.yml`, on every push and pull request): install with a cached pnpm store → `biome ci` → typecheck all packages, test files and `scripts/` included → `vitest` (unit tests, integration tests against a Postgres service, adapter tests against recorded HTTP fixtures) → Vite build of the web app, and a check that `docs/API.md` still matches the route table → a Playwright smoke test against the built API serving the built web app, on a Postgres service → Docker image build without push. On pushes to `main` the image is also pushed to GHCR tagged `edge` and with the commit SHA; pushes to the integration branch push `dev` and the commit SHA, so a manual deploy always has a built image to pull. Renovate keeps dependencies current.
+
+**The prompt evaluation is its own workflow, not a step of that one.** This section listed it inside `vitest` until v1.34, which was wrong in a way worth stating: it calls real models, so it costs real money, and putting it on every push would charge an unrelated typo fix for two providers' worth of API calls. `.github/workflows/prompt-eval.yml` runs the fixture set — nineteen pre-filter cases and eight reviewer cases across both example specs, with expected outcomes — against two providers, on a path filter covering the prompts, the fixtures and the evaluation code, plus `workflow_dispatch` for running it by hand. Each run takes a `--budget` in dollars and fails if it reaches it, because the cases it never asked about are not evidence that the prompt is fine. A provider with no secret configured *skips* with a notice rather than failing, so a fork still gets a green build; the skip is decided from the credential before anything runs, because the pre-filter fails open and a keyless run would otherwise report every listing as plausible and look exactly like a pass. (P1-17.)
 
 **Release and deploy** (`.github/workflows/release.yml`, on a published GitHub Release tagged `vX.Y.Z`): build the image for amd64 and arm64, push to GHCR tagged with the version and `latest`, then — only if the deploy secrets exist, so forks skip this step — connect to the droplet over SSH as a restricted `deploy` user with a deploy key from the repository secrets and run `deploy.sh`: `pg_dump` to `./backups`, `docker compose pull`, `docker compose up -d` (migrations run on container start), then poll `/healthz` and fail the job if the app is not healthy within two minutes. The compose file on the droplet pins `image: ghcr.io/<you>/goodies-beacon:${GOODIES_BEACON_VERSION}` so what is running is always a known build.
 

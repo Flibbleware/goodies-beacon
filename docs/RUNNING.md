@@ -669,8 +669,17 @@ cheapest-tier model, and under 1.5p on anything you would sensibly put in this r
 at twelve requests a minute so it does not trip a free tier's limit, which takes about a minute
 and a half; `--rpm` raises that.
 
-Gemini 3.1 Flash-Lite scored 19/19 on 15 September 2026. Anything with a **wrong discard** is not
-fit for this role whatever its total, because that is the mistake nothing reports.
+Gemini 3.1 Flash-Lite scored 19/19 on 15 September 2026, and GPT-5 nano and Gemini 3.5 Flash-Lite
+both scored 19/19 on 17 September 2026 for well under a penny each. Anything with a **wrong
+discard** is not fit for this role whatever its total, because that is the mistake nothing reports.
+
+**If every case comes back "could not be run", check the output ceiling before the prompt.** A
+reasoning model is charged for its hidden reasoning against the same `maxOutputTokens` as its
+answer, so a ceiling sized for one short sentence leaves it nothing to answer with, and it returns
+an empty response that fails the schema. That is what the pre-filter's 200-token ceiling did to
+GPT-5 nano until 17 September 2026 — silently, because the stage fails open and simply kept
+everything. It is 2000 now, which is a ceiling rather than a target: a model that does not reason
+still emits its one sentence and costs what it always did.
 
 ### The reviewer
 
@@ -716,7 +725,8 @@ There is a **daily** cap as well as a per-minute one — twenty requests a day p
 free tier — so a free key is good for about two full runs a day, and the third reports every case
 as a failure. If a whole run comes back as "could not be run", check the quota before the prompt.
 
-Gemini 3.6 Flash scored 41/41 checks on 15 September 2026 for about 5p. It ignored the fixture
+GPT-5 mini and Gemini 3.8 Flash both scored 40/40 checks on 17 September 2026, for about 2p and
+4p respectively. Gemini 3.6 Flash scored 41/41 on 15 September 2026 for about 5p. It ignored the fixture
 listing that instructs the reviewer to mark everything as a match, and reported that listing's
 three genuine failures instead.
 
@@ -727,11 +737,55 @@ a partial item. A criterion that bundles two tests — "an all-in-one **with the
 the case**" — cannot be answered cleanly when half the machine is missing, and that is worth fixing
 in the spec rather than arguing with the reviewer about.
 
+P1-17 proved that the hard way and it is worth repeating. Two providers disagreed on two criteria;
+both attempts to settle it by clarifying the prompt fixed one criterion and broke another, because
+the trouble was never the prompt. One criterion said the disc "**looks** free of deep scratches" —
+a visual test put to listings with no photographs — and dropping the word settled it on both. The
+other bundles three tests and the fixture stopped asserting it. **If a criterion asks two things,
+split it**; the reviewer answers what it is asked, and a bundled question has no clean answer.
+
 The fixture cases carry their evidence in the seller's text, because there are no listing
 photographs in the repository. They will tell you whether a model reports unknowns honestly,
 follows the criteria and translates; they will not tell you how well it reads a photograph, which
 is the thing you are mostly paying for. Judge that on your own items with the backfill, before
 freezing a spec.
+
+### The prompt evaluation in CI
+
+Both check scripts are also a gate. `.github/workflows/prompt-eval.yml` runs the same fixtures
+against **two** providers, because §9's promise is that switching provider is a settings change —
+a prompt that works on one and not the other quietly breaks that, and only a run against both
+finds it.
+
+It is a separate workflow rather than a step of `ci.yml`, and deliberately so: it calls real
+models, and an unrelated typo fix should not pay for two providers' worth of API calls. It runs
+when something it judges has changed — the prompts, the two role modules, the fixtures, the
+example specs, or the evaluation code — and from the Actions tab on demand, where the budget is an
+input.
+
+| Flag | What it does |
+|---|---|
+| `--model provider:model` | Runs against this model instead of the role's configured one, and puts the setting back afterwards |
+| `--rpm n` | Requests per minute. The defaults are free-tier safe: twelve for the pre-filter, four for the reviewer |
+| `--budget n` | Dollars this run may spend. Checked **before** each call, and reaching it fails the run |
+
+The budget fails rather than passing early on purpose: the cases it never asked about are not
+evidence that the prompt is fine.
+
+**A provider with no key configured skips, with a notice, and exits zero**, so a fork gets a green
+build. That is decided from the credential before anything runs, and it has to be: the pre-filter
+fails open by design, so a run with no key would report every listing as plausible, find no wrong
+discards, and look exactly like a pass.
+
+The job summary carries a table per role with precision, recall, how many cases ran, how many
+could not, and what it spent. For the pre-filter, keeping is the positive class, so **recall is
+the number that must be 1.0** — a wrong discard is the mistake nothing else reports. For the
+reviewer, both the expected criteria and the model's answers are put through the decision rules
+and scored on whether the listing would have reached you, which measures the prompt against the
+product's own output rather than against a second opinion about what the rules would say.
+
+Add `OPENAI_API_KEY` and `GOOGLE_GENERATIVE_AI_API_KEY` as repository secrets to turn it on. A
+run with the default budget costs a few pence per provider.
 
 ### Images in a review
 

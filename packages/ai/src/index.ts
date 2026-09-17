@@ -22,6 +22,17 @@ export {
   withBudgetGuard,
 } from './budget.js';
 export {
+  assertBudget,
+  BudgetSpentError,
+  type Confusion,
+  EMPTY,
+  type EvalRun,
+  markdownSummary,
+  type Score,
+  score,
+  tally,
+} from './eval/score.js';
+export {
   type GenerateDeps,
   type GenerateRequest,
   type GenerateResult,

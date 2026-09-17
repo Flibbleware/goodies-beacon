@@ -91,6 +91,12 @@ export const OBJECT_RETRIES = 1;
 /** The SDK's own retry, for the failures it *does* consider retryable. */
 const TRANSPORT_RETRIES = 1;
 
+/**
+ * Only for a caller that names no ceiling of its own. Both roles that exist do — and both had to,
+ * because a *reasoning* model is charged for its hidden reasoning against this same allowance, so
+ * a number chosen by looking at how long the answer is will be far too small. Whatever asks next
+ * should measure before it trusts this (P1-17 found both existing roles the hard way).
+ */
 const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
 
 export class ModelOutputError extends Error {

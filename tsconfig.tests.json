@@ -18,6 +18,8 @@
     "packages/sources/*/src/**/*.test.ts",
     "apps/*/src/**/*.test.ts",
     "apps/web/e2e/**/*.ts",
+    "packages/*/scripts/**/*.ts",
+    "apps/*/scripts/**/*.ts",
     "apps/web/playwright.config.ts"
   ]
 }
