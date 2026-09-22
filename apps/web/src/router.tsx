@@ -10,6 +10,7 @@ import { itemsRoute } from './routes/items.js';
 import { loginRoute } from './routes/login.js';
 import { rootRoute } from './routes/root.js';
 import { settingsRoute } from './routes/settings.js';
+import { wishesRoute } from './routes/wishes.js';
 
 /**
  * Routes are declared in code rather than generated from the filesystem: there are few of them,
@@ -25,6 +26,7 @@ const routeTree = rootRoute.addChildren([
     newItemRoute,
     itemRoute,
     editItemRoute,
+    wishesRoute,
     settingsRoute,
   ]),
 ]);

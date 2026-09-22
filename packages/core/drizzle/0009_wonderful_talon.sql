@@ -1,0 +1,2 @@
+ALTER TABLE "wish_items" DROP CONSTRAINT "wish_items_category";--> statement-breakpoint
+ALTER TABLE "wish_items" ADD CONSTRAINT "wish_items_category" CHECK ("wish_items"."category" in ('game', 'dvd', 'vhs', 'toy', 'figurine', 'book', 'other'));

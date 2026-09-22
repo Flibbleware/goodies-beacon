@@ -133,17 +133,28 @@ export async function seedPlanFailure(
   }
 }
 
-/** Two processes, one answering and one that stopped an hour ago (§14's worker heartbeat). */
+/**
+ * Two processes, one answering and one that stopped an hour ago (§14's worker heartbeat).
+ *
+ * Upserted, not inserted. The server under test runs the real heartbeat every five minutes by the
+ * clock, not five minutes after it starts, so a run that crosses :00, :05, :10… has an `api` row
+ * written before this step, and a plain insert failed on it — intermittently, depending only on
+ * what time the run started.
+ */
 export async function seedHeartbeats(databaseUrl: string): Promise<void> {
   const pool = createPool(databaseUrl);
+  const db = createDb(pool);
 
   try {
-    await createDb(pool)
-      .insert(processHeartbeat)
-      .values([
-        { role: 'api', lastSeenAt: new Date() },
-        { role: 'worker', lastSeenAt: new Date(Date.now() - 60 * 60 * 1000) },
-      ]);
+    for (const row of [
+      { role: 'api' as const, lastSeenAt: new Date() },
+      { role: 'worker' as const, lastSeenAt: new Date(Date.now() - 60 * 60 * 1000) },
+    ]) {
+      await db
+        .insert(processHeartbeat)
+        .values(row)
+        .onConflictDoUpdate({ target: processHeartbeat.role, set: { lastSeenAt: row.lastSeenAt } });
+    }
   } finally {
     await pool.end();
   }

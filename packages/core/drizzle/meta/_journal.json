@@ -50,6 +50,27 @@
       "when": 1789422327800,
       "tag": "0006_lucky_maggott",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790103029167,
+      "tag": "0007_magical_hannibal_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790104976382,
+      "tag": "0008_omniscient_angel",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790106258971,
+      "tag": "0009_wonderful_talon",
+      "breakpoints": true
     }
   ]
 }

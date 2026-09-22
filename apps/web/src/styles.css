@@ -18,6 +18,17 @@
   --color-edge-dark: oklch(0.31 0.014 260);
 
   --color-beacon: oklch(0.58 0.16 250);
+
+  /*
+   * A burnt orange for the Figurine wish category. Tailwind's own orange is Book's, and its next
+   * step is red, which means an error here; this sits between them, deeper and redder than orange.
+   */
+  --color-copper-100: oklch(0.88 0.07 45);
+  --color-copper-300: oklch(0.76 0.12 42);
+  --color-copper-400: oklch(0.68 0.15 40);
+  --color-copper-500: oklch(0.6 0.16 38);
+  --color-copper-600: oklch(0.52 0.15 37);
+  --color-copper-800: oklch(0.4 0.11 35);
 }
 
 html {
@@ -26,4 +37,16 @@ html {
 
 body {
   @apply bg-paper text-ink dark:bg-paper-dark dark:text-ink-dark;
+}
+
+/*
+ * Tailwind v4's preflight gives buttons the default arrow, following the platform convention that
+ * only links get a hand. This app's buttons act like its links, so they get the hand back — except
+ * when disabled, where the arrow says there is nothing to press.
+ */
+@layer base {
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }

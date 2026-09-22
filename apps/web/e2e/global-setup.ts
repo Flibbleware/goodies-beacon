@@ -10,6 +10,7 @@ import {
   seen,
   settings,
   wantedItems,
+  wishItems,
 } from '@goodies-beacon/core';
 
 /**
@@ -34,10 +35,12 @@ export default async function globalSetup(): Promise<void> {
     await db.delete(authSession);
     await db.delete(authUser);
     await db.delete(settings);
-    // The spec editor steps create items and upload a photo, and the audit-view steps seed
-    // listings and candidates; all of them start from nothing. Listings outlive an item by
-    // design — §4 keys them on (source, externalId) globally — so they are cleared explicitly.
+    // The spec editor steps create items and upload a photo, the wish list steps add wishes, and
+    // the audit-view steps seed listings and candidates; all of them start from nothing. Listings
+    // outlive an item by design — §4 keys them on (source, externalId) globally — so they are
+    // cleared explicitly.
     await db.delete(wantedItems);
+    await db.delete(wishItems);
     await db.delete(listings);
     await db.delete(seen);
     await db.delete(media);

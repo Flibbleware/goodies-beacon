@@ -175,15 +175,22 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
 export async function createItem(db: Database, input: ItemSaveInput): Promise<SavedVersion> {
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
 
-  return db.transaction(async (tx) => {
-    const [item] = await tx
-      .insert(wantedItems)
-      .values(itemColumns(input))
-      .returning({ id: wantedItems.id });
-    if (!item) throw new Error('the wanted item was not inserted');
+  return db.transaction((tx) => insertItem(tx, input));
+}
 
-    return writeVersion(tx, item.id, 1, input);
-  });
+/**
+ * `createItem` inside a transaction someone else holds, for a caller that must do something else
+ * atomically with it — promoting a wish deletes the wish in the same one (P1-19). It does not
+ * check the grading scale; a caller whose spec can name one must.
+ */
+export async function insertItem(tx: Transaction, input: ItemSaveInput): Promise<SavedVersion> {
+  const [item] = await tx
+    .insert(wantedItems)
+    .values(itemColumns(input))
+    .returning({ id: wantedItems.id });
+  if (!item) throw new Error('the wanted item was not inserted');
+
+  return writeVersion(tx, item.id, 1, input);
 }
 
 /** Version N+1 for an existing item. Undefined when there is no such item. */
@@ -211,7 +218,7 @@ export async function saveItem(
   });
 }
 
-type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+export type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 async function writeVersion(
   tx: Transaction,

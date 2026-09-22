@@ -47,6 +47,7 @@ describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
       'spec_versions',
       'verdicts',
       'wanted_items',
+      'wish_items',
     ]);
 
     const applied = await pool?.query<{ count: string }>(

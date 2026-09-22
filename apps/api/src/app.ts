@@ -14,6 +14,7 @@ import { type RequestVariables, requestId } from './request-id.js';
 import { securityHeaders } from './security-headers.js';
 import { createSettingsRoutes } from './settings/routes.js';
 import { serveWebApp } from './web.js';
+import { createWishRoutes } from './wishes/routes.js';
 
 export type AppVariables = AuthVariables & RequestVariables;
 
@@ -53,6 +54,7 @@ export function createApp(deps: AppDeps) {
   app.route('/api/candidates', createCandidateRoutes({ db }));
   app.route('/api/dashboard', createDashboardRoutes({ db, logger }));
   app.route('/api/items', createItemRoutes({ db }));
+  app.route('/api/wishes', createWishRoutes({ db }));
   app.route('/api/settings', createSettingsRoutes({ db, config, logger }));
   app.route('/api/media', createMediaRoutes({ db, mediaDir: config.mediaDir, logger }));
 
