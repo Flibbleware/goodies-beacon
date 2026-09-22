@@ -12,7 +12,7 @@ export function Field({
 }: {
   id: string;
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   error?: string | undefined;
   children: ReactNode;
 }) {
@@ -70,9 +70,14 @@ export function Button({
   );
 }
 
-export function Alert({ tone, children }: { tone: 'error' | 'ok'; children: ReactNode }) {
-  const style =
-    tone === 'error' ? 'text-red-600 dark:text-red-400' : 'text-ink-dim dark:text-ink-dim-dark';
+const ALERT_STYLE = {
+  error: 'text-red-600 dark:text-red-400',
+  warn: 'text-amber-700 dark:text-amber-500',
+  ok: 'text-ink-dim dark:text-ink-dim-dark',
+};
+
+export function Alert({ tone, children }: { tone: 'error' | 'warn' | 'ok'; children: ReactNode }) {
+  const style = ALERT_STYLE[tone];
   return (
     <p role={tone === 'error' ? 'alert' : 'status'} className={`mt-4 text-sm ${style}`}>
       {children}

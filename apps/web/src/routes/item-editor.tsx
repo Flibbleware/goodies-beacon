@@ -1,14 +1,15 @@
 import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
 import { WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRoute, Link, useNavigate } from '@tanstack/react-router';
-import { type FormEvent, useEffect, useId, useState } from 'react';
+import { createRoute, Link, useBlocker, useNavigate } from '@tanstack/react-router';
+import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react';
 import { ApiError } from '../api/client.js';
 import { createItem, itemQuery, itemsQuery, type LoadedItem, saveItem } from '../api/items.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
-import { parseSpecText, STARTING_SPEC, withReferenceImage } from '../items/parse.js';
+import { parseSpecText, STARTING_SPEC, withDocument, withReferenceImage } from '../items/parse.js';
 import { ReferenceImages } from '../items/reference-images.js';
 import { SpecEditor } from '../items/spec-editor.js';
+import { SpecForm } from '../items/spec-form.js';
 import { VersionHistory } from '../items/version-history.js';
 import { appLayoutRoute } from './app-layout.js';
 
@@ -48,14 +49,19 @@ function EditItem() {
 }
 
 /**
- * The manual spec editor (P1-13). One page for both a new item and an amendment to an existing
- * one, because saving is the same act either way: §4's spec versions are immutable, so every save
- * writes version N+1 and points the item at it.
+ * The manual spec editor (P1-13, typed form in P1-18). One page for both a new item and an
+ * amendment to an existing one, because saving is the same act either way: §4's spec versions are
+ * immutable, so every save writes version N+1 and points the item at it.
+ *
+ * The form and the JSON are two surfaces onto one string of text, not two models of a spec. The
+ * text is what is edited and what is saved; the form reads the parsed document and writes back
+ * through `withDocument`, so switching between them cannot lose anything.
  */
 function Editor({ item }: { item: LoadedItem | undefined }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const ids = { title: useId(), status: useId(), note: useId() };
+  const tabIds = { form: useId(), json: useId(), panel: useId() };
 
   const [title, setTitle] = useState(item?.title ?? '');
   const [status, setStatus] = useState<WantedItemStatus>(item?.status ?? 'draft');
@@ -63,6 +69,14 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
     item?.current ? `${JSON.stringify(item.current.document, null, 2)}\n` : STARTING_SPEC,
   );
   const [note, setNote] = useState('');
+  const [surface, setSurface] = useState<'form' | 'json'>('form');
+
+  /**
+   * Media stored by an upload in this visit. The file exists on the server the moment it is
+   * uploaded while the document that points at it lives only in `text`, so leaving without saving
+   * orphans it — which is what the blocker below is for.
+   */
+  const [uploaded, setUploaded] = useState<ReadonlySet<string>>(new Set());
 
   // Landing on the page after another version was saved should show that version, not the old one.
   useEffect(() => {
@@ -71,9 +85,25 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
     setStatus(item.status);
     setText(`${JSON.stringify(item.current.document, null, 2)}\n`);
     setNote('');
+    setUploaded(new Set());
   }, [item?.current, item?.title, item?.status]);
 
   const parsed = parseSpecText(text);
+  // What the form draws: the saveable spec, or the draft that keeps it up while a field is empty.
+  const shown = parsed.ok ? parsed.spec : parsed.draft;
+
+  // Only uploads the document still points at are at risk: one deleted from the JSON by hand is
+  // already gone from the spec. While the document cannot be read, assume every one of them is.
+  const unsaved: ReadonlySet<string> = shown
+    ? new Set(shown.referenceImages.map((image) => image.id).filter((id) => uploaded.has(id)))
+    : uploaded;
+
+  const blocker = useBlocker({
+    shouldBlockFn: () => unsaved.size > 0,
+    enableBeforeUnload: () => unsaved.size > 0,
+    withResolver: true,
+    disabled: unsaved.size === 0,
+  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -87,6 +117,7 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
       return item ? saveItem(item.id, body) : createItem(body);
     },
     onSuccess: async (saved) => {
+      setUploaded(new Set());
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
       await queryClient.invalidateQueries({ queryKey: itemQuery(saved.itemId).queryKey });
       if (!item) await navigate({ to: '/items/$itemId/edit', params: { itemId: saved.itemId } });
@@ -96,6 +127,32 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     save.mutate();
+  };
+
+  const removeImage = (id: string) => {
+    const updated = withDocument(text, (document) => {
+      if (!Array.isArray(document.referenceImages)) return;
+      document.referenceImages = document.referenceImages.filter(
+        (entry) =>
+          entry === null || typeof entry !== 'object' || (entry as { id?: unknown }).id !== id,
+      );
+    });
+    if (updated !== undefined) setText(updated);
+  };
+
+  const onTabKey = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next =
+      event.key === 'Home'
+        ? 'form'
+        : event.key === 'End'
+          ? 'json'
+          : surface === 'form'
+            ? 'json'
+            : 'form';
+    setSurface(next);
+    document.getElementById(tabIds[next])?.focus();
   };
 
   return (
@@ -122,6 +179,33 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
           Version {item.current.version} is the one polling uses. Saving writes version{' '}
           {item.current.version + 1}.
         </p>
+      ) : null}
+
+      {blocker.status === 'blocked' ? (
+        <div
+          role="alertdialog"
+          aria-label="Unsaved reference images"
+          className="mt-4 rounded-lg border border-amber-300 p-4 dark:border-amber-900"
+        >
+          <p className="text-sm font-medium">
+            {unsaved.size === 1 ? 'An image is' : `${unsaved.size} images are`} uploaded but not in
+            a saved version.
+          </p>
+          <p className="mt-1 text-sm text-ink-dim dark:text-ink-dim-dark">
+            Leaving now loses{' '}
+            {unsaved.size === 1 ? 'the reference to it' : 'the references to them'}, and the stored
+            file{unsaved.size === 1 ? ' stays' : 's stay'} on the server with nothing pointing at{' '}
+            {unsaved.size === 1 ? 'it' : 'them'}.
+          </p>
+          <div className="mt-3 flex gap-3">
+            <Button type="button" variant="quiet" onClick={blocker.reset}>
+              Stay and save
+            </Button>
+            <Button type="button" variant="quiet" onClick={blocker.proceed}>
+              Leave anyway
+            </Button>
+          </div>
+        </div>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-6 space-y-6">
@@ -158,14 +242,71 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
           </Field>
         </div>
 
-        <SpecEditor value={text} onChange={setText} parsed={parsed} />
+        <div>
+          <div role="tablist" aria-label="Editing surface" className="flex gap-2">
+            {(['form', 'json'] as const).map((choice) => (
+              <button
+                key={choice}
+                id={tabIds[choice]}
+                type="button"
+                role="tab"
+                aria-selected={surface === choice}
+                aria-controls={tabIds.panel}
+                tabIndex={surface === choice ? 0 : -1}
+                onClick={() => setSurface(choice)}
+                onKeyDown={onTabKey}
+                className={`rounded-lg px-3 py-1.5 text-sm ${
+                  surface === choice
+                    ? 'bg-beacon text-white'
+                    : 'border border-edge dark:border-edge-dark'
+                }`}
+              >
+                {choice === 'form' ? 'Form' : 'JSON'}
+              </button>
+            ))}
+          </div>
+
+          <div id={tabIds.panel} role="tabpanel" aria-labelledby={tabIds[surface]} className="mt-4">
+            {surface === 'form' && shown ? (
+              <>
+                {parsed.ok ? null : (
+                  <Alert tone="error">
+                    Not saveable yet —{' '}
+                    {parsed.issues.map((issue) => `${issue.path}: ${issue.message}`).join('; ')}.
+                  </Alert>
+                )}
+                <SpecForm
+                  spec={shown}
+                  text={text}
+                  onChange={setText}
+                  warnings={parsed.ok ? parsed.warnings : (parsed.warnings ?? [])}
+                  issues={parsed.ok ? [] : parsed.issues}
+                />
+              </>
+            ) : (
+              <>
+                {surface === 'form' ? (
+                  <Alert tone="error">
+                    The spec does not have the shape the form draws. Fix it below and the form comes
+                    back.
+                  </Alert>
+                ) : null}
+                <SpecEditor value={text} onChange={setText} parsed={parsed} />
+              </>
+            )}
+          </div>
+        </div>
 
         <ReferenceImages
+          images={shown?.referenceImages}
           canInsert={withReferenceImage(text, PROBE) !== undefined}
+          unsaved={unsaved}
+          onRemove={removeImage}
           onUploaded={(image) => {
             const updated = withReferenceImage(text, image);
             if (updated === undefined) return false;
             setText(updated);
+            setUploaded((current) => new Set(current).add(image.id));
             return true;
           }}
         />

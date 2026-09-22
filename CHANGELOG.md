@@ -4,6 +4,25 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-18 Typed spec form. A wanted item's spec is edited through toggles, dropdowns and tables
+  rather than by writing JSON: §4's settings as the bounded values they are, criteria and search
+  plans as rows that can be added and removed, and the summary and plausibility note as prose.
+  The JSON editor stays behind a tab, with its live validation and linter warnings unchanged — it
+  is the escape hatch for a paste or a wholesale rewrite, not the only way in.
+- Both surfaces edit one document. The form reads the parsed spec and writes back to the raw JSON,
+  so switching between them never loses a field the form does not show. An edit in the form does
+  re-indent the JSON, as adding a reference image always has.
+- A half-finished value keeps the form on screen. An empty criterion, or a poll interval typed one
+  key at a time, no longer drops the page to raw JSON: the form draws from a draft parse and shows
+  what would stop a save beside the field concerned, while the Save button stays on the strict
+  schema. A price ceiling with pence can be saved from the form.
+- New criteria and search plans get ids that are never reused, so a criterion added after another
+  was deleted does not inherit its feedback, and a plan's watermark is never shared with another
+  item's. Changing a plan's marketplace starts a new plan with that source's default region.
+- Reference images are visible where they are uploaded. The panel shows each one as a labelled
+  thumbnail with the number sent on every review, images can be removed there, and an upload that
+  is not yet part of a saved version says so. Leaving the page with one now warns first, instead of
+  leaving the stored file behind without a word.
 - P1-17 Prompt eval suite in CI. The fixture cases P1-09 and P1-10 left behind — nineteen
   pre-filter listings and eight reviewer listings across both example specs — are now a gate:
   `.github/workflows/prompt-eval.yml` runs them against two providers and fails the build on a
