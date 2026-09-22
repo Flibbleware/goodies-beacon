@@ -200,6 +200,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('link', { name: 'New wanted item' }).click();
     await page.getByLabel('Title').fill('Carmageddon big box');
     await page.getByLabel('Status').selectOption('active');
+    await page.getByRole('tab', { name: 'JSON' }).click();
     await page.getByLabel('Spec').fill(JSON.stringify(carmageddon, null, 2));
     await page.getByRole('button', { name: 'Create item' }).click();
 
@@ -212,6 +213,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('a spec the schema rejects cannot be saved, and the error names the path', async () => {
+    await page.getByRole('tab', { name: 'JSON' }).click();
     const broken = { ...carmageddon, criteria: [{ ...carmageddon.criteria[0], text: '' }] };
     await page.getByLabel('Spec').fill(JSON.stringify(broken, null, 2));
 
@@ -241,6 +243,51 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByRole('button', { name: 'Save new version' })).toBeEnabled();
   });
 
+  await test.step('the form edits the same document the JSON surface holds', async () => {
+    await page.getByRole('tab', { name: 'Form' }).click();
+
+    await expect(page.getByLabel('Summary')).toHaveValue(/Carmageddon/);
+    await page.getByLabel('Price ceiling').fill('95');
+    await page.getByLabel('Relists').selectOption('suppress');
+    await page.getByLabel('Polled').first().uncheck();
+
+    // One key at a time, because `P` and `PT` are not durations and once took the form away.
+    await page.getByLabel('Poll every').pressSequentially('PT8H');
+    await expect(page.getByLabel('Poll every')).toHaveValue('PT8H');
+
+    // A price with pence must not trip the browser's own validation and block Save.
+    await page.getByLabel('Price ceiling').fill('149.99');
+    const valid = await page
+      .getByLabel('Price ceiling')
+      .evaluate((input) => (input as unknown as { checkValidity(): boolean }).checkValidity());
+    expect(valid).toBe(true);
+    await page.getByLabel('Price ceiling').fill('95');
+
+    await page.getByRole('tab', { name: 'JSON' }).click();
+    const spec = page.getByLabel('Spec');
+    await expect(spec).toHaveValue(/"amount": 95/);
+    await expect(spec).toHaveValue(/"relists": "suppress"/);
+    await expect(spec).toHaveValue(/"enabled": false/);
+    await expect(spec).toHaveValue(/"pollEvery": "PT8H"/);
+
+    // Put it back, so the steps below still describe the spec they were written for.
+    await spec.fill(JSON.stringify(carmageddon, null, 2));
+  });
+
+  await test.step('a criterion is added and removed from the form', async () => {
+    await page.getByRole('tab', { name: 'Form' }).click();
+
+    const criteria = page.getByRole('region', { name: 'Criteria' });
+    const rows = criteria.getByRole('listitem');
+    await expect(rows).toHaveCount(carmageddon.criteria.length);
+
+    await criteria.getByRole('button', { name: 'Add a criterion' }).click();
+    await expect(rows).toHaveCount(carmageddon.criteria.length + 1);
+
+    await rows.last().getByRole('button', { name: 'Remove' }).click();
+    await expect(rows).toHaveCount(carmageddon.criteria.length);
+  });
+
   await test.step('a reference image is uploaded, labelled, and added to the spec', async () => {
     await page.getByLabel('Label').fill('UK big box, front');
     await page.getByLabel('Image').setInputFiles({
@@ -250,7 +297,21 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     });
     await page.getByRole('button', { name: 'Upload and add' }).click();
 
-    await expect(page.getByText('Added to the spec: UK big box, front.')).toBeVisible();
+    // The panel shows what it stored, says it is not saved yet, and writes it into the document.
+    await expect(page.getByRole('img', { name: 'UK big box, front' })).toBeVisible();
+    await expect(page.getByText('not saved yet')).toBeVisible();
+    await page.getByRole('tab', { name: 'JSON' }).click();
+    await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
+  });
+
+  await test.step('leaving with an unsaved image warns rather than orphaning it', async () => {
+    await nav.click();
+
+    const warning = page.getByRole('alertdialog', { name: 'Unsaved reference images' });
+    await expect(warning).toContainText('uploaded but not in a saved version');
+    await warning.getByRole('button', { name: 'Stay and save' }).click();
+
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
     await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
   });
 
@@ -265,6 +326,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(history.getByText('Hardened the disc criterion; added a photo.')).toBeVisible();
     await expect(history.getByText('First version, entered by hand.')).toBeVisible();
     // The editor reopens on the stored document, image and all.
+    await expect(page.getByRole('img', { name: 'UK big box, front' })).toBeVisible();
+    await expect(page.getByText('not saved yet')).toBeHidden();
+    await page.getByRole('tab', { name: 'JSON' }).click();
     await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
   });
 
@@ -273,6 +337,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('link', { name: 'New wanted item' }).click();
 
     await page.getByLabel('Title').fill('Power Macintosh 5500');
+    await page.getByRole('tab', { name: 'JSON' }).click();
     await page.getByLabel('Spec').fill(JSON.stringify(powerMac, null, 2));
     await page.getByRole('button', { name: 'Create item' }).click();
 

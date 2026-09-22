@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.34; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.35; section numbers below refer to it.*
 
-Version 1.12 — 17 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.13 — 22 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -212,7 +212,7 @@ Run on 13 September 2026; the record and deviations are in `CHANGELOG.md` under 
 
 **Exit test.** With a manually entered spec for "Carmageddon big box, Macintosh preferred, PC acceptable" and search plans "carmageddon" on `EBAY_GB` and `EBAY_US`: a poll runs on schedule; a newly listed jewel-case Carmageddon is rejected at the pre-filter or the reviewer with a readable reason; a boxed Mac copy is matched; a listing whose photos don't show the box contents is uncertain with "contents not visible" as the unknown; the match and the uncertain each arrive as a plain email; the spend for the day is visible on the dashboard; `docs/SPIKES.md` states, for each of Vinted, Yahoo Auctions and Mercari, whether it works from the droplet, from home, and through the proxy.
 
-Two tracks. Track A is throwaway spike work; Track B is the product. They are independent until P1-18, with one ordering rule: **S1-01 goes first**, before P1-01, because P1-04 depends on it and P1-03's harness wants the fixtures it records. The Vinted spike needs a residential proxy with a sticky GB session (§5); sign up for one in the first week so S1-02 is never waiting on a purchase. The droplet exists now, so the "from the droplet" half of every spike can be run at once.
+Two tracks. Track A is throwaway spike work; Track B is the product. They are independent until the Phase 1 exit (P1-XX), with one ordering rule: **S1-01 goes first**, before P1-01, because P1-04 depends on it and P1-03's harness wants the fixtures it records. The Vinted spike needs a residential proxy with a sticky GB session (§5); sign up for one in the first week so S1-02 is never waiting on a purchase. The droplet exists now, so the "from the droplet" half of every spike can be run at once.
 
 ### Track A — spikes
 
@@ -295,7 +295,10 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-15 | Candidates and verdicts UI | L | P1-12, P1-14 |
 | P1-16 | Dashboard | M | P1-12 |
 | P1-17 | Prompt eval suite in CI | M | P1-09, P1-10, P1-11 |
-| P1-18 | Phase 1 exit | S | all above, S1-05 |
+| P1-18 | Typed spec form (pulled forward from Phase 2) | L | P1-13, P1-14 |
+| P1-XX | Phase 1 exit | S | all above, S1-05 |
+
+**Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
 
 #### P1-00 Hardening from the Phase 0 review — S
 
@@ -391,7 +394,7 @@ Done when:
 
 - [x] Tests cover the SSRF guard, the size cap, a non-image response, and a corrupt image. Sixty-one tests. The guard blocks on the resolved *address*, not the hostname, because `evil.example.com` can resolve to 127.0.0.1 as easily as `localhost` can; it refuses when **any** answer is private rather than picking the public one, which is what a DNS rebinding attempt wants; it sees through IPv4-mapped IPv6 (`::ffff:127.0.0.1` reaches loopback just as well); and it re-checks at every redirect hop, since the trick is a public host answering 302 to `169.254.169.254`. The size cap is checked twice — once against `content-length` to save the download, once against the bytes actually read, because `content-length` is a claim.
 - [x] Two identical images uploaded twice produce one stored file (hash-based dedupe). Keyed on a SHA-256 of the *original* bytes, so the second arrival is recognised before any re-encoding is done. Four concurrent ingests of one photo settle on one row: the unique index decides and the losers read back what the winner wrote, rather than failing the poll.
-- [ ] Reference image upload from the UI works and shows the running "images per review" count. **Half done, and the remainder belongs to P1-13.** `POST /api/media` accepts an upload with a label, re-encodes it and returns the row, and `GET /api/media/:id` and `/:id/thumb` serve it with an immutable cache and an ETag. There is no page to put the control on: §7's running count lives on the item page, and P1-13's own description carries "reference image upload with labels (P1-05)". Building an unmounted component now would be guessing at what that task needs.
+- [x] Reference image upload from the UI works and shows the running "images per review" count. **Finished by P1-18**: the editor's reference-image panel uploads, shows each image as a labelled thumbnail, counts the images sent with every review and nudges at six, as the item page's spec card already did. What follows is how it stood before that. **Half done, and the remainder belongs to P1-13.** `POST /api/media` accepts an upload with a label, re-encodes it and returns the row, and `GET /api/media/:id` and `/:id/thumb` serve it with an immutable cache and an ETag. There is no page to put the control on: §7's running count lives on the item page, and P1-13's own description carries "reference image upload with labels (P1-05)". Building an unmounted component now would be guessing at what that task needs.
 
 #### P1-06 Currency conversion — S
 
@@ -839,7 +842,78 @@ would be worthless. The instruction the model ignored is already in the prompt i
 so sharpening it further would have been the same mistake as the two reverted prompt edits above.
 Judge a replacement model on this suite before switching to it — that is what it is for.
 
-#### P1-18 Phase 1 exit — S
+#### P1-18 Typed spec form — L
+
+**Pulled forward into Phase 1 on 22 September 2026, and required before the Phase 1 exit.** It
+was raised during Phase 1 as P2-01 and first scheduled for Phase 2 (below, and ARCHITECTURE.md §17
+v1.35); the branch it was built on, `feat/P2-01-typed-spec-form`, still carries the old id. The
+Phase 1 exit test enters the Carmageddon spec by hand, and that should not mean writing JSON.
+
+§8's "nothing is a black box" has two halves and Phase 1 built only the reading one: P1-14's spec
+card renders every field of a spec in plain English, while P1-13's editor is the raw JSON textarea
+§17 asked for. Give the settings the toggles, dropdowns and number fields they are; the criteria
+and search plans their tables, with rows added, edited and removed; and the reference images a
+panel that shows them. Saving still writes version N+1 through the same `saveItem` path, and the
+same `wantedSpecSchema` still validates — this is a second surface onto the document, not a second
+model of it. The JSON editor stays, behind a toggle: it is the escape hatch for a paste, a
+wholesale rewrite, or a field a form has not caught up with, and P1-13's live validation and
+linter warnings are what it already needs to be.
+
+Build the form and the spec card as one component with a `readOnly` mode rather than two that
+drift, because Phase 3's chat shows the same card beside the conversation and would otherwise make
+a third.
+
+**The reference-image panel is the part with known defects**, found while looking at a real item on
+18 September 2026. Today the panel uploads a file, stores it immediately, appends a
+`{ id, path, label, addedAt }` entry to the bottom of the JSON, and shows the owner nothing: no
+thumbnail, no filename, only an alert that is easily off-screen, with the entry itself below the
+fold of a twenty-eight-row textarea. It reads as though the upload was swallowed. Worse, the entry
+lives only in the browser's text state until the spec is saved, so leaving the page orphans the
+stored file with nothing pointing at it, and §13's retention job — Phase 2 — does not sweep
+unreferenced media. Removing an image is hand-editing JSON. And `withReferenceImage`
+re-serialises the whole document to append, silently reformatting whatever the owner typed.
+
+Depends on P1-13, P1-14.
+
+Done when:
+
+- [x] Every field in `SpecSettings` is set from the form — sources, listing types, price ceiling, shipping, condition, grading, negative keywords, notification mode, poll interval, relists, unknown handling and backfill — with no JSON typed, and the document it produces parses to the same spec the JSON surface would. *Byte-identical* is what this box asked for and is the wrong test: both surfaces write `JSON.stringify(document, null, 2)`, so the bytes match each other but not necessarily what someone hand-formatted, and normalising their formatting on an edit is the existing behaviour of `withReferenceImage`, not a regression.
+- [x] Criteria and search plans are rows: added, edited and removed, with `kind`, `quantifiable` and `onUnknown` as controls rather than free text, and a criterion keeping its id across an edit so feedback history stays attached (§4). Ids are generated once on add and nothing in the form rewrites them. They are random rather than counted: a counter only avoids the ids on screen, so a criterion deleted in one version and a new one added in the next would share an id and the newcomer would inherit the old one's feedback. A plan's is a whole uuid, for the reason in the section below. Changing a plan's *source* is the one edit that gives it a new id, because its watermark and stats describe the old marketplace.
+- [x] An uploaded reference image appears as a labelled thumbnail in the editor the moment it is stored, and can be removed there.
+- [x] Leaving the editor with an uploaded image that has not been saved warns before it is lost. `useBlocker` covers in-app navigation with a dialog naming the count, and `enableBeforeUnload` covers a reload or a closed tab; the panel says "not saved yet" under each thumbnail meanwhile.
+- [x] An image uploaded and then abandoned is not lost without warning; sweeping one abandoned anyway belongs to Phase 2's retention job. **Amended when the task was pulled into Phase 1**, because as first written this box could not be ticked before the exit: §13's orphaned-media sweep is part of the retention job, which is Phase 2 work and does not exist yet. The requirement is not dropped — it is carried to that job in *What comes next* below. Until then the warning above is what stops the file being stranded, the dialog says plainly that *Leave anyway* leaves it on the server, and an owner who clicks it strands one.
+- [x] The JSON editor is still reachable in one click, still validates as you type, and still shows the linter's warnings; a spec typed in one surface and then opened in the other is the same spec. The Playwright run edits three settings in the form, reads them back out of the JSON, and puts the document back.
+- [x] Whether the spec card and the form become one component is decided in Phase 3, when the chat needs a card beside the conversation. **Amended when the task was pulled into Phase 1**; as first written the box asked for one component with a `readOnly` mode, and that was reconsidered while building it and deliberately not done. ARCHITECTURE.md §17's Phase 3 entry now carries the decision. The two say different things about the same values — the card carries the lint warnings, the "sent with every review" count and the reference thumbnails as evidence, while the form carries controls, hints about what each field costs, and row add/remove — so one component would be every control wrapped in a `readOnly` branch to serve two pages that do not want the same page. The drift this box was guarding against is real but was overstated as a refactor; **Phase 3 should decide it properly** when the chat needs a spec card beside the conversation, because that is the third renderer the box was worried about and the first time the shape of the answer is actually known.
+
+#### What P1-18 found
+
+**Adding a criterion made the spec invalid, and the form vanished.** A new row starts with empty
+text, which `criterionSchema` rightly refuses, so the strict parse failed and the editor fell back
+to raw JSON mid-edit — fields unmounted, caret lost. Clearing a field to retype it did the same, and
+so, found in review, did *typing* into four settings: `P` and `PT` are the first two keystrokes of
+`PT8H` and neither is a duration, a grading scale id is not a uuid until it is finished, `0` is not
+a price, and unticking both listing types left no way to tick one back. The form now draws from a
+draft parse (`draftSpecSchema`) that relaxes every one of those rules to its bare type, while the
+Save button stays on `wantedSpecSchema` and its objections are shown beside the field each one
+names. The relaxation is one `.extend` beside the strict schema rather than a weakening of it,
+because everything else — the API, the interviewer's `propose_spec`, the reviewer — depends on the
+strict rule. `parse.test.ts` walks each of those values; the Playwright run types `PT8H` one key at
+a time.
+
+**A price with pence could not be saved from the form.** The price input was `type="number"
+min={1}` with the default step of 1 and the page's `<form>` validates natively, so `149.99` was
+refused by the browser with its own tooltip before any of this code ran. It takes any step now,
+and the schema's "more than zero" is what judges it.
+
+**`search_plan_state` is keyed on the plan id alone, across every item, and nothing checks that a
+plan id is unique across items.** The form's first draft numbered new plans `plan-1`, `plan-2`, so
+every item created through it would have shared watermarks and stats with every other; it uses a
+uuid now. The JSON surface still accepts any id, and entering the Carmageddon example twice gives
+two items the same `ebay-gb-carmageddon`. That predates this task and is not fixed here: the right
+place is `saveItem`, refusing a plan id another item owns with a 400 against the path, as P1-13 did
+for a `gradingScaleId` naming no scale.
+
+#### P1-XX Phase 1 exit — S
 
 Run the Phase 1 exit test on the droplet. Record the outcome, the month's real AI spend so far, and the spike recommendations in `CHANGELOG.md` under `v0.2.0`. Update ARCHITECTURE.md §2 with anything the spikes changed. When `development/0.2.0` is merged to `main`, make `main` the default branch again — it was switched to the integration branch during Phase 0 so manually triggered workflows and Renovate could see their files — and remove the "replace `main` with `development/0.2.0`" note from RUNNING.md.
 
@@ -849,7 +923,11 @@ Run the Phase 1 exit test on the droplet. Record the outcome, the month's real A
 
 Phase 2 and Phase 3 will be planned once Phase 1's spikes are in, because the Vinted findings decide how much of Phase 4 exists as designed and the eBay findings decide the default marketplaces. The shape will be the same as this document: tasks with sizes, dependencies and done-when lists.
 
-Their order was swapped at the Phase 0 exit (ARCHITECTURE.md §17 v1.22): **Phase 2 is notifications** — the 08:00 digest, `Notification` idempotency for every channel, the backfill and scan summary email, English summaries in email, the proper templates, and the retention job from §13, which otherwise waits until Phase 5 while candidates and media accumulate from the first poll; **Phase 3 is the interviewer and spec editing** — the chat, `propose_spec`, backfill-before-agree, and the typed spec form and side-by-side version diff that P1-13 deliberately leaves out. Notifications come first because the SMTP transport has existed since P0-10, the manual editor gives a way to create specs, and §8 calls the interviewer a convenience rather than a gatekeeper; an email for a real match is the product's output, and it should not wait behind a chat UI.
+Their order was swapped at the Phase 0 exit (ARCHITECTURE.md §17 v1.22): **Phase 2 is notifications** — the 08:00 digest, `Notification` idempotency for every channel, the backfill and scan summary email, English summaries in email, the proper templates, and the retention job from §13, which otherwise waits until Phase 5 while candidates and media accumulate from the first poll; **Phase 3 is the interviewer** — the chat, `propose_spec`, backfill-before-agree, the Agree and amendment flows, and the side-by-side version diff. Notifications come first because the SMTP transport has existed since P0-10 and an email for a real match is the product's output, which should not wait behind a chat UI.
+
+**Phase 2's retention job also owns §13's orphaned-media sweep**, carried from P1-18: a reference image uploaded in the spec editor and never saved into a version, more than a day old and referenced by no spec version, grading scale or candidate, is deleted. Done when an abandoned upload is gone after the next nightly run and one saved into a version is not.
+
+**The typed spec form is Phase 1 work** (ARCHITECTURE.md §17 v1.35), which is a correction to that swap rather than part of it. The swap's second reason was that "the manual editor gives a way to create specs", and P1-13's editor — a raw JSON textarea, which is what §17 asked for — is that only for someone who knows the schema. Deferring the form with the chat therefore left hand-written JSON as the sole way to create or amend an item across two phases instead of one. The form needs nothing from the interviewer: it is a typed editor over P1-02 schemas, and the spec card in P1-14 already renders every one of those fields read-only. It was first scheduled at the head of Phase 2 and then brought forward, so that the Phase 1 exit does not leave JSON as the only way in; P1-18, in Track B above, is that task.
 
 ### Carried forward from the Phase 0 exit test
 

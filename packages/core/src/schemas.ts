@@ -41,6 +41,8 @@ export {
   type AiRole,
   BACKFILL_DEPTHS,
   type BackfillDepth,
+  BUYING_TYPES,
+  type BuyingType,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
   type CandidateOrigin,
@@ -152,3 +154,11 @@ export {
   sourcesSettingsSchema,
   toPublicSettings,
 } from './settings/schema.js';
+export {
+  isMarketplaceSourceId,
+  isSourceId,
+  MARKETPLACE_SOURCE_IDS,
+  type MarketplaceSourceId,
+  SOURCE_IDS,
+  type SourceId,
+} from './sources.js';
