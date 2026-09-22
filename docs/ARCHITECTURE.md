@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.35 — 22 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.36 — 22 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -32,6 +32,7 @@ It is single-user, runs from one `docker compose up`, and every marketplace and 
 | Images | Reference images (labelled variants) and grading example images can be added at any time; each addition creates a new spec version. |
 | Transparency | The agreed spec is structured data, rendered in full and editable directly; every verdict shows per-criterion evidence and the exact prompt sent. |
 | Settings vs criteria | Anything with a bounded set of values is a typed field on the item; free-text criteria are reserved for judgement calls that need reading or looking. |
+| Wish list | A lightweight list beside the wanted items: a label, a category (game, DVD, VHS, toy, figurine, book, other) and an optional search link opened by hand. No polling and no AI; a wish is promoted to a wanted item when it is worth watching. |
 | Searching | Search broad, judge narrow. An item holds many search plans across sources (e.g. "macintosh", "mac performa", "power macintosh" on eBay GB and US, plus Japanese keywords on Yahoo/Mercari); queries are editable at any time and each shows its own stats. The reviewer does the narrowing. |
 | Retention | Candidates auto-deleted after 30 days unless marked *retain*. |
 | Hosting | Docker Compose on a VPS or home machine; the scraping worker can run on a different machine from the core. |
@@ -216,6 +217,8 @@ What `Seen` is for is the count of what is genuinely new to the instance, relist
 **Notification** — `id, candidateId, channel (realtime|digest), sentAt, digestDate?`. Guarantees at-most-once per candidate per channel.
 
 **InterviewSession / Message** — The chat transcript for creating or amending a spec.
+
+**WishItem** — `id, label, category (game|dvd|vhs|toy|figurine|book|other), searchUrl?, createdAt, updatedAt`. The wish list (v1.36, P1-19): something the owner would like but has not specced. It stands entirely apart from the pipeline — no foreign key in or out, nothing polls or reviews it, and `searchUrl` is an http(s) link the owner opens by hand. Promotion deletes the row and writes a draft WantedItem in one transaction, so a thing is a wish or wanted, never both; the category and link, which a spec has no field for, go into version 1's change note.
 
 **Settings** — Single row: polling defaults (global interval, the poll and backfill caps), digest time + timezone, currency base, retention days, AI role config, per-source credentials (see §12 on secrets).
 
@@ -444,6 +447,7 @@ Reference and grading example images are not swept by age: they belong to a spec
 React + Vite, TanStack Router and Query, Tailwind. Pages:
 
 *Dashboard* — active items, today's new matches/uncertains, source health, AI spend this month.
+*Wish list* — wishes added in a modal, filterable by category (each with its icon) and sorted A–Z or newest first, edited in place in the list, each with a Search button opening its link in a new tab and a Promote action that turns it into a draft wanted item.
 *Wanted items* — list with status, mode, last poll, counts. Item page: current spec card (settings, criteria, the search-plan table with per-query stats, labelled reference images — all editable in place), version history with diffs, candidate list filtered by verdict and origin, "Amend" opens the chat, "Scan current listings" runs a backfill.
 *Interview* — streaming chat with the spec card alongside; Agree button; preview-search results panel.
 *Candidate* — listing photos and English summary, verdict with per-criterion evidence and "Show prompt", actions: Not a match / Challenge (with note), Retain, Use photo as reference, Mark as bought (moves item to `found`).
@@ -520,7 +524,7 @@ Each phase ends with something you can use. Estimates assume one developer with 
 
 **Phase 0 — Foundation.** Monorepo scaffold with Biome and lefthook, CI workflow (lint, typecheck, test, build) green from the first commit, Dockerfile and compose files (production and `compose.dev.yml` with Mailpit), Postgres + Drizzle migrations, pg-boss wiring, auth (password, sessions), settings storage with encrypted secrets, `/healthz`, UI shell, release workflow that builds the image and deploys to the droplet. *Exit: a tagged release deploys an empty Goodies Beacon to the droplet over HTTPS and you can log in.*
 
-**Phase 1 — eBay end to end + feasibility spikes.** eBay adapter (search, enrich, health check), poll scheduler, Listing/Candidate ingestion, a manually-written spec (a typed form, with the raw JSON behind a tab; no interviewer yet), the full matching pipeline with the AI role abstraction, candidate audit view, and a plain real-time email for each match or uncertain on a realtime item — the SMTP transport exists from Phase 0, and an email is the product's output. In parallel: throwaway spike scripts for Vinted (UK + one EU domain, from VPS and from home), Yahoo Auctions and Mercari, recording what works, at what rate, and the fixtures they produce. *Exit: your Carmageddon search runs 3×/day against eBay, you can read verdicts in the UI, and a match reaches your inbox.* (The typed form was planned for Phase 2 by v1.35 and brought forward before the Phase 1 exit — see Phase 2 below for why it could not wait for the interviewer. Phase 1 also stays open until the MVP is where the owner wants it, rather than closing when its first task list is done, so it takes on further tasks as they are identified; the development plan lists them.)
+**Phase 1 — eBay end to end + feasibility spikes.** eBay adapter (search, enrich, health check), poll scheduler, Listing/Candidate ingestion, a manually-written spec (a typed form, with the raw JSON behind a tab; no interviewer yet), the full matching pipeline with the AI role abstraction, candidate audit view, and a plain real-time email for each match or uncertain on a realtime item — the SMTP transport exists from Phase 0, and an email is the product's output. In parallel: throwaway spike scripts for Vinted (UK + one EU domain, from VPS and from home), Yahoo Auctions and Mercari, recording what works, at what rate, and the fixtures they produce. *Exit: your Carmageddon search runs 3×/day against eBay, you can read verdicts in the UI, and a match reaches your inbox.* (The typed form was planned for Phase 2 by v1.35 and brought forward before the Phase 1 exit — see Phase 2 below for why it could not wait for the interviewer. Phase 1 also stays open until the MVP is where the owner wants it, rather than closing when its first task list is done, so it takes on further tasks as they are identified; the development plan lists them. The first of those is the wish list, v1.36.)
 
 **Phase 2 — Notifications.** 08:00 digest, `Notification` idempotency for every channel, the backfill and scan summary email, proper templates with English summaries, currency in email, and the retention job from §13 so candidates and media stop accumulating. *Exit: you stop refreshing tabs for eBay.* (Swapped with the interviewer at the Phase 0 exit on the grounds that "the manual spec editor already gives a way to create items". v1.35 cashes that in: the Phase 1 editor was a raw JSON textarea, which is a way to create items for the developer who wrote the schema and not for anyone else, and the swap left it as the only one for two phases rather than one. The typed form has no dependency on the interviewer — it is a typed editor over schemas that have existed since P1-02 — so it was taken out of Phase 3, scheduled here first, and then brought forward into Phase 1 so the exit is not reached with JSON as the only way in. §8's "the interviewer is a convenience, not a gatekeeper" is only true once the thing it is a convenience over exists.)
 

@@ -32,6 +32,7 @@ import {
   SPEC_ORIGINS,
   VERDICT_DECISIONS,
   WANTED_ITEM_STATUSES,
+  WISH_CATEGORIES,
 } from '../domain/constants.js';
 import { SOURCE_IDS } from '../sources.js';
 
@@ -162,6 +163,27 @@ export const wantedItems = pgTable(
     check('wanted_items_notification_mode', oneOf(table.notificationMode, NOTIFICATION_MODES)),
     index('wanted_items_status_idx').on(table.status),
   ],
+);
+
+/**
+ * The wish list (P1-19): things the owner would like, noted without a spec.
+ *
+ * Deliberately standalone. Nothing polls, reviews or emails about a wish — no foreign key reaches
+ * it from the pipeline and it reaches nothing — and promoting one deletes this row and writes a
+ * `wanted_items` row in the same transaction, so a thing is a wish or wanted, never both.
+ */
+export const wishItems = pgTable(
+  'wish_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    label: text('label').notNull(),
+    category: text('category').$type<(typeof WISH_CATEGORIES)[number]>().notNull(),
+    /** A link the owner searches by hand: http(s) only, checked by `wishSaveSchema`. */
+    searchUrl: text('search_url'),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [check('wish_items_category', oneOf(table.category, WISH_CATEGORIES))],
 );
 
 /**
@@ -616,6 +638,7 @@ export type CostLedgerEntry = typeof costLedger.$inferSelect;
 export type NewCostLedgerEntry = typeof costLedger.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type Media = typeof media.$inferSelect;
+export type WishItem = typeof wishItems.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
 
 export type SettingsRow = typeof settings.$inferSelect;

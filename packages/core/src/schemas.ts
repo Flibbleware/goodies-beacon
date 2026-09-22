@@ -71,6 +71,8 @@ export {
   type VerdictDecision,
   WANTED_ITEM_STATUSES,
   type WantedItemStatus,
+  WISH_CATEGORIES,
+  type WishCategory,
 } from './domain/constants.js';
 export {
   LINT_CODES,
@@ -162,3 +164,9 @@ export {
   SOURCE_IDS,
   type SourceId,
 } from './sources.js';
+export {
+  WISH_CATEGORY_LABELS,
+  type Wish,
+  type WishSaveInput,
+  wishSaveSchema,
+} from './wishes/schema.js';

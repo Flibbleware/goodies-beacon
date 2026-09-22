@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.35; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.36; section numbers below refer to it.*
 
-Version 1.13 — 22 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.14 — 22 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -296,6 +296,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-16 | Dashboard | M | P1-12 |
 | P1-17 | Prompt eval suite in CI | M | P1-09, P1-10, P1-11 |
 | P1-18 | Typed spec form (pulled forward from Phase 2) | L | P1-13, P1-14 |
+| P1-19 | Wish list | M | P1-14 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -912,6 +913,67 @@ uuid now. The JSON surface still accepts any id, and entering the Carmageddon ex
 two items the same `ebay-gb-carmageddon`. That predates this task and is not fixed here: the right
 place is `saveItem`, refusing a plan id another item owns with a 400 against the path, as P1-13 did
 for a `gradingScaleId` naming no scale.
+
+#### P1-19 Wish list — M
+
+Somewhere to note a thing you would like without writing a spec for it. A wanted item is a
+commitment — a spec, search plans, polls three times a day and a model's attention on every
+listing — and much of what a collector would pick up if it turned up is not worth that yet. A wish
+is a label and a category (Game, DVD, VHS, Toy, Figurine, Book, or Other), with an optional search link of the
+owner's own: a saved eBay search, a shop page. Nothing polls, reviews or emails about a wish; the
+list's *Search* button opens the link in a new tab, and that is the whole of its searching.
+**Promote** turns a wish into a draft wanted item when it is worth having Goodies Beacon look.
+
+The page is one list, filterable by category, with each wish edited in its own row rather than
+on a page of its own, and every row's Search button visible without opening anything. The
+categories have icons, drawn inline — seven shapes do not earn an icon package.
+
+Decided with the owner before it was built: promotion *moves* the wish (the draft item is created
+and the wish deleted in one transaction, so a thing is a wish or wanted and never both); the
+categories are the four named plus *Other*, so nothing is refused a place (Book and then Figurine were
+added at the owner's request while the task was still open, each as its own migration so a
+database that had already applied the earlier ones is widened rather than left behind); and the link is a fixed
+URL rather than a template with the label substituted in.
+
+Depends on P1-14.
+
+Done when:
+
+- [x] A wish is added with a label, a category and optionally a search link — in a modal opened from the page header — and edited or removed where it is listed, without a page of its own. `wish_items` is a plain table with no history — a wish has no spec to version — and `/api/wishes` is its list, create, update and delete.
+- [x] The list filters by category, each shown with its icon and a count, and the filter is a link, so it survives a reload and can be bookmarked (the candidate list's pattern, P1-15). A sort toggle beside it orders the list A–Z (the default: case-insensitive, with numbers compared as numbers) or newest first, and is a link in the same way, each keeping the other's choice.
+- [x] A wish with a search link shows a Search button in its row that opens the link in a new tab; one without shows none. Only `http` and `https` links are accepted, by the same `wishSaveSchema` in the browser and the API, because the link is rendered as an `href` the owner clicks and `javascript:` there would run in the app's own origin.
+- [x] Promote turns a wish into a draft wanted item titled with its label and opens it in the spec editor, and the wish leaves the list. Asked twice at once, exactly one wanted item results: the wish is deleted with `RETURNING` inside the transaction that writes the item, so the second caller finds nothing to promote.
+- [x] A wish touches no marketplace and no model: nothing in the poll or review pipeline reads `wish_items`, and the table has no foreign key into or out of the domain tables.
+
+#### What P1-19 found
+
+**A spec has nowhere to put a wish's category or search link**, and promotion should not simply
+drop them. They are written into version 1's change note — *"Promoted from the wish list (VHS);
+searched by hand at …"* — which is the one free-text field whose job is saying where a version
+came from, and they stay in the item's history for good.
+
+**`createItem` could not share a transaction.** It opened its own, so promotion could not write
+the item and delete the wish atomically. The insert is now `insertItem`, taking a transaction the
+caller holds; `createItem` is that plus the grading-scale check, unchanged for every other caller.
+
+**The Playwright run failed now and then, and it was P1-16's heartbeat seed, not this task.**
+P1-16 reasoned that Playwright kills its server before the heartbeat's five-minute tick fires. The
+tick is a cron on the clock (`*/5 * * * *`), though, not five minutes after start, so any run that
+crossed :00, :05, :10… had a real `api` row written just before the dashboard step inserted its
+own, and the insert failed on the primary key. It failed twice while this task was being built,
+once at 20:05:45. The seed now upserts, and calling it twice in a row is proven to leave the
+intended state.
+
+**A form in a modal must be mounted when it opens, not reset when it opens.** The add form first
+lived in the modal permanently and was cleared by an effect on opening. That clear lands a render
+after the modal appears, and a keystroke in the gap — Playwright's, every time — set the form from
+the previous wish's values, so the second wish added in a row inherited the first one's search link.
+The form now exists only while the modal is open, so each opening starts from fresh state with no
+gap. `components/modal.tsx` is the app's first modal, and the next one should do the same.
+
+**The wanted item routes answer a malformed id with a 500.** `/api/items/not-a-uuid` reaches
+Postgres, which refuses it as a type error. The wish routes check for a uuid first and answer 404;
+the item routes are left as they were, since changing them is outside this task.
 
 #### P1-XX Phase 1 exit — S
 

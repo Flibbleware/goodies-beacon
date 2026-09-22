@@ -1037,8 +1037,8 @@ phone: one column, no tables, and a gallery that scrolls sideways rather than wi
 
 ## The web app
 
-The pages are Dashboard, Wanted items (list, item and spec editor), Candidates (list and one
-candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
+The pages are Dashboard, Wanted items (list, item and spec editor), Wish list, Candidates (list
+and one candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
 but disabled, labelled with the task that brings it. Settings holds
 account (change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles,
 provider keys and the budget cap) and instance (time zone, digest time) sections. Dark and light

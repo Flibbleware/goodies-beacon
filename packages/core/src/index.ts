@@ -173,7 +173,9 @@ export {
   type Verdict,
   verdicts,
   type WantedItem,
+  type WishItem,
   wantedItems,
+  wishItems,
 } from './db/schema.js';
 export {
   AI_ROLES,
@@ -224,6 +226,8 @@ export {
   type VerdictDecision,
   WANTED_ITEM_STATUSES,
   type WantedItemStatus,
+  WISH_CATEGORIES,
+  type WishCategory,
 } from './domain/constants.js';
 export {
   type DecidableCriterion,
@@ -483,3 +487,16 @@ export {
   type SourceId,
   TEMPLATE_SOURCE_ID,
 } from './sources.js';
+export {
+  WISH_CATEGORY_LABELS,
+  type Wish,
+  type WishSaveInput,
+  wishSaveSchema,
+} from './wishes/schema.js';
+export {
+  createWish,
+  deleteWish,
+  listWishes,
+  promoteWish,
+  updateWish,
+} from './wishes/store.js';

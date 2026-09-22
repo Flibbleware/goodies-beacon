@@ -600,6 +600,128 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL('/settings');
   });
 
+  const wishes = page.getByRole('list', { name: 'Wishes' });
+  const wish = (label: string) => wishes.getByRole('listitem').filter({ hasText: label });
+  const JURASSIC_SEARCH = 'https://www.ebay.co.uk/sch/i.html?_nkw=jurassic+park+vhs';
+
+  await test.step('a wish is added with a category and a search link, and a bad link is refused', async () => {
+    await page.getByRole('link', { name: 'Wish list' }).click();
+    await expect(page).toHaveURL('/wishes');
+    await expect(page.getByText('Nothing on the wish list yet.')).toBeVisible();
+
+    const dialog = page.getByRole('dialog', { name: 'Add a wish' });
+    const open = page.getByRole('button', { name: 'Add a wish' });
+
+    // Cancel closes it with nothing added.
+    await open.click();
+    await dialog.getByLabel('Label').fill('Never mind');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText('Nothing on the wish list yet.')).toBeVisible();
+
+    await open.click();
+    await expect(dialog.getByLabel('Label')).toHaveValue('');
+    await dialog.getByLabel('Label').fill('Jurasic Park');
+    await dialog.getByLabel('Category').selectOption('vhs');
+    // Rendered as an href the owner clicks, so a script URL must never get that far.
+    await dialog.getByLabel('Search link').fill('javascript:alert(1)');
+    await dialog.getByRole('button', { name: 'Add to wish list' }).click();
+    await expect(dialog.getByText('must be an http or https link')).toBeVisible();
+
+    await dialog.getByLabel('Search link').fill(JURASSIC_SEARCH);
+    await dialog.getByRole('button', { name: 'Add to wish list' }).click();
+    await expect(dialog).toBeHidden();
+
+    const search = wish('Jurasic Park').getByRole('link', { name: /^Search/ });
+    await expect(search).toHaveAttribute('href', JURASSIC_SEARCH);
+    await expect(search).toHaveAttribute('target', '_blank');
+
+    await open.click();
+    await dialog.getByLabel('Label').fill('Tamagotchi');
+    await dialog.getByLabel('Category').selectOption('toy');
+    await dialog.getByRole('button', { name: 'Add to wish list' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(wish('Tamagotchi')).toBeVisible();
+    // No link, so Search is there but disabled rather than missing.
+    await expect(wish('Tamagotchi').getByRole('link', { name: /^Search/ })).toHaveCount(0);
+    await expect(wish('Tamagotchi').getByRole('button', { name: /^Search for/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  await test.step('the list filters by category, and the filter survives a reload', async () => {
+    await page
+      .getByRole('navigation', { name: 'Category' })
+      .getByRole('link', { name: /^VHS/ })
+      .click();
+    await expect(page).toHaveURL('/wishes?category=vhs');
+    await expect(wishes.getByRole('listitem')).toHaveCount(1);
+    await expect(wish('Jurasic Park')).toBeVisible();
+
+    await page.reload();
+    await expect(wishes.getByRole('listitem')).toHaveCount(1);
+
+    await page
+      .getByRole('navigation', { name: 'Category' })
+      .getByRole('link', { name: /^All/ })
+      .click();
+    await expect(wishes.getByRole('listitem')).toHaveCount(2);
+  });
+
+  await test.step('a wish is edited where it is listed', async () => {
+    await page.getByRole('button', { name: 'Edit Jurasic Park' }).click();
+    const edit = page.getByRole('form', { name: 'Edit Jurasic Park' });
+    await edit.getByLabel('Label').fill('Jurassic Park');
+    await edit.getByRole('button', { name: 'Save' }).click();
+
+    await expect(wish('Jurassic Park')).toBeVisible();
+    await expect(wish('Jurassic Park').getByRole('link', { name: /^Search/ })).toHaveAttribute(
+      'href',
+      JURASSIC_SEARCH,
+    );
+  });
+
+  await test.step('the list is A–Z by default, newest first on request, and keeps the filter', async () => {
+    const rows = wishes.getByRole('listitem');
+    const sort = page.getByRole('navigation', { name: 'Sort' });
+
+    await expect(rows.nth(0)).toContainText('Jurassic Park');
+    await expect(rows.nth(1)).toContainText('Tamagotchi');
+
+    await sort.getByRole('link', { name: 'Newest' }).click();
+    await expect(page).toHaveURL('/wishes?sort=newest');
+    await expect(rows.nth(0)).toContainText('Tamagotchi');
+    await expect(rows.nth(1)).toContainText('Jurassic Park');
+
+    // Choosing a category keeps the sort, and choosing a sort keeps the category.
+    const category = page.getByRole('navigation', { name: 'Category' });
+    await category.getByRole('link', { name: /^VHS/ }).click();
+    await expect(page).toHaveURL(/category=vhs/);
+    await expect(page).toHaveURL(/sort=newest/);
+    await sort.getByRole('link', { name: 'A–Z' }).click();
+    await expect(page).toHaveURL('/wishes?category=vhs');
+
+    await category.getByRole('link', { name: /^All/ }).click();
+    await expect(rows.nth(0)).toContainText('Jurassic Park');
+  });
+
+  await test.step('promoting a wish makes it a draft wanted item and takes it off the list', async () => {
+    await page.getByRole('button', { name: 'Promote Tamagotchi' }).click();
+    await page
+      .getByRole('alertdialog', { name: 'Promote to a wanted item' })
+      .getByRole('button', { name: 'Promote' })
+      .click();
+
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
+    await expect(page.getByLabel('Title')).toHaveValue('Tamagotchi');
+    await expect(page.getByLabel('Status')).toHaveValue('draft');
+
+    await page.getByRole('link', { name: 'Wish list' }).click();
+    await expect(wishes.getByRole('listitem')).toHaveCount(1);
+    await expect(wish('Tamagotchi')).toHaveCount(0);
+  });
+
   await test.step('the password can be changed, and the new one is what signs you in', async () => {
     await page.goto('/settings');
 

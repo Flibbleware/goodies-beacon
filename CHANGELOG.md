@@ -4,6 +4,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-19 Wish list. Note something you would like without writing a spec: Add a wish opens a small
+  form for a label, a category (Game, DVD, VHS, Toy, Figurine, Book or Other, each with its icon)
+  and optionally a search link of your own, which the list's Search button opens in a new tab.
+  Filter the list by category, sort it A–Z or newest first, edit a wish in its row, and Promote it
+  to a draft wanted item when it is worth having Goodies Beacon look. Nothing polls or reviews a
+  wish.
 - P1-18 Typed spec form. A wanted item's spec is edited through toggles, dropdowns and tables
   rather than by writing JSON: §4's settings as the bounded values they are, criteria and search
   plans as rows that can be added and removed, and the summary and plausibility note as prose.
