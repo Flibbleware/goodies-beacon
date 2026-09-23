@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import type { ItemCategory } from '../domain/constants.js';
-import { ITEM_CATEGORIES } from '../domain/constants.js';
+import { categoryIdSchema } from '../categories/schema.js';
 import { tagsSchema } from '../domain/tags.js';
 
 /**
@@ -24,7 +23,7 @@ const searchUrlSchema = z
 export const wishSaveSchema = z.object({
   // The same limit as a wanted item's title, so promoting a wish can never fail on its label.
   label: z.string().trim().min(1, 'a wish needs a label').max(200, 'is too long'),
-  category: z.enum(ITEM_CATEGORIES),
+  categoryId: categoryIdSchema,
   searchUrl: searchUrlSchema.nullable().default(null),
   tags: tagsSchema.default([]),
 });
@@ -34,7 +33,7 @@ export type WishSaveInput = z.infer<typeof wishSaveSchema>;
 export interface Wish {
   id: string;
   label: string;
-  category: ItemCategory;
+  categoryId: string | null;
   searchUrl: string | null;
   tags: string[];
   createdAt: Date;

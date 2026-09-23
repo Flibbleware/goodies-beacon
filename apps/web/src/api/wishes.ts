@@ -1,4 +1,4 @@
-import type { ItemCategory, Wish } from '@goodies-beacon/core/schemas';
+import type { Wish } from '@goodies-beacon/core/schemas';
 import { api } from './client.js';
 import type { SavedVersion } from './items.js';
 
@@ -10,7 +10,7 @@ export type WishRow = Omit<Wish, 'createdAt' | 'updatedAt'> & {
 
 export interface WishSave {
   label: string;
-  category: ItemCategory;
+  categoryId: string | null;
   searchUrl: string;
   tags: string[];
 }

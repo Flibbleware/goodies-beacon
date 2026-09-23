@@ -30,6 +30,7 @@ describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
       'auth_session',
       'auth_user',
       'candidates',
+      'categories',
       'cost_ledger',
       'events',
       'feedback',

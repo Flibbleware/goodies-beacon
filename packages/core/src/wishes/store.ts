@@ -1,4 +1,5 @@
 import { desc, eq } from 'drizzle-orm';
+import { assertCategory } from '../categories/store.js';
 import type { Database } from '../db/client.js';
 import { wishItems } from '../db/schema.js';
 import { joinTags } from '../domain/tags.js';
@@ -14,7 +15,7 @@ import type { Wish, WishSaveInput } from './schema.js';
 const columns = {
   id: wishItems.id,
   label: wishItems.label,
-  category: wishItems.category,
+  categoryId: wishItems.categoryId,
   searchUrl: wishItems.searchUrl,
   tags: wishItems.tags,
   createdAt: wishItems.createdAt,
@@ -27,6 +28,7 @@ export async function listWishes(db: Database): Promise<Wish[]> {
 }
 
 export async function createWish(db: Database, input: WishSaveInput): Promise<Wish> {
+  await assertCategory(db, input.categoryId);
   const [row] = await db.insert(wishItems).values(input).returning(columns);
   if (!row) throw new Error('the wish was not inserted');
   return row;
@@ -38,6 +40,7 @@ export async function updateWish(
   id: string,
   input: WishSaveInput,
 ): Promise<Wish | undefined> {
+  await assertCategory(db, input.categoryId);
   const [row] = await db
     .update(wishItems)
     .set({ ...input, updatedAt: new Date() })
@@ -74,7 +77,7 @@ export async function promoteWish(db: Database, id: string): Promise<SavedVersio
       itemSaveSchema.parse({
         title: wish.label,
         status: 'draft',
-        category: wish.category,
+        categoryId: wish.categoryId,
         spec: { settings: { sources: ['ebay'] } },
         changeNote: promotionNote(wish),
       }),

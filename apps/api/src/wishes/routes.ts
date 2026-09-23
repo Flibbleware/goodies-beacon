@@ -9,6 +9,7 @@ import {
 } from '@goodies-beacon/core';
 import { type Context, Hono } from 'hono';
 import { z } from 'zod';
+import { unknownCategoryError } from '../categories/unknown.js';
 import { errorResponse } from '../errors.js';
 import { parseBody } from '../parse.js';
 
@@ -30,7 +31,11 @@ export function createWishRoutes({ db }: WishRouteDeps) {
   routes.post('/', async (c) => {
     const body = await parseBody(c, wishSaveSchema);
     if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
-    return c.json({ wish: await createWish(db, body.value) }, 201);
+    try {
+      return c.json({ wish: await createWish(db, body.value) }, 201);
+    } catch (error) {
+      return unknownCategoryError(c, error);
+    }
   });
 
   routes.put('/:id', async (c) => {
@@ -40,8 +45,12 @@ export function createWishRoutes({ db }: WishRouteDeps) {
     const body = await parseBody(c, wishSaveSchema);
     if (!body.ok) return errorResponse(c, 400, 'validation_failed', body.message);
 
-    const wish = await updateWish(db, id, body.value);
-    return wish ? c.json({ wish }) : notFound(c);
+    try {
+      const wish = await updateWish(db, id, body.value);
+      return wish ? c.json({ wish }) : notFound(c);
+    } catch (error) {
+      return unknownCategoryError(c, error);
+    }
   });
 
   routes.delete('/:id', async (c) => {

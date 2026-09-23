@@ -1,4 +1,5 @@
 import { desc, eq, max } from 'drizzle-orm';
+import { assertCategory } from '../categories/store.js';
 import type { Database } from '../db/client.js';
 import { gradingScales, specVersions, wantedItems } from '../db/schema.js';
 import type { WantedItemStatus } from '../domain/constants.js';
@@ -32,7 +33,7 @@ export interface LoadedItem extends PollState {
   id: string;
   title: string;
   status: ItemSummary['status'];
-  category: ItemSummary['category'];
+  categoryId: ItemSummary['categoryId'];
   notificationMode: ItemSummary['notificationMode'];
   pollEvery: string | null;
   createdAt: Date;
@@ -65,7 +66,7 @@ export async function listItems(db: Database): Promise<ItemSummary[]> {
         id: wantedItems.id,
         title: wantedItems.title,
         status: wantedItems.status,
-        category: wantedItems.category,
+        categoryId: wantedItems.categoryId,
         notificationMode: wantedItems.notificationMode,
         currentVersion: specVersions.version,
         updatedAt: wantedItems.updatedAt,
@@ -139,7 +140,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
     id: item.id,
     title: item.title,
     status: item.status,
-    category: item.category,
+    categoryId: item.categoryId,
     notificationMode: item.notificationMode,
     pollEvery: item.pollEvery,
     createdAt: item.createdAt,
@@ -177,6 +178,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
 /** A new item and its version 1, in one transaction so neither can exist without the other. */
 export async function createItem(db: Database, input: ItemSaveInput): Promise<SavedVersion> {
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
+  await assertCategory(db, input.categoryId);
 
   return db.transaction((tx) => insertItem(tx, input));
 }
@@ -184,7 +186,7 @@ export async function createItem(db: Database, input: ItemSaveInput): Promise<Sa
 /**
  * `createItem` inside a transaction someone else holds, for a caller that must do something else
  * atomically with it — promoting a wish deletes the wish in the same one (P1-19). It does not
- * check the grading scale; a caller whose spec can name one must.
+ * check the grading scale or the category; a caller whose input can name one must.
  */
 export async function insertItem(tx: Transaction, input: ItemSaveInput): Promise<SavedVersion> {
   const [item] = await tx
@@ -203,6 +205,7 @@ export async function saveItem(
   input: ItemSaveInput,
 ): Promise<SavedVersion | undefined> {
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
+  await assertCategory(db, input.categoryId);
 
   return db.transaction(async (tx) => {
     const [existing] = await tx
@@ -271,7 +274,7 @@ function itemColumns(input: ItemSaveInput) {
   return {
     title: input.title,
     status: input.status,
-    category: input.category,
+    categoryId: input.categoryId,
     notificationMode: settings.notificationMode,
     pollEvery: settings.pollEvery,
     gradingScaleId: settings.gradingScaleId,

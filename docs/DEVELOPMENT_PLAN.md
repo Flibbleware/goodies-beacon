@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.38; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.39; section numbers below refer to it.*
 
-Version 1.16 — 23 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.17 — 23 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -299,6 +299,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-19 | Wish list | M | P1-14 |
 | P1-20 | Categories for wanted items | S | P1-19 |
 | P1-21 | Tags for wishes | S | P1-19 |
+| P1-22 | Custom categories | M | P1-20 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1030,6 +1031,52 @@ Done when:
 - [x] A text box filters the list to wishes with a tag containing the text, ignoring case, and combines with the category filter and the sort. The filter is in the URL (`?tag=`) like the other two, so it survives a reload, and the category chips' counts are of the wishes the box lets through. Clicking a pill filters by that tag.
 - [x] Promoting a tagged wish writes its tags into version 1's change note: *"Promoted from the wish list; tagged big box, 90s; searched by hand at …"*.
 - [x] Edit opens the add modal filled in with the wish, titled *Edit* and its label, and saves in place; Cancel, Esc or the backdrop leave the wish as it was. The row no longer expands into a form.
+
+#### P1-22 Custom categories — M
+
+The seven categories P1-19 built in and P1-20 shared with the wanted items were the developer's
+guess at a collection; the owner's is different, and a fixed list with *Other* at the end is where
+that shows. Categories become the owner's own: made in Settings with a name, an icon and a colour,
+renamed and recoloured at any time, and deleted when no longer wanted. Nothing in the code names a
+category any more.
+
+Decided with the owner before it was built: a category looks as it does today — a line-drawn icon
+on a tinted tile — chosen from a fixed set of seventeen shapes and twelve hues rather than an emoji
+or a letter, because each is drawn in code and the lists should keep one look; and deleting a
+category that is in use leaves those wishes and items uncategorised rather than refusing, with the
+confirmation saying how many.
+
+A category is a row in `categories`, and `wish_items` and `wanted_items` point at it with a
+nullable `category_id` whose foreign key sets null on delete. There is no *Other*: that only ever
+meant "none of these", which a null says without a row. The icon and colour stay typed — tuples with
+check constraints, as every bounded set in the schema is — and are keyed by what is drawn
+(`cassette`, `disc`) rather than what it was for, so a disc can be a CD.
+
+Depends on P1-20.
+
+Done when:
+
+- [x] Settings has a Categories section that adds, edits and deletes categories — name, icon and colour, with a live preview tile — listed A–Z, each saying how many wishes and wanted items use it. `/api/categories` is its list, create, update and delete; a name is unique ignoring case (a unique index on `lower(name)`, with a 409 naming the clash rather than a 500 about the index), and an icon or colour outside the set is a 400.
+- [x] The wish list and the wanted items choose from those categories, or none, in their forms, and show and filter by them as before; the filter gains an *Uncategorised* chip when anything is, and links to Settings when no categories exist yet. A category id that names no category is a 400 against `categoryId`, not a foreign-key 500. Promoting a wish keeps its category.
+- [x] Deleting a category in use asks first, naming what it would uncategorise, and leaves those wishes and items in place without one.
+- [x] Nothing is recreated by hand. The migration makes a category for each of the seven built-ins in use, named, drawn and coloured as it was, and points its wishes and items at it; nothing becomes *Other*, which is uncategorised instead. It is two migrations — add the table and the new columns and convert, then drop the old columns — so drizzle-kit never has to guess whether a column was renamed. `categories-migration.integration.test.ts` builds a database at P1-21 with rows in every case, runs the rest, and checks each row landed where it should.
+
+The app's favicon — the beacon light, at 32 and 192 pixels and as a 180-pixel home-screen icon on
+a white ground, because iOS draws transparency as black — rides along on this branch at the owner's
+request; it is in `apps/web/public`, which Vite copies to the root of the build.
+
+#### What P1-22 found
+
+**Drizzle writes a column inside a `sql` fragment without its table.** The usage counts are
+subqueries, and `${wishItems.categoryId} = ${categories.id}` rendered as `"category_id" = "id"`,
+where the bare `"id"` resolved to the wish's own — so every count was zero, and the test that
+seeded a wish before counting is what caught it. The columns are qualified by hand there now; any
+correlated subquery written the same way elsewhere has the same trap.
+
+**Grading scales have a `category` too, and it is not this.** §4's GradingScale carries a free-text
+`category` ("Big box PC game") describing what a scale grades. Nothing uses it yet; Phase 5, which
+builds grading scales, should decide whether it becomes a reference to these categories or stays
+text, rather than inheriting the name by accident.
 
 #### P1-XX Phase 1 exit — S
 
