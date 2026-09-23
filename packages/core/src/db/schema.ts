@@ -24,6 +24,7 @@ import {
   EVENT_LEVELS,
   FEEDBACK_RESOLUTIONS,
   FEEDBACK_TYPES,
+  ITEM_CATEGORIES,
   MEDIA_KINDS,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_MODES,
@@ -32,7 +33,6 @@ import {
   SPEC_ORIGINS,
   VERDICT_DECISIONS,
   WANTED_ITEM_STATUSES,
-  WISH_CATEGORIES,
 } from '../domain/constants.js';
 import { SOURCE_IDS } from '../sources.js';
 
@@ -150,6 +150,11 @@ export const wantedItems = pgTable(
       onDelete: 'set null',
     }),
     minimumGrade: text('minimum_grade'),
+    /**
+     * What the item is, for the list (P1-20). On the item rather than in the spec: it sorts the
+     * owner's collection and nothing searches or judges by it.
+     */
+    category: text('category').$type<(typeof ITEM_CATEGORIES)[number]>().notNull().default('other'),
     /** Nullable because version 1 is written after the item; the pair is circular by nature. */
     currentSpecVersionId: uuid('current_spec_version_id').references(
       (): AnyPgColumn => specVersions.id,
@@ -161,6 +166,7 @@ export const wantedItems = pgTable(
   (table) => [
     check('wanted_items_status', oneOf(table.status, WANTED_ITEM_STATUSES)),
     check('wanted_items_notification_mode', oneOf(table.notificationMode, NOTIFICATION_MODES)),
+    check('wanted_items_category', oneOf(table.category, ITEM_CATEGORIES)),
     index('wanted_items_status_idx').on(table.status),
   ],
 );
@@ -177,13 +183,13 @@ export const wishItems = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     label: text('label').notNull(),
-    category: text('category').$type<(typeof WISH_CATEGORIES)[number]>().notNull(),
+    category: text('category').$type<(typeof ITEM_CATEGORIES)[number]>().notNull(),
     /** A link the owner searches by hand: http(s) only, checked by `wishSaveSchema`. */
     searchUrl: text('search_url'),
     createdAt,
     updatedAt,
   },
-  (table) => [check('wish_items_category', oneOf(table.category, WISH_CATEGORIES))],
+  (table) => [check('wish_items_category', oneOf(table.category, ITEM_CATEGORIES))],
 );
 
 /**

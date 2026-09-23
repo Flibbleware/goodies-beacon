@@ -45,6 +45,7 @@ export {
   type BuyingType,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
+  CATEGORY_LABELS,
   type CandidateOrigin,
   type CandidateStage,
   CONDITION_CATEGORIES,
@@ -54,6 +55,8 @@ export {
   type CriterionResult,
   IMAGE_STRATEGIES,
   type ImageStrategy,
+  ITEM_CATEGORIES,
+  type ItemCategory,
   NOTIFICATION_MODES,
   type NotificationMode,
   ON_UNKNOWN,
@@ -71,8 +74,6 @@ export {
   type VerdictDecision,
   WANTED_ITEM_STATUSES,
   type WantedItemStatus,
-  WISH_CATEGORIES,
-  type WishCategory,
 } from './domain/constants.js';
 export {
   LINT_CODES,
@@ -165,7 +166,6 @@ export {
   type SourceId,
 } from './sources.js';
 export {
-  WISH_CATEGORY_LABELS,
   type Wish,
   type WishSaveInput,
   wishSaveSchema,

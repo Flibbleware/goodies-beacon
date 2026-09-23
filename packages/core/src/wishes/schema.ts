@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { WishCategory } from '../domain/constants.js';
-import { WISH_CATEGORIES } from '../domain/constants.js';
+import type { ItemCategory } from '../domain/constants.js';
+import { ITEM_CATEGORIES } from '../domain/constants.js';
 
 /**
  * The wish list (P1-19): a label, a category, and optionally a link to search by hand.
@@ -22,26 +22,16 @@ const searchUrlSchema = z
 export const wishSaveSchema = z.object({
   // The same limit as a wanted item's title, so promoting a wish can never fail on its label.
   label: z.string().trim().min(1, 'a wish needs a label').max(200, 'is too long'),
-  category: z.enum(WISH_CATEGORIES),
+  category: z.enum(ITEM_CATEGORIES),
   searchUrl: searchUrlSchema.nullable().default(null),
 });
 
 export type WishSaveInput = z.infer<typeof wishSaveSchema>;
 
-export const WISH_CATEGORY_LABELS: Record<WishCategory, string> = {
-  game: 'Game',
-  dvd: 'DVD',
-  vhs: 'VHS',
-  toy: 'Toy',
-  figurine: 'Figurine',
-  book: 'Book',
-  other: 'Other',
-};
-
 export interface Wish {
   id: string;
   label: string;
-  category: WishCategory;
+  category: ItemCategory;
   searchUrl: string | null;
   createdAt: Date;
   updatedAt: Date;

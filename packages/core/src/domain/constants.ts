@@ -12,9 +12,22 @@ export type WantedItemStatus = (typeof WANTED_ITEM_STATUSES)[number];
 export const NOTIFICATION_MODES = ['realtime', 'digest'] as const;
 export type NotificationMode = (typeof NOTIFICATION_MODES)[number];
 
-/** What a wish list item is (P1-19). `other` so that nothing is refused a place on the list. */
-export const WISH_CATEGORIES = ['game', 'dvd', 'vhs', 'toy', 'figurine', 'book', 'other'] as const;
-export type WishCategory = (typeof WISH_CATEGORIES)[number];
+/**
+ * What a wish or a wanted item is, for sorting a collection rather than for searching (P1-19,
+ * P1-20). `other` so that nothing is refused a place on either list.
+ */
+export const ITEM_CATEGORIES = ['game', 'dvd', 'vhs', 'toy', 'figurine', 'book', 'other'] as const;
+export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
+
+export const CATEGORY_LABELS: Record<ItemCategory, string> = {
+  game: 'Game',
+  dvd: 'DVD',
+  vhs: 'VHS',
+  toy: 'Toy',
+  figurine: 'Figurine',
+  book: 'Book',
+  other: 'Other',
+};
 
 /** What caused a new immutable spec version (§4). */
 export const SPEC_ORIGINS = [

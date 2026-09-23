@@ -186,13 +186,19 @@ describe.skipIf(!databaseUrl)('the wish list routes', () => {
 
     const read = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
     const { item } = (await read.json()) as {
-      item: { title: string; status: string; current: { document: Record<string, unknown> } };
+      item: {
+        title: string;
+        status: string;
+        category: string;
+        current: { document: Record<string, unknown> };
+      };
     };
     expect(item.title).toBe('Jurassic Park');
     expect(item.status).toBe('draft');
-    // Where the category and the link went, since a spec has no field for either.
+    expect(item.category).toBe('vhs');
+    // Where the link went, since a spec has no field for it.
     expect(item.current.document.changeNote).toBe(
-      `Promoted from the wish list (VHS); searched by hand at ${SEARCH}.`,
+      `Promoted from the wish list; searched by hand at ${SEARCH}.`,
     );
 
     const list = await app.request('/api/wishes', { headers: { cookie } });

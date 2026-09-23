@@ -4,6 +4,9 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-20 Categories for wanted items. A wanted item has the wish list's categories — set it in the
+  editor beside the title — and the Wanted items list shows each item's category icon and filters by
+  category. Promoting a wish keeps its category. Existing items start as Other.
 - P1-19 Wish list. Note something you would like without writing a spec: Add a wish opens a small
   form for a label, a category (Game, DVD, VHS, Toy, Figurine, Book or Other, each with its icon)
   and optionally a search link of your own, which the list's Search button opens in a new tab.
