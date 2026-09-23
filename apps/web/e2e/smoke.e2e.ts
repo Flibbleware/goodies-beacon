@@ -648,8 +648,13 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(dialog.getByText('must be an http or https link')).toBeVisible();
 
     await dialog.getByLabel('Search link').fill(JURASSIC_SEARCH);
+    await dialog.getByLabel('Tags').fill('big box, Spielberg, Big Box');
     await dialog.getByRole('button', { name: 'Add to wish list' }).click();
     await expect(dialog).toBeHidden();
+    // Pills beside the label, in the order typed, the repeat dropped.
+    await expect(
+      wish('Jurasic Park').getByRole('button', { name: /^big box$|^Spielberg$/ }),
+    ).toHaveText(['big box', 'Spielberg']);
 
     const search = wish('Jurasic Park').getByRole('link', { name: /^Search/ });
     await expect(search).toHaveAttribute('href', JURASSIC_SEARCH);
@@ -658,6 +663,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await open.click();
     await dialog.getByLabel('Label').fill('Tamagotchi');
     await dialog.getByLabel('Category').selectOption('toy');
+    await dialog.getByLabel('Tags').fill('90s');
     await dialog.getByRole('button', { name: 'Add to wish list' }).click();
     await expect(dialog).toBeHidden();
     await expect(wish('Tamagotchi')).toBeVisible();
@@ -688,11 +694,53 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(wishes.getByRole('listitem')).toHaveCount(2);
   });
 
+  await test.step('the list filters by tag, and the filter survives a reload', async () => {
+    const filter = page.getByRole('searchbox', { name: 'Filter by tag' });
+
+    // One key at a time, since every keystroke also rewrites the URL.
+    await filter.pressSequentially('SPIEL');
+    await expect(page).toHaveURL('/wishes?tag=SPIEL');
+    await expect(wishes.getByRole('listitem')).toHaveCount(1);
+    await expect(wish('Jurasic Park')).toBeVisible();
+
+    await page.reload();
+    await expect(filter).toHaveValue('SPIEL');
+    await expect(wishes.getByRole('listitem')).toHaveCount(1);
+
+    await filter.fill('vinyl');
+    await expect(page.getByText('No wishes tagged “vinyl”.')).toBeVisible();
+
+    await filter.fill('');
+    await expect(page).toHaveURL('/wishes');
+    await expect(wishes.getByRole('listitem')).toHaveCount(2);
+
+    // A pill is a shortcut to filtering by its tag.
+    await wish('Tamagotchi').getByRole('button', { name: '90s' }).click();
+    await expect(filter).toHaveValue('90s');
+    await expect(wishes.getByRole('listitem')).toHaveCount(1);
+    await expect(wish('Tamagotchi')).toBeVisible();
+
+    await filter.fill('');
+    await expect(wishes.getByRole('listitem')).toHaveCount(2);
+  });
+
   await test.step('a wish is edited where it is listed', async () => {
-    await page.getByRole('button', { name: 'Edit Jurasic Park' }).click();
-    const edit = page.getByRole('form', { name: 'Edit Jurasic Park' });
+    const openEdit = page.getByRole('button', { name: 'Edit Jurasic Park' });
+    const edit = page.getByRole('dialog', { name: 'Edit Jurasic Park' });
+
+    // The same modal as adding, filled in; Cancel leaves the wish as it was.
+    await openEdit.click();
+    await expect(edit.getByLabel('Tags')).toHaveValue('big box, Spielberg');
+    await edit.getByLabel('Label').fill('Never mind');
+    await edit.getByRole('button', { name: 'Cancel' }).click();
+    await expect(edit).toBeHidden();
+    await expect(wish('Jurasic Park')).toBeVisible();
+
+    await openEdit.click();
+    await expect(edit.getByLabel('Label')).toHaveValue('Jurasic Park');
     await edit.getByLabel('Label').fill('Jurassic Park');
     await edit.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
 
     await expect(wish('Jurassic Park')).toBeVisible();
     await expect(wish('Jurassic Park').getByRole('link', { name: /^Search/ })).toHaveAttribute(

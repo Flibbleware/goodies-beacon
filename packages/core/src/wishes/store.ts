@@ -1,6 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { wishItems } from '../db/schema.js';
+import { joinTags } from '../domain/tags.js';
 import { itemSaveSchema } from '../items/schema.js';
 import { insertItem, type SavedVersion } from '../items/store.js';
 import type { Wish, WishSaveInput } from './schema.js';
@@ -15,6 +16,7 @@ const columns = {
   label: wishItems.label,
   category: wishItems.category,
   searchUrl: wishItems.searchUrl,
+  tags: wishItems.tags,
   createdAt: wishItems.createdAt,
   updatedAt: wishItems.updatedAt,
 };
@@ -59,8 +61,8 @@ export async function deleteWish(db: Database, id: string): Promise<boolean> {
  *
  * The draft is the same near-empty spec a new item starts from in the editor, searching eBay,
  * which is where the owner is sent next. The category carries over as the item's own (P1-20); the
- * search link has nowhere to live in a spec, so it goes into version 1's change note rather than
- * vanishing. Undefined when there is no such wish.
+ * search link and the tags (P1-21) have nowhere to live on an item yet, so they go into version 1's
+ * change note rather than vanishing. Undefined when there is no such wish.
  */
 export async function promoteWish(db: Database, id: string): Promise<SavedVersion | undefined> {
   return db.transaction(async (tx) => {
@@ -74,10 +76,15 @@ export async function promoteWish(db: Database, id: string): Promise<SavedVersio
         status: 'draft',
         category: wish.category,
         spec: { settings: { sources: ['ebay'] } },
-        changeNote: wish.searchUrl
-          ? `Promoted from the wish list; searched by hand at ${wish.searchUrl}.`
-          : 'Promoted from the wish list.',
+        changeNote: promotionNote(wish),
       }),
     );
   });
+}
+
+function promotionNote(wish: Wish): string {
+  const parts = ['Promoted from the wish list'];
+  if (wish.tags.length > 0) parts.push(`tagged ${joinTags(wish.tags)}`);
+  if (wish.searchUrl) parts.push(`searched by hand at ${wish.searchUrl}`);
+  return `${parts.join('; ')}.`;
 }

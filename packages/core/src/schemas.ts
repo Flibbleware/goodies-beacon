@@ -105,6 +105,14 @@ export {
   wantedSpecSchema,
 } from './domain/spec.js';
 export {
+  joinTags,
+  MAX_TAG_LENGTH,
+  MAX_TAGS,
+  matchesTag,
+  splitTags,
+  tagsSchema,
+} from './domain/tags.js';
+export {
   type CriterionResultEntry,
   criterionResultSchema,
   type PrefilterOutput,
