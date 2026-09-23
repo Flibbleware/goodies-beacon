@@ -12,6 +12,7 @@ export interface WishSave {
   label: string;
   category: ItemCategory;
   searchUrl: string;
+  tags: string[];
 }
 
 export const wishesQuery = {

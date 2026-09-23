@@ -186,6 +186,8 @@ export const wishItems = pgTable(
     category: text('category').$type<(typeof ITEM_CATEGORIES)[number]>().notNull(),
     /** A link the owner searches by hand: http(s) only, checked by `wishSaveSchema`. */
     searchUrl: text('search_url'),
+    /** Free text, tidied by `tagsSchema` (P1-21). */
+    tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
     createdAt,
     updatedAt,
   },

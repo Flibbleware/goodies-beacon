@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import type { ItemCategory } from '../domain/constants.js';
 import { ITEM_CATEGORIES } from '../domain/constants.js';
+import { tagsSchema } from '../domain/tags.js';
 
 /**
- * The wish list (P1-19): a label, a category, and optionally a link to search by hand.
+ * The wish list (P1-19): a label, a category, and optionally a link to search by hand and some
+ * tags (P1-21).
  *
  * Shared by the API and the page, so the form refuses what the server would refuse.
  */
@@ -24,6 +26,7 @@ export const wishSaveSchema = z.object({
   label: z.string().trim().min(1, 'a wish needs a label').max(200, 'is too long'),
   category: z.enum(ITEM_CATEGORIES),
   searchUrl: searchUrlSchema.nullable().default(null),
+  tags: tagsSchema.default([]),
 });
 
 export type WishSaveInput = z.infer<typeof wishSaveSchema>;
@@ -33,6 +36,7 @@ export interface Wish {
   label: string;
   category: ItemCategory;
   searchUrl: string | null;
+  tags: string[];
   createdAt: Date;
   updatedAt: Date;
 }

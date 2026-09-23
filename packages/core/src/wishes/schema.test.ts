@@ -7,7 +7,18 @@ describe('wishSaveSchema', () => {
       label: 'Jurassic Park',
       category: 'vhs',
       searchUrl: null,
+      tags: [],
     });
+  });
+
+  it('tidies its tags', () => {
+    expect(
+      wishSaveSchema.parse({
+        label: 'x',
+        category: 'vhs',
+        tags: [' big box', '', 'Big Box', '90s'],
+      }).tags,
+    ).toEqual(['big box', '90s']);
   });
 
   it('keeps an http or https link', () => {

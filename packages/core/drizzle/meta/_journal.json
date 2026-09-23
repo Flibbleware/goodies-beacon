@@ -78,6 +78,13 @@
       "when": 1790116799458,
       "tag": "0010_steady_emma_frost",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790191450537,
+      "tag": "0011_red_steel_serpent",
+      "breakpoints": true
     }
   ]
 }

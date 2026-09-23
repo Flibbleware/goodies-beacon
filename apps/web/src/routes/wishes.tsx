@@ -1,5 +1,12 @@
 import type { ItemCategory } from '@goodies-beacon/core/schemas';
-import { CATEGORY_LABELS, ITEM_CATEGORIES, wishSaveSchema } from '@goodies-beacon/core/schemas';
+import {
+  CATEGORY_LABELS,
+  ITEM_CATEGORIES,
+  joinTags,
+  matchesTag,
+  splitTags,
+  wishSaveSchema,
+} from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
@@ -18,6 +25,7 @@ import { CategoryTile } from '../components/category-icon.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { EditIcon, PromoteIcon, RemoveIcon, SearchIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
+import { TagPills } from '../components/tag-pills.js';
 import { sortWishes } from '../wishes/sort.js';
 import { appLayoutRoute } from './app-layout.js';
 
@@ -25,6 +33,8 @@ export interface WishSearch {
   category?: ItemCategory | undefined;
   /** Absent means A–Z, so the default view has a plain URL. */
   sort?: 'newest' | undefined;
+  /** Part of a tag, matched ignoring case (P1-21). */
+  tag?: string | undefined;
 }
 
 export const wishesRoute = createRoute({
@@ -35,6 +45,10 @@ export const wishesRoute = createRoute({
       ? (search.category as ItemCategory)
       : undefined,
     sort: search.sort === 'newest' ? 'newest' : undefined,
+    tag: tagParam(
+      // The router reads `?tag=1990` as a number.
+      typeof search.tag === 'number' ? String(search.tag) : search.tag,
+    ),
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(wishesQuery),
   component: Wishes,
@@ -46,36 +60,63 @@ export const wishesRoute = createRoute({
  * when it is worth having Goodies Beacon look.
  */
 function Wishes() {
-  const { category, sort } = wishesRoute.useSearch();
+  const { category, sort, tag } = wishesRoute.useSearch();
+  const navigate = useNavigate({ from: '/wishes' });
   const { data, isPending, isError } = useQuery(wishesQuery);
   const wishes = data?.wishes ?? [];
+  // The box is driven by its own state and copied to the URL, not read back from it: the URL
+  // settles a navigation later, and a controlled input a keystroke behind loses its caret.
+  const [query, setQuery] = useState(tag ?? '');
+  const tagged = wishes.filter((wish) => matchesTag(wish.tags, query));
   const shown = sortWishes(
-    category ? wishes.filter((wish) => wish.category === category) : wishes,
+    category ? tagged.filter((wish) => wish.category === category) : tagged,
     sort ?? 'az',
   );
-  const [adding, setAdding] = useState(false);
+  // `null` is closed; an empty object is adding, and one holding a wish is editing it.
+  const [editing, setEditing] = useState<{ wish?: WishRow } | null>(null);
+
+  const filterBy = (value: string) => {
+    setQuery(value);
+    void navigate({ search: (prev) => ({ ...prev, tag: tagParam(value) }), replace: true });
+  };
 
   return (
     <div className="mx-auto max-w-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Wish list</h1>
-        <Button type="button" onClick={() => setAdding(true)}>
+        <Button type="button" onClick={() => setEditing({})}>
           Add a wish
         </Button>
       </div>
 
-      <AddWish open={adding} onClose={() => setAdding(false)} category={category} />
+      <WishModal
+        open={editing !== null}
+        wish={editing?.wish}
+        category={category}
+        onClose={() => setEditing(null)}
+      />
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <Sort current={sort} category={category} />
+      <div className="mt-4">
+        <input
+          type="search"
+          aria-label="Filter by tag"
+          placeholder="Filter by tag…"
+          value={query}
+          onChange={(event) => filterBy(event.target.value)}
+          className={CONTROL}
+        />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <Sort current={sort} category={category} tag={tagParam(query)} />
         <CategoryFilter
-          items={wishes}
+          items={tagged}
           current={category}
           link={({ category: chosen, active, className, children }) => (
-            // Choosing a category keeps the sort, as the sort links keep the category.
+            // Choosing a category keeps the sort and the tag filter, as the sort links do.
             <Link
               to="/wishes"
-              search={{ category: chosen, sort }}
+              search={{ category: chosen, sort, tag: tagParam(query) }}
               aria-current={active ? 'true' : undefined}
               className={className}
             >
@@ -97,9 +138,7 @@ function Wishes() {
       {data && shown.length === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-edge p-8 text-center dark:border-edge-dark">
           <p className="text-sm text-ink-dim dark:text-ink-dim-dark">
-            {category
-              ? `Nothing in ${CATEGORY_LABELS[category]} yet.`
-              : 'Nothing on the wish list yet.'}
+            {emptyMessage(category, tagParam(query))}
           </p>
         </div>
       ) : null}
@@ -111,7 +150,7 @@ function Wishes() {
         >
           {shown.map((wish) => (
             <li key={wish.id} className="p-4">
-              <WishEntry wish={wish} />
+              <WishEntry wish={wish} onEdit={() => setEditing({ wish })} onPickTag={filterBy} />
             </li>
           ))}
         </ul>
@@ -120,60 +159,69 @@ function Wishes() {
   );
 }
 
-const EMPTY: WishSave = { label: '', category: 'game', searchUrl: '' };
+/** What the form edits: the tags as the one comma-separated field they are typed into. */
+type WishValues = Omit<WishSave, 'tags'> & { tags: string };
 
-type Errors = Partial<Record<keyof WishSave, string>>;
+const EMPTY: WishValues = { label: '', category: 'game', searchUrl: '', tags: '' };
+
+type Errors = Partial<Record<keyof WishValues, string>>;
+
+const toSave = (values: WishValues): WishSave => ({ ...values, tags: splitTags(values.tags) });
 
 /** The same schema the server applies, so a bad link is named before anything is sent. */
-function check(values: WishSave): Errors {
-  const result = wishSaveSchema.safeParse(values);
+function check(values: WishValues): Errors {
+  const result = wishSaveSchema.safeParse(toSave(values));
   if (result.success) return {};
   const errors: Errors = {};
   for (const issue of result.error.issues) {
-    const key = issue.path[0] as keyof WishSave;
+    const key = issue.path[0] as keyof WishValues;
     errors[key] ??= issue.message;
   }
   return errors;
 }
 
 /**
- * The add form, in a modal. The form is mounted only while the modal is open, so each opening
- * starts from fresh state rather than being reset: a reset in an effect lands a render after the
- * modal appears, and a keystroke in that gap wrote the previous wish's link into the next one.
+ * Adding and editing a wish share one modal (P1-21). The form is mounted only while the modal is
+ * open, so each opening starts from fresh state rather than being reset: a reset in an effect
+ * lands a render after the modal appears, and a keystroke in that gap wrote the previous wish's
+ * link into the next one.
  */
-function AddWish({
+function WishModal({
   open,
-  onClose,
+  wish,
   category,
+  onClose,
 }: {
   open: boolean;
-  onClose: () => void;
+  wish: WishRow | undefined;
   category: ItemCategory | undefined;
+  onClose: () => void;
 }) {
   return (
-    <Modal open={open} onClose={onClose} title="Add a wish">
-      {open ? <AddWishForm category={category} onDone={onClose} /> : null}
+    <Modal open={open} onClose={onClose} title={wish ? `Edit ${wish.label}` : 'Add a wish'}>
+      {open ? <WishForm key={wish?.id} wish={wish} category={category} onDone={onClose} /> : null}
     </Modal>
   );
 }
 
-function AddWishForm({
+function WishForm({
+  wish,
   category,
   onDone,
 }: {
+  wish: WishRow | undefined;
   category: ItemCategory | undefined;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
   // Adding while a category is filtered starts in that category, so the new row lands in view.
-  const [values, setValues] = useState<WishSave>({
-    ...EMPTY,
-    category: category ?? EMPTY.category,
-  });
+  const [values, setValues] = useState<WishValues>(() =>
+    wish ? fromRow(wish) : { ...EMPTY, category: category ?? EMPTY.category },
+  );
   const [errors, setErrors] = useState<Errors>({});
 
-  const add = useMutation({
-    mutationFn: createWish,
+  const save = useMutation({
+    mutationFn: (body: WishSave) => (wish ? updateWish(wish.id, body) : createWish(body)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: wishesQuery.queryKey });
       onDone();
@@ -184,19 +232,22 @@ function AddWishForm({
     event.preventDefault();
     const found = check(values);
     setErrors(found);
-    if (Object.keys(found).length === 0) add.mutate(values);
+    if (Object.keys(found).length === 0) save.mutate(toSave(values));
   };
+  const submit = wish
+    ? { idle: 'Save', pending: 'Saving…' }
+    : { idle: 'Add to wish list', pending: 'Adding…' };
 
   return (
     <form noValidate onSubmit={onSubmit}>
       <WishFields values={values} errors={errors} onChange={setValues} />
-      {add.isError ? <Alert tone="error">{(add.error as Error).message}</Alert> : null}
+      {save.isError ? <Alert tone="error">{(save.error as Error).message}</Alert> : null}
       <div className="mt-5 flex justify-end gap-3">
         <Button type="button" variant="quiet" onClick={onDone}>
           Cancel
         </Button>
-        <Button type="submit" disabled={add.isPending}>
-          {add.isPending ? 'Adding…' : 'Add to wish list'}
+        <Button type="submit" disabled={save.isPending}>
+          {save.isPending ? submit.pending : submit.idle}
         </Button>
       </div>
     </form>
@@ -208,11 +259,11 @@ function WishFields({
   errors,
   onChange,
 }: {
-  values: WishSave;
+  values: WishValues;
   errors: Errors;
-  onChange: (values: WishSave) => void;
+  onChange: (values: WishValues) => void;
 }) {
-  const ids = { label: useId(), category: useId(), url: useId() };
+  const ids = { label: useId(), category: useId(), url: useId(), tags: useId() };
 
   return (
     <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
@@ -261,6 +312,23 @@ function WishFields({
           />
         </Field>
       </div>
+
+      <div className="sm:col-span-2">
+        <Field
+          id={ids.tags}
+          label="Tags"
+          hint="Optional. Your own words to find it by, separated by commas."
+          error={errors.tags}
+        >
+          <input
+            id={ids.tags}
+            value={values.tags}
+            onChange={(event) => onChange({ ...values, tags: event.target.value })}
+            placeholder="big box, 90s, Spielberg"
+            className={CONTROL}
+          />
+        </Field>
+      </div>
     </div>
   );
 }
@@ -268,15 +336,17 @@ function WishFields({
 function Sort({
   current,
   category,
+  tag,
 }: {
   current: WishSearch['sort'];
   category: ItemCategory | undefined;
+  tag: string | undefined;
 }) {
   return (
     <nav aria-label="Sort" className="flex items-center gap-2">
       <Link
         to="/wishes"
-        search={{ category }}
+        search={{ category, tag }}
         aria-current={current === undefined ? 'true' : undefined}
         className={filterChip(current === undefined)}
       >
@@ -284,7 +354,7 @@ function Sort({
       </Link>
       <Link
         to="/wishes"
-        search={{ category, sort: 'newest' }}
+        search={{ category, sort: 'newest', tag }}
         aria-current={current === 'newest' ? 'true' : undefined}
         className={filterChip(current === 'newest')}
       >
@@ -294,22 +364,21 @@ function Sort({
   );
 }
 
-function WishEntry({ wish }: { wish: WishRow }) {
+function WishEntry({
+  wish,
+  onEdit,
+  onPickTag,
+}: {
+  wish: WishRow;
+  onEdit: () => void;
+  onPickTag: (tag: string) => void;
+}) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'view' | 'edit' | 'promote' | 'remove'>('view');
-  const [values, setValues] = useState<WishSave>(() => fromRow(wish));
-  const [errors, setErrors] = useState<Errors>({});
+  const [mode, setMode] = useState<'view' | 'promote' | 'remove'>('view');
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: wishesQuery.queryKey });
 
-  const save = useMutation({
-    mutationFn: () => updateWish(wish.id, values),
-    onSuccess: async () => {
-      await refresh();
-      setMode('view');
-    },
-  });
   const remove = useMutation({ mutationFn: () => deleteWish(wish.id), onSuccess: refresh });
   const promote = useMutation({
     mutationFn: () => promoteWish(wish.id),
@@ -321,59 +390,24 @@ function WishEntry({ wish }: { wish: WishRow }) {
       await navigate({ to: '/items/$itemId/edit', params: { itemId: saved.itemId } });
     },
   });
-  const failed = save.error ?? remove.error ?? promote.error;
-
-  if (mode === 'edit') {
-    const onSubmit = (event: FormEvent) => {
-      event.preventDefault();
-      const found = check(values);
-      setErrors(found);
-      if (Object.keys(found).length === 0) save.mutate();
-    };
-
-    return (
-      <form noValidate onSubmit={onSubmit} aria-label={`Edit ${wish.label}`}>
-        <WishFields values={values} errors={errors} onChange={setValues} />
-        {failed ? <Alert tone="error">{(failed as Error).message}</Alert> : null}
-        <div className="mt-3 flex gap-3">
-          <Button type="submit" disabled={save.isPending}>
-            {save.isPending ? 'Saving…' : 'Save'}
-          </Button>
-          <Button
-            type="button"
-            variant="quiet"
-            onClick={() => {
-              setValues(fromRow(wish));
-              setErrors({});
-              setMode('view');
-            }}
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
-    );
-  }
+  const failed = remove.error ?? promote.error;
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <CategoryTile category={wish.category} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium break-words">{wish.label}</p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="text-sm font-medium break-words">{wish.label}</p>
+            <TagPills tags={wish.tags} onPick={onPickTag} />
+          </div>
           <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
             {CATEGORY_LABELS[wish.category]}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <IconButton
-            label={`Edit ${wish.label}`}
-            onClick={() => {
-              setValues(fromRow(wish));
-              setMode('edit');
-            }}
-          >
+          <IconButton label={`Edit ${wish.label}`} onClick={onEdit}>
             <EditIcon />
           </IconButton>
           <IconButton
@@ -485,6 +519,27 @@ function IconButton({
   );
 }
 
-function fromRow(wish: WishRow): WishSave {
-  return { label: wish.label, category: wish.category, searchUrl: wish.searchUrl ?? '' };
+function fromRow(wish: WishRow): WishValues {
+  return {
+    label: wish.label,
+    category: wish.category,
+    searchUrl: wish.searchUrl ?? '',
+    tags: joinTags(wish.tags),
+  };
+}
+
+/** A blank filter is left out of the URL, as the default sort is. */
+function tagParam(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() !== '' ? value : undefined;
+}
+
+function emptyMessage(category: ItemCategory | undefined, tag: string | undefined): string {
+  if (tag) {
+    return category
+      ? `Nothing in ${CATEGORY_LABELS[category]} tagged “${tag.trim()}”.`
+      : `No wishes tagged “${tag.trim()}”.`;
+  }
+  return category
+    ? `Nothing in ${CATEGORY_LABELS[category]} yet.`
+    : 'Nothing on the wish list yet.';
 }

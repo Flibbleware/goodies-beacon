@@ -50,6 +50,7 @@ interface WishBody {
   label: string;
   category: string;
   searchUrl: string | null;
+  tags: string[];
 }
 
 async function add(body: Record<string, unknown>): Promise<WishBody> {
@@ -122,6 +123,36 @@ describe.skipIf(!databaseUrl)('the wish list routes', () => {
     ]);
   });
 
+  it('stores tags tidied, in the order given, and none when none are sent', async () => {
+    const tagged = await add({
+      label: 'Jurassic Park',
+      category: 'vhs',
+      tags: [' big box ', 'Spielberg', 'BIG BOX', ''],
+    });
+    expect(tagged.tags).toEqual(['big box', 'Spielberg']);
+    expect((await add({ label: 'x', category: 'toy' })).tags).toEqual([]);
+
+    const res = await send('PUT', `/api/wishes/${tagged.id}`, {
+      label: 'Jurassic Park',
+      category: 'vhs',
+      tags: ['90s'],
+    });
+    expect(((await res.json()) as { wish: WishBody }).wish.tags).toEqual(['90s']);
+  });
+
+  it('refuses a tag the form could not give back', async () => {
+    const res = await send('POST', '/api/wishes', {
+      label: 'x',
+      category: 'game',
+      tags: ['big, box'],
+    });
+
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: { message: string } }).error.message).toMatch(
+      /^tags\.0 /,
+    );
+  });
+
   /** Book and Figurine came after the table, so this tests the check constraint's migrations too. */
   it('stores every category', async () => {
     for (const category of ['game', 'dvd', 'vhs', 'toy', 'figurine', 'book', 'other']) {
@@ -177,7 +208,12 @@ describe.skipIf(!databaseUrl)('the wish list routes', () => {
   });
 
   it('promotes a wish to a draft wanted item and takes it off the list', async () => {
-    const wish = await add({ label: 'Jurassic Park', category: 'vhs', searchUrl: SEARCH });
+    const wish = await add({
+      label: 'Jurassic Park',
+      category: 'vhs',
+      searchUrl: SEARCH,
+      tags: ['big box', '90s'],
+    });
 
     const res = await send('POST', `/api/wishes/${wish.id}/promote`);
     expect(res.status).toBe(201);
@@ -196,9 +232,9 @@ describe.skipIf(!databaseUrl)('the wish list routes', () => {
     expect(item.title).toBe('Jurassic Park');
     expect(item.status).toBe('draft');
     expect(item.category).toBe('vhs');
-    // Where the link went, since a spec has no field for it.
+    // Where the tags and link went, since an item has no field for either.
     expect(item.current.document.changeNote).toBe(
-      `Promoted from the wish list; searched by hand at ${SEARCH}.`,
+      `Promoted from the wish list; tagged big box, 90s; searched by hand at ${SEARCH}.`,
     );
 
     const list = await app.request('/api/wishes', { headers: { cookie } });

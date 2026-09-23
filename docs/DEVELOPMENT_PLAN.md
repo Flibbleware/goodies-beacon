@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.37; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.38; section numbers below refer to it.*
 
-Version 1.15 — 22 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.16 — 23 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -298,6 +298,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-18 | Typed spec form (pulled forward from Phase 2) | L | P1-13, P1-14 |
 | P1-19 | Wish list | M | P1-14 |
 | P1-20 | Categories for wanted items | S | P1-19 |
+| P1-21 | Tags for wishes | S | P1-19 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -998,6 +999,37 @@ Done when:
 - [x] A wanted item has a category, set from the editor and returned by the list and item routes. `wanted_items.category` is `NOT NULL DEFAULT 'other'` with a check constraint from the same `ITEM_CATEGORIES` tuple the wish list uses, so existing items become Other and a client that sends none still saves.
 - [x] The list shows each item's category tile and filters by category, with the filter in the URL so it survives a reload. The chips are one shared component with the wish list's, which supplies its own links.
 - [x] Promoting a wish gives the new item the wish's category; the change note now carries only the search link.
+
+#### P1-21 Tags for wishes — S
+
+A wish's category says what kind of thing it is; tags say whatever else the owner wants to find it
+by — *big box*, *90s*, *Spielberg*, *birthday*. They are free text, typed into the add and edit
+form as one comma-separated field, and shown as pills after the wish's label in the order they were
+typed. A *Filter by tag* box on the wish list narrows it to the wishes with a tag containing what is
+typed, ignoring case, alongside the category chips and the sort rather than instead of them; a pill
+is a shortcut that fills the box with its tag.
+
+Tags are the wish's own column rather than a table of their own, because nothing yet needs a tag to
+be a thing with an id — no rename across wishes, no list of every tag in use — and a `text[]` is the
+boring answer until something does. The schema and the matching live in `packages/core`'s domain
+rather than beside the wish list, because wanted items may take tags later; that is not part of this
+task. Until then a wanted item has nowhere to keep them, so promotion writes a wish's tags into
+version 1's change note beside its search link, as P1-19 did for the link.
+
+Editing a wish moves into the modal adding one already uses, at the owner's request while the task
+was open. P1-19 edited a wish by expanding its row into the form, which made adding and editing two
+different surfaces for the same four fields; now both are one form in one modal, opened empty from
+the header or filled in from a row's Edit button.
+
+Depends on P1-19.
+
+Done when:
+
+- [x] A wish has tags, set in the add and edit form and returned by the list, create and update routes. `wish_items.tags` is `text[] NOT NULL DEFAULT '{}'`, so existing wishes have none and a client that sends none still saves. `tagsSchema`, shared by the browser and the API, trims each tag, drops empties and any repeat that differs only in case (the first spelling wins), and refuses a tag over forty characters, more than twenty tags, and a tag containing a comma — the form edits them as one comma-separated field, so a tag holding one would come back as two.
+- [x] Each wish's tags are shown as pills beside its label, in the order entered.
+- [x] A text box filters the list to wishes with a tag containing the text, ignoring case, and combines with the category filter and the sort. The filter is in the URL (`?tag=`) like the other two, so it survives a reload, and the category chips' counts are of the wishes the box lets through. Clicking a pill filters by that tag.
+- [x] Promoting a tagged wish writes its tags into version 1's change note: *"Promoted from the wish list; tagged big box, 90s; searched by hand at …"*.
+- [x] Edit opens the add modal filled in with the wish, titled *Edit* and its label, and saves in place; Cancel, Esc or the backdrop leave the wish as it was. The row no longer expands into a form.
 
 #### P1-XX Phase 1 exit — S
 

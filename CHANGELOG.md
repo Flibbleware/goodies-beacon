@@ -4,6 +4,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-21 Tags for wishes. Give a wish tags of your own — *big box, 90s, Spielberg* — as a
+  comma-separated field when adding or editing it; they show as pills beside its label. A *Filter by
+  tag* box on the wish list narrows it to wishes with a matching tag, alongside the category chips
+  and the sort, and clicking a pill filters by that tag. Promoting a wish records its tags in the new
+  item's change note.
+- Editing a wish opens the same modal as adding one, filled in, rather than expanding its row.
 - P1-20 Categories for wanted items. A wanted item has the wish list's categories — set it in the
   editor beside the title — and the Wanted items list shows each item's category icon and filters by
   category. Promoting a wish keeps its category. Existing items start as Other.
