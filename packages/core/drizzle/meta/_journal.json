@@ -71,6 +71,13 @@
       "when": 1790106258971,
       "tag": "0009_wonderful_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790116799458,
+      "tag": "0010_steady_emma_frost",
+      "breakpoints": true
     }
   ]
 }

@@ -200,6 +200,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('link', { name: 'New wanted item' }).click();
     await page.getByLabel('Title').fill('Carmageddon big box');
     await page.getByLabel('Status').selectOption('active');
+    await page.getByLabel('Category').selectOption('game');
     await page.getByRole('tab', { name: 'JSON' }).click();
     await page.getByLabel('Spec').fill(JSON.stringify(carmageddon, null, 2));
     await page.getByRole('button', { name: 'Create item' }).click();
@@ -356,6 +357,24 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(row).toContainText('version 2');
     await expect(row).toContainText('Never polled');
     await expect(row).toContainText('0 candidates');
+  });
+
+  await test.step('the list filters by category, and an item saved without one is Other', async () => {
+    const list = page.getByRole('list', { name: 'Wanted items' });
+    const category = page.getByRole('navigation', { name: 'Category' });
+
+    await category.getByRole('link', { name: /^Game/ }).click();
+    await expect(page).toHaveURL('/items?category=game');
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list).toContainText('Carmageddon big box');
+
+    // The Power Mac was saved without choosing one.
+    await category.getByRole('link', { name: /^Other/ }).click();
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list).toContainText('Power Macintosh 5500');
+
+    await category.getByRole('link', { name: /^All/ }).click();
+    await expect(list.getByRole('listitem')).toHaveCount(2);
   });
 
   await test.step('the item page renders the spec as a card rather than as JSON', async () => {
@@ -716,6 +735,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
     await expect(page.getByLabel('Title')).toHaveValue('Tamagotchi');
     await expect(page.getByLabel('Status')).toHaveValue('draft');
+    // The wish's category comes with it.
+    await expect(page.getByLabel('Category')).toHaveValue('toy');
 
     await page.getByRole('link', { name: 'Wish list' }).click();
     await expect(wishes.getByRole('listitem')).toHaveCount(1);

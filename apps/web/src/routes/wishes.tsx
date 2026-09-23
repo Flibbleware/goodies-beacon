@@ -1,9 +1,5 @@
-import type { WishCategory } from '@goodies-beacon/core/schemas';
-import {
-  WISH_CATEGORIES,
-  WISH_CATEGORY_LABELS,
-  wishSaveSchema,
-} from '@goodies-beacon/core/schemas';
+import type { ItemCategory } from '@goodies-beacon/core/schemas';
+import { CATEGORY_LABELS, ITEM_CATEGORIES, wishSaveSchema } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
@@ -17,15 +13,16 @@ import {
   type WishSave,
   wishesQuery,
 } from '../api/wishes.js';
+import { CategoryFilter, filterChip } from '../components/category-filter.js';
+import { CategoryTile } from '../components/category-icon.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { EditIcon, PromoteIcon, RemoveIcon, SearchIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
-import { CategoryIcon, CategoryTile } from '../wishes/category-icon.js';
 import { sortWishes } from '../wishes/sort.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface WishSearch {
-  category?: WishCategory | undefined;
+  category?: ItemCategory | undefined;
   /** Absent means A–Z, so the default view has a plain URL. */
   sort?: 'newest' | undefined;
 }
@@ -34,8 +31,8 @@ export const wishesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/wishes',
   validateSearch: (search: Record<string, unknown>): WishSearch => ({
-    category: (WISH_CATEGORIES as readonly unknown[]).includes(search.category)
-      ? (search.category as WishCategory)
+    category: (ITEM_CATEGORIES as readonly unknown[]).includes(search.category)
+      ? (search.category as ItemCategory)
       : undefined,
     sort: search.sort === 'newest' ? 'newest' : undefined,
   }),
@@ -71,7 +68,21 @@ function Wishes() {
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <Sort current={sort} category={category} />
-        <Filter wishes={wishes} current={category} sort={sort} />
+        <CategoryFilter
+          items={wishes}
+          current={category}
+          link={({ category: chosen, active, className, children }) => (
+            // Choosing a category keeps the sort, as the sort links keep the category.
+            <Link
+              to="/wishes"
+              search={{ category: chosen, sort }}
+              aria-current={active ? 'true' : undefined}
+              className={className}
+            >
+              {children}
+            </Link>
+          )}
+        />
       </div>
 
       {isPending ? (
@@ -87,7 +98,7 @@ function Wishes() {
         <div className="mt-4 rounded-xl border border-dashed border-edge p-8 text-center dark:border-edge-dark">
           <p className="text-sm text-ink-dim dark:text-ink-dim-dark">
             {category
-              ? `Nothing in ${WISH_CATEGORY_LABELS[category]} yet.`
+              ? `Nothing in ${CATEGORY_LABELS[category]} yet.`
               : 'Nothing on the wish list yet.'}
           </p>
         </div>
@@ -137,7 +148,7 @@ function AddWish({
 }: {
   open: boolean;
   onClose: () => void;
-  category: WishCategory | undefined;
+  category: ItemCategory | undefined;
 }) {
   return (
     <Modal open={open} onClose={onClose} title="Add a wish">
@@ -150,7 +161,7 @@ function AddWishForm({
   category,
   onDone,
 }: {
-  category: WishCategory | undefined;
+  category: ItemCategory | undefined;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -220,13 +231,13 @@ function WishFields({
           id={ids.category}
           value={values.category}
           onChange={(event) =>
-            onChange({ ...values, category: event.target.value as WishCategory })
+            onChange({ ...values, category: event.target.value as ItemCategory })
           }
           className={CONTROL}
         >
-          {WISH_CATEGORIES.map((value) => (
+          {ITEM_CATEGORIES.map((value) => (
             <option key={value} value={value}>
-              {WISH_CATEGORY_LABELS[value]}
+              {CATEGORY_LABELS[value]}
             </option>
           ))}
         </select>
@@ -254,59 +265,12 @@ function WishFields({
   );
 }
 
-const chip = (active: boolean) =>
-  `inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs ${
-    active
-      ? 'bg-paper-raised font-medium dark:bg-paper-raised-dark'
-      : 'text-ink-dim hover:bg-paper-raised dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark'
-  }`;
-
-/**
- * Links rather than buttons, so a filtered view survives a reload and can be bookmarked. Each
- * keeps the current sort, as the sort links keep the category.
- */
-function Filter({
-  wishes,
-  current,
-  sort,
-}: {
-  wishes: readonly WishRow[];
-  current: WishCategory | undefined;
-  sort: WishSearch['sort'];
-}) {
-  return (
-    <nav aria-label="Category" className="flex flex-wrap items-center gap-2">
-      <Link
-        to="/wishes"
-        search={{ sort }}
-        aria-current={current === undefined ? 'true' : undefined}
-        className={chip(current === undefined)}
-      >
-        All · {wishes.length}
-      </Link>
-      {WISH_CATEGORIES.map((category) => (
-        <Link
-          key={category}
-          to="/wishes"
-          search={{ category, sort }}
-          aria-current={current === category ? 'true' : undefined}
-          className={chip(current === category)}
-        >
-          <CategoryIcon category={category} size="size-4" />
-          {WISH_CATEGORY_LABELS[category]} ·{' '}
-          {wishes.filter((wish) => wish.category === category).length}
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
 function Sort({
   current,
   category,
 }: {
   current: WishSearch['sort'];
-  category: WishCategory | undefined;
+  category: ItemCategory | undefined;
 }) {
   return (
     <nav aria-label="Sort" className="flex items-center gap-2">
@@ -314,7 +278,7 @@ function Sort({
         to="/wishes"
         search={{ category }}
         aria-current={current === undefined ? 'true' : undefined}
-        className={chip(current === undefined)}
+        className={filterChip(current === undefined)}
       >
         A–Z
       </Link>
@@ -322,7 +286,7 @@ function Sort({
         to="/wishes"
         search={{ category, sort: 'newest' }}
         aria-current={current === 'newest' ? 'true' : undefined}
-        className={chip(current === 'newest')}
+        className={filterChip(current === 'newest')}
       >
         Newest
       </Link>
@@ -398,7 +362,7 @@ function WishEntry({ wish }: { wish: WishRow }) {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium break-words">{wish.label}</p>
           <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
-            {WISH_CATEGORY_LABELS[wish.category]}
+            {CATEGORY_LABELS[wish.category]}
           </p>
         </div>
 

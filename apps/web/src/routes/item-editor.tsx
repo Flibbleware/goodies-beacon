@@ -1,5 +1,9 @@
-import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
-import { WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
+import type { ItemCategory, WantedItemStatus } from '@goodies-beacon/core/schemas';
+import {
+  CATEGORY_LABELS,
+  ITEM_CATEGORIES,
+  WANTED_ITEM_STATUSES,
+} from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link, useBlocker, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react';
@@ -60,11 +64,12 @@ function EditItem() {
 function Editor({ item }: { item: LoadedItem | undefined }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const ids = { title: useId(), status: useId(), note: useId() };
+  const ids = { title: useId(), status: useId(), category: useId(), note: useId() };
   const tabIds = { form: useId(), json: useId(), panel: useId() };
 
   const [title, setTitle] = useState(item?.title ?? '');
   const [status, setStatus] = useState<WantedItemStatus>(item?.status ?? 'draft');
+  const [category, setCategory] = useState<ItemCategory>(item?.category ?? 'other');
   const [text, setText] = useState(() =>
     item?.current ? `${JSON.stringify(item.current.document, null, 2)}\n` : STARTING_SPEC,
   );
@@ -83,10 +88,11 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
     if (!item?.current) return;
     setTitle(item.title);
     setStatus(item.status);
+    setCategory(item.category);
     setText(`${JSON.stringify(item.current.document, null, 2)}\n`);
     setNote('');
     setUploaded(new Set());
-  }, [item?.current, item?.title, item?.status]);
+  }, [item?.current, item?.title, item?.status, item?.category]);
 
   const parsed = parseSpecText(text);
   // What the form draws: the saveable spec, or the draft that keeps it up while a field is empty.
@@ -111,6 +117,7 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
       const body = {
         title: title.trim(),
         status,
+        category,
         spec: parsed.spec,
         changeNote: note.trim() === '' ? null : note.trim(),
       };
@@ -210,16 +217,18 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
 
       <form onSubmit={onSubmit} className="mt-6 space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field id={ids.title} label="Title" hint="What you call it. Shown in emails and lists.">
-            <input
-              id={ids.title}
-              name="title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Carmageddon big box"
-              className={CONTROL}
-            />
-          </Field>
+          <div className="sm:col-span-2">
+            <Field id={ids.title} label="Title" hint="What you call it. Shown in emails and lists.">
+              <input
+                id={ids.title}
+                name="title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Carmageddon big box"
+                className={CONTROL}
+              />
+            </Field>
+          </div>
 
           <Field
             id={ids.status}
@@ -236,6 +245,26 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
               {WANTED_ITEM_STATUSES.map((value) => (
                 <option key={value} value={value}>
                   {STATUS_LABELS[value]}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field
+            id={ids.category}
+            label="Category"
+            hint="For sorting your list; nothing searches or judges by it."
+          >
+            <select
+              id={ids.category}
+              name="category"
+              value={category}
+              onChange={(event) => setCategory(event.target.value as ItemCategory)}
+              className={CONTROL}
+            >
+              {ITEM_CATEGORIES.map((value) => (
+                <option key={value} value={value}>
+                  {CATEGORY_LABELS[value]}
                 </option>
               ))}
             </select>

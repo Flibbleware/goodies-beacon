@@ -1,5 +1,6 @@
 import type {
   CandidateCounts,
+  ItemCategory,
   ItemSummary,
   NotificationMode,
   PlanStats,
@@ -33,6 +34,7 @@ export interface LoadedItem {
   id: string;
   title: string;
   status: WantedItemStatus;
+  category: ItemCategory;
   notificationMode: NotificationMode;
   pollEvery: string | null;
   createdAt: string;
@@ -55,6 +57,7 @@ export interface SavedVersion {
 export interface ItemSave {
   title: string;
   status: WantedItemStatus;
+  category: ItemCategory;
   spec: WantedSpec;
   changeNote: string | null;
 }

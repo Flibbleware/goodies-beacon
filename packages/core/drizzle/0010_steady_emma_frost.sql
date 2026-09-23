@@ -1,0 +1,2 @@
+ALTER TABLE "wanted_items" ADD COLUMN "category" text DEFAULT 'other' NOT NULL;--> statement-breakpoint
+ALTER TABLE "wanted_items" ADD CONSTRAINT "wanted_items_category" CHECK ("wanted_items"."category" in ('game', 'dvd', 'vhs', 'toy', 'figurine', 'book', 'other'));

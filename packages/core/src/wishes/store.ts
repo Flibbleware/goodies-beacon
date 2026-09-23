@@ -3,7 +3,7 @@ import type { Database } from '../db/client.js';
 import { wishItems } from '../db/schema.js';
 import { itemSaveSchema } from '../items/schema.js';
 import { insertItem, type SavedVersion } from '../items/store.js';
-import { WISH_CATEGORY_LABELS, type Wish, type WishSaveInput } from './schema.js';
+import type { Wish, WishSaveInput } from './schema.js';
 
 /**
  * Reading and writing the wish list (P1-19). A plain table with no history: a wish has no spec to
@@ -58,25 +58,25 @@ export async function deleteWish(db: Database, id: string): Promise<boolean> {
  * click or a retry cannot make two items, and the thing is never both a wish and wanted.
  *
  * The draft is the same near-empty spec a new item starts from in the editor, searching eBay,
- * which is where the owner is sent next. The category and search link have nowhere to live in a
- * spec, so they go into version 1's change note rather than vanishing. Undefined when there is no
- * such wish.
+ * which is where the owner is sent next. The category carries over as the item's own (P1-20); the
+ * search link has nowhere to live in a spec, so it goes into version 1's change note rather than
+ * vanishing. Undefined when there is no such wish.
  */
 export async function promoteWish(db: Database, id: string): Promise<SavedVersion | undefined> {
   return db.transaction(async (tx) => {
     const [wish] = await tx.delete(wishItems).where(eq(wishItems.id, id)).returning(columns);
     if (!wish) return undefined;
 
-    const origin = `Promoted from the wish list (${WISH_CATEGORY_LABELS[wish.category]})`;
     return insertItem(
       tx,
       itemSaveSchema.parse({
         title: wish.label,
         status: 'draft',
+        category: wish.category,
         spec: { settings: { sources: ['ebay'] } },
         changeNote: wish.searchUrl
-          ? `${origin}; searched by hand at ${wish.searchUrl}.`
-          : `${origin}.`,
+          ? `Promoted from the wish list; searched by hand at ${wish.searchUrl}.`
+          : 'Promoted from the wish list.',
       }),
     );
   });

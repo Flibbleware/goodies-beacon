@@ -1,11 +1,11 @@
-import type { WishCategory } from '@goodies-beacon/core/schemas';
+import type { ItemCategory } from '@goodies-beacon/core/schemas';
 import type { ReactNode } from 'react';
 
 /**
  * One line-drawn icon per wish category (P1-19), inline rather than from an icon package: seven
  * shapes do not earn a dependency. Decorative — every use sits beside the category's name.
  */
-const PATHS: Record<WishCategory, ReactNode> = {
+const PATHS: Record<ItemCategory, ReactNode> = {
   // A gamepad: body, d-pad, two buttons.
   game: (
     <>
@@ -69,7 +69,7 @@ const PATHS: Record<WishCategory, ReactNode> = {
  * (styles.css), because Tailwind has nothing between Book's orange and red.
  * Written out whole so Tailwind finds every class.
  */
-const COLOURS: Record<WishCategory, { ink: string; tile: string }> = {
+const COLOURS: Record<ItemCategory, { ink: string; tile: string }> = {
   game: {
     ink: 'text-violet-600 dark:text-violet-400',
     tile: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',
@@ -105,14 +105,14 @@ export function CategoryIcon({
   category,
   size = 'size-5',
 }: {
-  category: WishCategory;
+  category: ItemCategory;
   size?: string;
 }) {
   return <Glyph category={category} className={`${size} ${COLOURS[category].ink}`} />;
 }
 
 /** The icon large, on a tile tinted with its category's colour: how a wish is shown in the list. */
-export function CategoryTile({ category }: { category: WishCategory }) {
+export function CategoryTile({ category }: { category: ItemCategory }) {
   return (
     <span
       className={`inline-flex size-12 shrink-0 items-center justify-center rounded-xl ${COLOURS[category].tile}`}
@@ -122,7 +122,7 @@ export function CategoryTile({ category }: { category: WishCategory }) {
   );
 }
 
-function Glyph({ category, className }: { category: WishCategory; className: string }) {
+function Glyph({ category, className }: { category: ItemCategory; className: string }) {
   return (
     <svg
       viewBox="0 0 24 24"

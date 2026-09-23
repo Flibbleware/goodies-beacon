@@ -32,6 +32,7 @@ export interface LoadedItem extends PollState {
   id: string;
   title: string;
   status: ItemSummary['status'];
+  category: ItemSummary['category'];
   notificationMode: ItemSummary['notificationMode'];
   pollEvery: string | null;
   createdAt: Date;
@@ -64,6 +65,7 @@ export async function listItems(db: Database): Promise<ItemSummary[]> {
         id: wantedItems.id,
         title: wantedItems.title,
         status: wantedItems.status,
+        category: wantedItems.category,
         notificationMode: wantedItems.notificationMode,
         currentVersion: specVersions.version,
         updatedAt: wantedItems.updatedAt,
@@ -137,6 +139,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
     id: item.id,
     title: item.title,
     status: item.status,
+    category: item.category,
     notificationMode: item.notificationMode,
     pollEvery: item.pollEvery,
     createdAt: item.createdAt,
@@ -268,6 +271,7 @@ function itemColumns(input: ItemSaveInput) {
   return {
     title: input.title,
     status: input.status,
+    category: input.category,
     notificationMode: settings.notificationMode,
     pollEvery: settings.pollEvery,
     gradingScaleId: settings.gradingScaleId,

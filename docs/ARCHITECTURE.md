@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.36 — 22 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.37 — 22 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -117,7 +117,7 @@ Components:
 
 Names below are the tables/entities; types are illustrative.
 
-**WantedItem** — `id, title, status (draft|active|paused|found|archived), notificationMode (realtime|digest), pollEvery (ISO 8601 duration, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`. This field was a Postgres interval until v1.26; it holds the same ISO 8601 vocabulary `SpecSettings.pollEvery` uses, because the two are one field in the UI and a value that parsed one way in JSONB and another in a column is a bug waiting for whoever writes the second editor.
+**WantedItem** — `id, title, status (draft|active|paused|found|archived), category (game|dvd|vhs|toy|figurine|book|other), notificationMode (realtime|digest), pollEvery (ISO 8601 duration, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`. `category` (v1.37, P1-20) is the wish list's, shared so the two lists sort a collection the same way; it lives on the item beside the title rather than in the spec, because nothing searches or judges by it, and an item saved without one is `other`. This field was a Postgres interval until v1.26; it holds the same ISO 8601 vocabulary `SpecSettings.pollEvery` uses, because the two are one field in the UI and a value that parsed one way in JSONB and another in a column is a bug waiting for whoever writes the second editor.
 
 **Those four fields are a projection of the spec, not a second opinion.** `notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade` appear here *and* in `SpecSettings`, and v1.32 settles which wins: the spec version is what is edited and every save rewrites these columns from it. They exist as columns because that is what the runtime reads — the scheduler takes `pollEvery` from the item row (§6) and the review pipeline takes `notificationMode` from it (§10), neither of them wanting to parse a JSONB document to answer a question asked of every plan and every candidate. P1-13 found the gap: an editor that wrote only the document would leave an item whose spec said `realtime` beside a column still saying `digest`, which reads as correct in the UI and emails nobody. Anything that writes a spec version — the manual editor, and the interviewer in Phase 3 — writes both, through the same function.
 
@@ -218,7 +218,7 @@ What `Seen` is for is the count of what is genuinely new to the instance, relist
 
 **InterviewSession / Message** — The chat transcript for creating or amending a spec.
 
-**WishItem** — `id, label, category (game|dvd|vhs|toy|figurine|book|other), searchUrl?, createdAt, updatedAt`. The wish list (v1.36, P1-19): something the owner would like but has not specced. It stands entirely apart from the pipeline — no foreign key in or out, nothing polls or reviews it, and `searchUrl` is an http(s) link the owner opens by hand. Promotion deletes the row and writes a draft WantedItem in one transaction, so a thing is a wish or wanted, never both; the category and link, which a spec has no field for, go into version 1's change note.
+**WishItem** — `id, label, category (game|dvd|vhs|toy|figurine|book|other), searchUrl?, createdAt, updatedAt`. The wish list (v1.36, P1-19): something the owner would like but has not specced. It stands entirely apart from the pipeline — no foreign key in or out, nothing polls or reviews it, and `searchUrl` is an http(s) link the owner opens by hand. Promotion deletes the row and writes a draft WantedItem in one transaction, so a thing is a wish or wanted, never both; the category carries over as the item's own (v1.37), and the search link, which a spec has no field for, goes into version 1's change note.
 
 **Settings** — Single row: polling defaults (global interval, the poll and backfill caps), digest time + timezone, currency base, retention days, AI role config, per-source credentials (see §12 on secrets).
 
@@ -448,7 +448,7 @@ React + Vite, TanStack Router and Query, Tailwind. Pages:
 
 *Dashboard* — active items, today's new matches/uncertains, source health, AI spend this month.
 *Wish list* — wishes added in a modal, filterable by category (each with its icon) and sorted A–Z or newest first, edited in place in the list, each with a Search button opening its link in a new tab and a Promote action that turns it into a draft wanted item.
-*Wanted items* — list with status, mode, last poll, counts. Item page: current spec card (settings, criteria, the search-plan table with per-query stats, labelled reference images — all editable in place), version history with diffs, candidate list filtered by verdict and origin, "Amend" opens the chat, "Scan current listings" runs a backfill.
+*Wanted items* — list with status, mode, last poll, counts, each item with its category tile and the list filterable by category, as the wish list is. Item page: current spec card (settings, criteria, the search-plan table with per-query stats, labelled reference images — all editable in place), version history with diffs, candidate list filtered by verdict and origin, "Amend" opens the chat, "Scan current listings" runs a backfill.
 *Interview* — streaming chat with the spec card alongside; Agree button; preview-search results panel.
 *Candidate* — listing photos and English summary, verdict with per-criterion evidence and "Show prompt", actions: Not a match / Challenge (with note), Retain, Use photo as reference, Mark as bought (moves item to `found`).
 *Grading scales* — create scales with example images per grade.

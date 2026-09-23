@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.36; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.37; section numbers below refer to it.*
 
-Version 1.14 — 22 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.15 — 22 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -297,6 +297,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-17 | Prompt eval suite in CI | M | P1-09, P1-10, P1-11 |
 | P1-18 | Typed spec form (pulled forward from Phase 2) | L | P1-13, P1-14 |
 | P1-19 | Wish list | M | P1-14 |
+| P1-20 | Categories for wanted items | S | P1-19 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -950,7 +951,8 @@ Done when:
 **A spec has nowhere to put a wish's category or search link**, and promotion should not simply
 drop them. They are written into version 1's change note — *"Promoted from the wish list (VHS);
 searched by hand at …"* — which is the one free-text field whose job is saying where a version
-came from, and they stay in the item's history for good.
+came from, and they stay in the item's history for good. (P1-20 then gave the category a home
+on the wanted item itself, so the note now carries only the link.)
 
 **`createItem` could not share a transaction.** It opened its own, so promotion could not write
 the item and delete the wish atomically. The insert is now `insertItem`, taking a transaction the
@@ -974,6 +976,28 @@ gap. `components/modal.tsx` is the app's first modal, and the next one should do
 **The wanted item routes answer a malformed id with a 500.** `/api/items/not-a-uuid` reaches
 Postgres, which refuses it as a type error. The wish routes check for a uuid first and answer 404;
 the item routes are left as they were, since changing them is outside this task.
+
+#### P1-20 Categories for wanted items — S
+
+The wish list's categories and icons, on the wanted items too, so the two lists sort a collection
+the same way. A wanted item gets the same seven categories — Game, DVD, VHS, Toy, Figurine, Book,
+Other — chosen in the editor beside its title and status; the list shows each item's category tile
+and filters by category with the wish list's chips; and promoting a wish carries its category
+across rather than writing it into the change note.
+
+The category is on the item, not in the spec. It is a fact about the owner's collection, like the
+title, and nothing searches, pre-filters or judges by it, so putting it in `SpecSettings` would
+hand the reviewer a field with nothing to do and make every recategorisation look like a change to
+what is being looked for. It is still saved through the editor like the title is, so changing it
+writes a version as any save does.
+
+Depends on P1-19.
+
+Done when:
+
+- [x] A wanted item has a category, set from the editor and returned by the list and item routes. `wanted_items.category` is `NOT NULL DEFAULT 'other'` with a check constraint from the same `ITEM_CATEGORIES` tuple the wish list uses, so existing items become Other and a client that sends none still saves.
+- [x] The list shows each item's category tile and filters by category, with the filter in the URL so it survives a reload. The chips are one shared component with the wish list's, which supplies its own links.
+- [x] Promoting a wish gives the new item the wish's category; the change note now carries only the search link.
 
 #### P1-XX Phase 1 exit — S
 

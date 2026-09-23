@@ -186,6 +186,7 @@ export {
   type BuyingType,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
+  CATEGORY_LABELS,
   type CandidateOrigin,
   type CandidateStage,
   CONDITION_CATEGORIES,
@@ -204,6 +205,8 @@ export {
   type FeedbackType,
   IMAGE_STRATEGIES,
   type ImageStrategy,
+  ITEM_CATEGORIES,
+  type ItemCategory,
   MEDIA_KINDS,
   type MediaKind,
   NOTIFICATION_CHANNELS,
@@ -226,8 +229,6 @@ export {
   type VerdictDecision,
   WANTED_ITEM_STATUSES,
   type WantedItemStatus,
-  WISH_CATEGORIES,
-  type WishCategory,
 } from './domain/constants.js';
 export {
   type DecidableCriterion,
@@ -488,7 +489,6 @@ export {
   TEMPLATE_SOURCE_ID,
 } from './sources.js';
 export {
-  WISH_CATEGORY_LABELS,
   type Wish,
   type WishSaveInput,
   wishSaveSchema,

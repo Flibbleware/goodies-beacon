@@ -108,6 +108,32 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     expect(await res.json()).toEqual({ items: [] });
   });
 
+  /** P1-20: the category is the item's own, saved with it and listed with it. */
+  it('saves a category, lists it, and defaults to Other when none is sent', async () => {
+    const spec = example('carmageddon');
+
+    const game = await send('POST', '/api/items', { title: 'Carmageddon', category: 'game', spec });
+    const other = await send('POST', '/api/items', { title: 'Unsorted', spec });
+    expect(game.status).toBe(201);
+    expect(other.status).toBe(201);
+    const { itemId } = (await game.json()) as { itemId: string };
+
+    const list = await app.request('/api/items', { headers: { cookie } });
+    const { items } = (await list.json()) as { items: { title: string; category: string }[] };
+    expect(Object.fromEntries(items.map((item) => [item.title, item.category]))).toEqual({
+      Carmageddon: 'game',
+      Unsorted: 'other',
+    });
+
+    // Changing it is a save like any other, and the item page reads it back.
+    await send('PUT', `/api/items/${itemId}`, { title: 'Carmageddon', category: 'book', spec });
+    const read = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
+    expect(((await read.json()) as { item: { category: string } }).item.category).toBe('book');
+
+    const bad = await send('POST', '/api/items', { title: 'x', category: 'vinyl', spec });
+    expect(bad.status).toBe(400);
+  });
+
   /** P1-13's first acceptance line: both worked examples go in exactly as they are written. */
   it.each(['carmageddon', 'power-mac-5500'])('stores the %s example whole', async (name) => {
     const spec = example(name);
