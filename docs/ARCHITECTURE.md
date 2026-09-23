@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.38 — 23 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.39 — 23 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -32,7 +32,7 @@ It is single-user, runs from one `docker compose up`, and every marketplace and 
 | Images | Reference images (labelled variants) and grading example images can be added at any time; each addition creates a new spec version. |
 | Transparency | The agreed spec is structured data, rendered in full and editable directly; every verdict shows per-criterion evidence and the exact prompt sent. |
 | Settings vs criteria | Anything with a bounded set of values is a typed field on the item; free-text criteria are reserved for judgement calls that need reading or looking. |
-| Wish list | A lightweight list beside the wanted items: a label, a category (game, DVD, VHS, toy, figurine, book, other), free-text tags and an optional search link opened by hand. No polling and no AI; a wish is promoted to a wanted item when it is worth watching. |
+| Wish list | A lightweight list beside the wanted items: a label, an optional category of the owner's own (made in Settings, each with an icon and a colour), free-text tags and an optional search link opened by hand. No polling and no AI; a wish is promoted to a wanted item when it is worth watching. |
 | Searching | Search broad, judge narrow. An item holds many search plans across sources (e.g. "macintosh", "mac performa", "power macintosh" on eBay GB and US, plus Japanese keywords on Yahoo/Mercari); queries are editable at any time and each shows its own stats. The reviewer does the narrowing. |
 | Retention | Candidates auto-deleted after 30 days unless marked *retain*. |
 | Hosting | Docker Compose on a VPS or home machine; the scraping worker can run on a different machine from the core. |
@@ -117,7 +117,7 @@ Components:
 
 Names below are the tables/entities; types are illustrative.
 
-**WantedItem** — `id, title, status (draft|active|paused|found|archived), category (game|dvd|vhs|toy|figurine|book|other), notificationMode (realtime|digest), pollEvery (ISO 8601 duration, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`. `category` (v1.37, P1-20) is the wish list's, shared so the two lists sort a collection the same way; it lives on the item beside the title rather than in the spec, because nothing searches or judges by it, and an item saved without one is `other`. This field was a Postgres interval until v1.26; it holds the same ISO 8601 vocabulary `SpecSettings.pollEvery` uses, because the two are one field in the UI and a value that parsed one way in JSONB and another in a column is a bug waiting for whoever writes the second editor.
+**WantedItem** — `id, title, status (draft|active|paused|found|archived), categoryId?, notificationMode (realtime|digest), pollEvery (ISO 8601 duration, nullable → global default), gradingScaleId?, minimumGrade?, currentSpecVersionId, createdAt`. `categoryId` (v1.37, P1-20; a reference from v1.39, P1-22) points at one of the owner's Categories, shared with the wish list so the two lists sort a collection the same way; it lives on the item beside the title rather than in the spec, because nothing searches or judges by it, and null is uncategorised. This field was a Postgres interval until v1.26; it holds the same ISO 8601 vocabulary `SpecSettings.pollEvery` uses, because the two are one field in the UI and a value that parsed one way in JSONB and another in a column is a bug waiting for whoever writes the second editor.
 
 **Those four fields are a projection of the spec, not a second opinion.** `notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade` appear here *and* in `SpecSettings`, and v1.32 settles which wins: the spec version is what is edited and every save rewrites these columns from it. They exist as columns because that is what the runtime reads — the scheduler takes `pollEvery` from the item row (§6) and the review pipeline takes `notificationMode` from it (§10), neither of them wanting to parse a JSONB document to answer a question asked of every plan and every candidate. P1-13 found the gap: an editor that wrote only the document would leave an item whose spec said `realtime` beside a column still saying `digest`, which reads as correct in the UI and emails nobody. Anything that writes a spec version — the manual editor, and the interviewer in Phase 3 — writes both, through the same function.
 
@@ -218,7 +218,9 @@ What `Seen` is for is the count of what is genuinely new to the instance, relist
 
 **InterviewSession / Message** — The chat transcript for creating or amending a spec.
 
-**WishItem** — `id, label, category (game|dvd|vhs|toy|figurine|book|other), searchUrl?, tags[], createdAt, updatedAt`. The wish list (v1.36, P1-19): something the owner would like but has not specced. It stands entirely apart from the pipeline — no foreign key in or out, nothing polls or reviews it, and `searchUrl` is an http(s) link the owner opens by hand. Promotion deletes the row and writes a draft WantedItem in one transaction, so a thing is a wish or wanted, never both; the category carries over as the item's own (v1.37), and the search link and tags, which an item has no field for, go into version 1's change note. `tags` (v1.38, P1-21) are the owner's own words beside the fixed category — trimmed, de-duplicated ignoring case, at most twenty of forty characters each, never containing a comma because the form edits them as one comma-separated field. They are a `text[]` on the row rather than a table, since nothing yet needs a tag to exist apart from the wish that carries it; the rules live in the core domain so a wanted item can take the same field later.
+**WishItem** — `id, label, categoryId?, searchUrl?, tags[], createdAt, updatedAt`. The wish list (v1.36, P1-19): something the owner would like but has not specced. It stands entirely apart from the pipeline — no foreign key in or out, nothing polls or reviews it, and `searchUrl` is an http(s) link the owner opens by hand. Promotion deletes the row and writes a draft WantedItem in one transaction, so a thing is a wish or wanted, never both; the category carries over as the item's own (v1.37), and the search link and tags, which an item has no field for, go into version 1's change note. `tags` (v1.38, P1-21) are the owner's own words beside the fixed category — trimmed, de-duplicated ignoring case, at most twenty of forty characters each, never containing a comma because the form edits them as one comma-separated field. They are a `text[]` on the row rather than a table, since nothing yet needs a tag to exist apart from the wish that carries it; the rules live in the core domain so a wanted item can take the same field later.
+
+**Category** — `id, name, icon, colour, createdAt, updatedAt`. The owner's own (v1.39, P1-22), made in Settings and shared by wishes and wanted items; nothing in the code names one. Until v1.39 there were seven fixed categories (game, DVD, VHS, toy, figurine, book, other) in a code tuple with a check constraint; the migration that replaced them created a row for each one in use, with the icon and colour it had been drawn with, and pointed its wishes and items at it — Other, which only ever meant "none of these", became no category. Names are unique ignoring case. `icon` and `colour` are the one bounded part and stay typed: they choose from a fixed set of shapes and hues because each is drawn in code, keyed by what is drawn rather than what it is for. Deleting a category leaves what used it uncategorised (`on delete set null`) rather than refusing, and Settings names the count before asking. It is unrelated to GradingScale's free-text `category`, which predates it and describes what a scale grades.
 
 **Settings** — Single row: polling defaults (global interval, the poll and backfill caps), digest time + timezone, currency base, retention days, AI role config, per-source credentials (see §12 on secrets).
 
@@ -447,12 +449,12 @@ Reference and grading example images are not swept by age: they belong to a spec
 React + Vite, TanStack Router and Query, Tailwind. Pages:
 
 *Dashboard* — active items, today's new matches/uncertains, source health, AI spend this month.
-*Wish list* — wishes added and edited in one modal, filterable by category (each with its icon) and by a text box matching part of a tag, sorted A–Z or newest first. Each wish shows its tags as pills beside its label, a Search button opening its link in a new tab, and a Promote action that turns it into a draft wanted item.
+*Wish list* — wishes added and edited in one modal, filterable by category (each with its icon, plus the uncategorised) and by a text box matching part of a tag, sorted A–Z or newest first. Each wish shows its tags as pills beside its label, a Search button opening its link in a new tab, and a Promote action that turns it into a draft wanted item.
 *Wanted items* — list with status, mode, last poll, counts, each item with its category tile and the list filterable by category, as the wish list is. Item page: current spec card (settings, criteria, the search-plan table with per-query stats, labelled reference images — all editable in place), version history with diffs, candidate list filtered by verdict and origin, "Amend" opens the chat, "Scan current listings" runs a backfill.
 *Interview* — streaming chat with the spec card alongside; Agree button; preview-search results panel.
 *Candidate* — listing photos and English summary, verdict with per-criterion evidence and "Show prompt", actions: Not a match / Challenge (with note), Retain, Use photo as reference, Mark as bought (moves item to `found`).
 *Grading scales* — create scales with example images per grade.
-*Settings* — sources and credentials with Test buttons (including per-source proxy URL with an exit-IP check), AI roles, SMTP, digest time and timezone, polling defaults, retention, budget cap.
+*Settings* — categories (name, icon and colour; used by the wish list and the wanted items), sources and credentials with Test buttons (including per-source proxy URL with an exit-IP check), AI roles, SMTP, digest time and timezone, polling defaults, retention, budget cap.
 *Costs* — ledger by item, role and month.
 
 ---

@@ -1,14 +1,12 @@
-import type { ItemCategory, WantedItemStatus } from '@goodies-beacon/core/schemas';
-import {
-  CATEGORY_LABELS,
-  ITEM_CATEGORIES,
-  WANTED_ITEM_STATUSES,
-} from '@goodies-beacon/core/schemas';
+import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
+import { WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link, useBlocker, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react';
+import { categoriesQuery } from '../api/categories.js';
 import { ApiError } from '../api/client.js';
 import { createItem, itemQuery, itemsQuery, type LoadedItem, saveItem } from '../api/items.js';
+import { CategoryOptions } from '../components/category-filter.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { parseSpecText, STARTING_SPEC, withDocument, withReferenceImage } from '../items/parse.js';
 import { ReferenceImages } from '../items/reference-images.js';
@@ -69,7 +67,9 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
 
   const [title, setTitle] = useState(item?.title ?? '');
   const [status, setStatus] = useState<WantedItemStatus>(item?.status ?? 'draft');
-  const [category, setCategory] = useState<ItemCategory>(item?.category ?? 'other');
+  const categories = useQuery(categoriesQuery).data?.categories ?? [];
+  // '' is no category, which is what a select can hold.
+  const [categoryId, setCategoryId] = useState(item?.categoryId ?? '');
   const [text, setText] = useState(() =>
     item?.current ? `${JSON.stringify(item.current.document, null, 2)}\n` : STARTING_SPEC,
   );
@@ -88,11 +88,11 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
     if (!item?.current) return;
     setTitle(item.title);
     setStatus(item.status);
-    setCategory(item.category);
+    setCategoryId(item.categoryId ?? '');
     setText(`${JSON.stringify(item.current.document, null, 2)}\n`);
     setNote('');
     setUploaded(new Set());
-  }, [item?.current, item?.title, item?.status, item?.category]);
+  }, [item?.current, item?.title, item?.status, item?.categoryId]);
 
   const parsed = parseSpecText(text);
   // What the form draws: the saveable spec, or the draft that keeps it up while a field is empty.
@@ -117,7 +117,7 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
       const body = {
         title: title.trim(),
         status,
-        category,
+        categoryId: categoryId === '' ? null : categoryId,
         spec: parsed.spec,
         changeNote: note.trim() === '' ? null : note.trim(),
       };
@@ -253,20 +253,16 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
           <Field
             id={ids.category}
             label="Category"
-            hint="For sorting your list; nothing searches or judges by it."
+            hint="For sorting your list; nothing searches or judges by it. Made in Settings."
           >
             <select
               id={ids.category}
               name="category"
-              value={category}
-              onChange={(event) => setCategory(event.target.value as ItemCategory)}
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
               className={CONTROL}
             >
-              {ITEM_CATEGORIES.map((value) => (
-                <option key={value} value={value}>
-                  {CATEGORY_LABELS[value]}
-                </option>
-              ))}
+              <CategoryOptions categories={categories} />
             </select>
           </Field>
         </div>

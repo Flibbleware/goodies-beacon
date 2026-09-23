@@ -55,6 +55,14 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   let carmageddonId = '';
   const verdictFilter = page.getByRole('navigation', { name: 'Verdict' });
 
+  await test.step('the favicons are served as images, not as the app shell', async () => {
+    for (const path of ['/favicon-32.png', '/icon-192.png', '/apple-touch-icon.png']) {
+      const res = await page.request.get(path);
+      expect(res.status()).toBe(200);
+      expect(res.headers()['content-type']).toBe('image/png');
+    }
+  });
+
   await test.step('an unauthenticated visit lands on the first-run page', async () => {
     await page.goto('/');
 
@@ -191,6 +199,43 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(section('Email').getByRole('status').last()).toHaveText('Saved.');
   });
 
+  await test.step('categories are made in Settings, each with an icon and a colour', async () => {
+    const categories = section('Categories');
+    const dialog = page.getByRole('dialog', { name: 'Add a category' });
+    await expect(categories.getByText('No categories yet.')).toBeVisible();
+
+    for (const [name, icon, colour] of [
+      ['Game', 'Gamepad', 'Violet'],
+      ['VHS', 'Cassette', 'Blue'],
+      ['Toys', 'Robot', 'Pink'],
+    ] as const) {
+      await categories.getByRole('button', { name: 'Add a category' }).click();
+      await dialog.getByLabel('Name').fill(name);
+      // The radios are visually hidden inside their labels, and a person clicks the label.
+      await dialog.getByTitle(icon, { exact: true }).click();
+      await dialog.getByTitle(colour, { exact: true }).click();
+      await expect(dialog.getByRole('radio', { name: icon })).toBeChecked();
+      await dialog.getByRole('button', { name: 'Add category' }).click();
+      await expect(dialog).toBeHidden();
+    }
+
+    // A–Z, ignoring case, and a name is unique the same way.
+    const rows = categories.getByRole('list', { name: 'Categories' }).getByRole('listitem');
+    await expect(rows).toHaveText([/^Game/, /^Toys/, /^VHS/]);
+    await categories.getByRole('button', { name: 'Add a category' }).click();
+    await dialog.getByLabel('Name').fill('vhs');
+    await dialog.getByRole('button', { name: 'Add category' }).click();
+    await expect(dialog.getByRole('alert')).toHaveText('There is already a category called vhs.');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+
+    await categories.getByRole('button', { name: 'Edit Toys' }).click();
+    const edit = page.getByRole('dialog', { name: 'Edit Toys' });
+    await expect(edit.getByRole('radio', { name: 'Robot' })).toBeChecked();
+    await edit.getByLabel('Name').fill('Toy');
+    await edit.getByRole('button', { name: 'Save' }).click();
+    await expect(rows).toHaveText([/^Game/, /^Toy/, /^VHS/]);
+  });
+
   await test.step('the Carmageddon example is entered as a wanted item', async () => {
     await nav.click();
 
@@ -200,7 +245,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('link', { name: 'New wanted item' }).click();
     await page.getByLabel('Title').fill('Carmageddon big box');
     await page.getByLabel('Status').selectOption('active');
-    await page.getByLabel('Category').selectOption('game');
+    await page.getByLabel('Category').selectOption({ label: 'Game' });
     await page.getByRole('tab', { name: 'JSON' }).click();
     await page.getByLabel('Spec').fill(JSON.stringify(carmageddon, null, 2));
     await page.getByRole('button', { name: 'Create item' }).click();
@@ -359,17 +404,18 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(row).toContainText('0 candidates');
   });
 
-  await test.step('the list filters by category, and an item saved without one is Other', async () => {
+  await test.step('the list filters by category, and an item saved without one is uncategorised', async () => {
     const list = page.getByRole('list', { name: 'Wanted items' });
     const category = page.getByRole('navigation', { name: 'Category' });
 
     await category.getByRole('link', { name: /^Game/ }).click();
-    await expect(page).toHaveURL('/items?category=game');
+    await expect(page).toHaveURL(/\/items\?category=[0-9a-f-]+$/);
     await expect(list.getByRole('listitem')).toHaveCount(1);
     await expect(list).toContainText('Carmageddon big box');
 
     // The Power Mac was saved without choosing one.
-    await category.getByRole('link', { name: /^Other/ }).click();
+    await category.getByRole('link', { name: /^Uncategorised/ }).click();
+    await expect(page).toHaveURL('/items?category=none');
     await expect(list.getByRole('listitem')).toHaveCount(1);
     await expect(list).toContainText('Power Macintosh 5500');
 
@@ -641,7 +687,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await open.click();
     await expect(dialog.getByLabel('Label')).toHaveValue('');
     await dialog.getByLabel('Label').fill('Jurasic Park');
-    await dialog.getByLabel('Category').selectOption('vhs');
+    await dialog.getByLabel('Category').selectOption({ label: 'VHS' });
     // Rendered as an href the owner clicks, so a script URL must never get that far.
     await dialog.getByLabel('Search link').fill('javascript:alert(1)');
     await dialog.getByRole('button', { name: 'Add to wish list' }).click();
@@ -662,7 +708,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await open.click();
     await dialog.getByLabel('Label').fill('Tamagotchi');
-    await dialog.getByLabel('Category').selectOption('toy');
+    await dialog.getByLabel('Category').selectOption({ label: 'Toy' });
     await dialog.getByLabel('Tags').fill('90s');
     await dialog.getByRole('button', { name: 'Add to wish list' }).click();
     await expect(dialog).toBeHidden();
@@ -680,7 +726,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       .getByRole('navigation', { name: 'Category' })
       .getByRole('link', { name: /^VHS/ })
       .click();
-    await expect(page).toHaveURL('/wishes?category=vhs');
+    await expect(page).toHaveURL(/\/wishes\?category=[0-9a-f-]+$/);
     await expect(wishes.getByRole('listitem')).toHaveCount(1);
     await expect(wish('Jurasic Park')).toBeVisible();
 
@@ -764,10 +810,10 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // Choosing a category keeps the sort, and choosing a sort keeps the category.
     const category = page.getByRole('navigation', { name: 'Category' });
     await category.getByRole('link', { name: /^VHS/ }).click();
-    await expect(page).toHaveURL(/category=vhs/);
+    await expect(page).toHaveURL(/category=[0-9a-f-]+/);
     await expect(page).toHaveURL(/sort=newest/);
     await sort.getByRole('link', { name: 'A–Z' }).click();
-    await expect(page).toHaveURL('/wishes?category=vhs');
+    await expect(page).toHaveURL(/\/wishes\?category=[0-9a-f-]+$/);
 
     await category.getByRole('link', { name: /^All/ }).click();
     await expect(rows.nth(0)).toContainText('Jurassic Park');
@@ -784,11 +830,29 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByLabel('Title')).toHaveValue('Tamagotchi');
     await expect(page.getByLabel('Status')).toHaveValue('draft');
     // The wish's category comes with it.
-    await expect(page.getByLabel('Category')).toHaveValue('toy');
+    await expect(page.getByLabel('Category').locator('option:checked')).toHaveText('Toy');
 
     await page.getByRole('link', { name: 'Wish list' }).click();
     await expect(wishes.getByRole('listitem')).toHaveCount(1);
     await expect(wish('Tamagotchi')).toHaveCount(0);
+  });
+
+  await test.step('deleting a category says what uses it, and leaves that uncategorised', async () => {
+    await page.getByRole('link', { name: 'Settings' }).click();
+    const categories = section('Categories');
+    await categories.getByRole('button', { name: 'Delete VHS' }).click();
+    const confirm = categories.getByRole('alertdialog', { name: 'Delete VHS' });
+    await expect(confirm).toContainText('1 wish will be left without a category.');
+    await confirm.getByRole('button', { name: 'Delete' }).click();
+    await expect(categories.getByRole('listitem')).toHaveText([/^Game/, /^Toy/]);
+
+    await page.getByRole('link', { name: 'Wish list' }).click();
+    await expect(wish('Jurassic Park')).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Category' })
+        .getByRole('link', { name: /^Uncategorised · 1/ }),
+    ).toBeVisible();
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {

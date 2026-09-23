@@ -4,6 +4,13 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-22 Custom categories. Categories are now yours: make them in Settings with a name, an icon and
+  a colour, rename or recolour them at any time, and delete them — whatever used a deleted category
+  is left uncategorised, and Settings says how many before it asks. The wish list and the wanted
+  items share them, and both lists gain an Uncategorised filter. Upgrading converts the old
+  built-in categories automatically: each one in use keeps its name, icon and colour, and Other
+  becomes uncategorised.
+- A favicon: the beacon light, in the browser tab and as the home-screen icon on a phone.
 - P1-21 Tags for wishes. Give a wish tags of your own — *big box, 90s, Spielberg* — as a
   comma-separated field when adding or editing it; they show as pills beside its label. A *Filter by
   tag* box on the wish list narrows it to wishes with a matching tag, alongside the category chips

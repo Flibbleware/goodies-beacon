@@ -1,11 +1,7 @@
 import { z } from 'zod';
-import type {
-  ItemCategory,
-  NotificationMode,
-  SpecOrigin,
-  WantedItemStatus,
-} from '../domain/constants.js';
-import { ITEM_CATEGORIES, WANTED_ITEM_STATUSES } from '../domain/constants.js';
+import { categoryIdSchema } from '../categories/schema.js';
+import type { NotificationMode, SpecOrigin, WantedItemStatus } from '../domain/constants.js';
+import { WANTED_ITEM_STATUSES } from '../domain/constants.js';
 import { wantedSpecSchema } from '../domain/spec.js';
 import type { SourceId } from '../sources.js';
 
@@ -18,8 +14,8 @@ import type { SourceId } from '../sources.js';
 export const itemSaveSchema = z.object({
   title: z.string().trim().min(1, 'a wanted item needs a title').max(200, 'is too long'),
   status: z.enum(WANTED_ITEM_STATUSES).default('draft'),
-  /** For the list only (P1-20); defaulted so a client that predates it still saves. */
-  category: z.enum(ITEM_CATEGORIES).default('other'),
+  /** For the list only (P1-20, P1-22); none when left out. */
+  categoryId: categoryIdSchema,
   spec: wantedSpecSchema,
   /**
    * The page's own change-note field, kept out of the JSON so a note can be written without
@@ -134,7 +130,7 @@ export interface ItemSummary extends PollState {
   id: string;
   title: string;
   status: WantedItemStatus;
-  category: ItemCategory;
+  categoryId: string | null;
   notificationMode: NotificationMode;
   currentVersion: number | null;
   updatedAt: Date;

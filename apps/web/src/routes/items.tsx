@@ -1,37 +1,46 @@
-import type { ItemCategory } from '@goodies-beacon/core/schemas';
-import { CATEGORY_LABELS, ITEM_CATEGORIES } from '@goodies-beacon/core/schemas';
 import { useQuery } from '@tanstack/react-query';
 import { createRoute, Link } from '@tanstack/react-router';
+import { type CategoryRow, categoriesQuery } from '../api/categories.js';
 import { type ItemRow, itemsQuery } from '../api/items.js';
-import { CategoryFilter } from '../components/category-filter.js';
+import {
+  CategoryFilter,
+  choiceName,
+  inChoice,
+  knownChoice,
+} from '../components/category-filter.js';
 import { CategoryTile } from '../components/category-icon.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface ItemsSearch {
-  category?: ItemCategory | undefined;
+  /** A category's id, or `none` for the uncategorised. */
+  category?: string | undefined;
 }
 
 export const itemsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/items',
   validateSearch: (search: Record<string, unknown>): ItemsSearch => ({
-    category: (ITEM_CATEGORIES as readonly unknown[]).includes(search.category)
-      ? (search.category as ItemCategory)
-      : undefined,
+    category: typeof search.category === 'string' ? search.category : undefined,
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(itemsQuery),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(itemsQuery),
+      context.queryClient.ensureQueryData(categoriesQuery),
+    ]),
   component: Items,
 });
 
 /**
  * §14's list: status, mode, last poll and counts, newest change first — filterable by category
- * with the wish list's chips, and each item shown with its category tile (P1-20).
+ * with the wish list's chips, and each item shown with its category tile (P1-20, P1-22).
  */
 function Items() {
-  const { category } = itemsRoute.useSearch();
+  const search = itemsRoute.useSearch();
   const { data, isPending, isError } = useQuery(itemsQuery);
+  const categories = useQuery(categoriesQuery).data?.categories ?? [];
+  const category = knownChoice(categories, search.category);
   const all = data?.items ?? [];
-  const items = category ? all.filter((item) => item.category === category) : all;
+  const items = all.filter((item) => inChoice(item.categoryId, category));
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -48,6 +57,7 @@ function Items() {
       {all.length > 0 ? (
         <div className="mt-6">
           <CategoryFilter
+            categories={categories}
             items={all}
             current={category}
             link={({ category: chosen, active, className, children }) => (
@@ -76,7 +86,7 @@ function Items() {
       {data && all.length > 0 && items.length === 0 && category ? (
         <div className="mt-4 rounded-xl border border-dashed border-edge p-8 text-center dark:border-edge-dark">
           <p className="text-sm text-ink-dim dark:text-ink-dim-dark">
-            No wanted items in {CATEGORY_LABELS[category]}.
+            No wanted items in {choiceName(categories, category)}.
           </p>
         </div>
       ) : null}
@@ -98,7 +108,7 @@ function Items() {
         >
           {items.map((item) => (
             <li key={item.id} className="p-4">
-              <Row item={item} />
+              <Row item={item} categories={categories} />
             </li>
           ))}
         </ul>
@@ -107,10 +117,10 @@ function Items() {
   );
 }
 
-function Row({ item }: { item: ItemRow }) {
+function Row({ item, categories }: { item: ItemRow; categories: readonly CategoryRow[] }) {
   return (
     <div className="flex items-center gap-4">
-      <CategoryTile category={item.category} />
+      <CategoryTile category={categories.find((category) => category.id === item.categoryId)} />
       <div className="min-w-0 flex-1">
         <Details item={item} />
       </div>

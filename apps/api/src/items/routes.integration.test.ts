@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import {
   authSession,
   authUser,
+  categories,
   createDb,
   createPool,
   type Database,
@@ -63,6 +64,7 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     await db.delete(authSession);
     await db.delete(authUser);
     await db.delete(wantedItems);
+    await db.delete(categories);
     app = createApp({
       db,
       logger,
@@ -108,30 +110,57 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     expect(await res.json()).toEqual({ items: [] });
   });
 
-  /** P1-20: the category is the item's own, saved with it and listed with it. */
-  it('saves a category, lists it, and defaults to Other when none is sent', async () => {
+  /** P1-20, P1-22: the category is the item's own, saved with it and listed with it. */
+  it('saves a category, lists it, and has none when none is sent', async () => {
     const spec = example('carmageddon');
+    const category = async (name: string) => {
+      const res = await send('POST', '/api/categories', { name, icon: 'star', colour: 'blue' });
+      return ((await res.json()) as { category: { id: string } }).category.id;
+    };
+    const game = await category('Game');
+    const book = await category('Book');
 
-    const game = await send('POST', '/api/items', { title: 'Carmageddon', category: 'game', spec });
-    const other = await send('POST', '/api/items', { title: 'Unsorted', spec });
-    expect(game.status).toBe(201);
-    expect(other.status).toBe(201);
-    const { itemId } = (await game.json()) as { itemId: string };
+    const created = await send('POST', '/api/items', {
+      title: 'Carmageddon',
+      categoryId: game,
+      spec,
+    });
+    const unsorted = await send('POST', '/api/items', { title: 'Unsorted', spec });
+    expect(created.status).toBe(201);
+    expect(unsorted.status).toBe(201);
+    const { itemId } = (await created.json()) as { itemId: string };
 
     const list = await app.request('/api/items', { headers: { cookie } });
-    const { items } = (await list.json()) as { items: { title: string; category: string }[] };
-    expect(Object.fromEntries(items.map((item) => [item.title, item.category]))).toEqual({
-      Carmageddon: 'game',
-      Unsorted: 'other',
+    const { items } = (await list.json()) as {
+      items: { title: string; categoryId: string | null }[];
+    };
+    expect(Object.fromEntries(items.map((item) => [item.title, item.categoryId]))).toEqual({
+      Carmageddon: game,
+      Unsorted: null,
     });
 
     // Changing it is a save like any other, and the item page reads it back.
-    await send('PUT', `/api/items/${itemId}`, { title: 'Carmageddon', category: 'book', spec });
+    await send('PUT', `/api/items/${itemId}`, { title: 'Carmageddon', categoryId: book, spec });
     const read = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
-    expect(((await read.json()) as { item: { category: string } }).item.category).toBe('book');
+    const readBack = (await read.json()) as { item: { categoryId: string } };
+    expect(readBack.item.categoryId).toBe(book);
 
-    const bad = await send('POST', '/api/items', { title: 'x', category: 'vinyl', spec });
-    expect(bad.status).toBe(400);
+    // Deleting the category leaves the item, uncategorised.
+    expect((await send('DELETE', `/api/categories/${book}`, undefined)).status).toBe(204);
+    const after = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
+    expect(((await after.json()) as { item: { categoryId: null } }).item.categoryId).toBeNull();
+  });
+
+  it('refuses a category that does not exist with a 400, not a foreign key 500', async () => {
+    const spec = example('carmageddon');
+    const missing = '00000000-0000-4000-8000-000000000000';
+
+    const res = await send('POST', '/api/items', { title: 'x', categoryId: missing, spec });
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('unknown_category');
+    expect(
+      (await send('POST', '/api/items', { title: 'x', categoryId: 'vinyl', spec })).status,
+    ).toBe(400);
   });
 
   /** P1-13's first acceptance line: both worked examples go in exactly as they are written. */

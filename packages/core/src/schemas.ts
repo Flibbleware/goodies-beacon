@@ -29,6 +29,12 @@ export {
   retainSchema,
   type VerdictView,
 } from './candidates/schema.js';
+export {
+  type Category,
+  type CategorySaveInput,
+  categoryIdSchema,
+  categorySaveSchema,
+} from './categories/schema.js';
 export type {
   DashboardSummary,
   ItemCounts,
@@ -45,9 +51,12 @@ export {
   type BuyingType,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
-  CATEGORY_LABELS,
+  CATEGORY_COLOURS,
+  CATEGORY_ICONS,
   type CandidateOrigin,
   type CandidateStage,
+  type CategoryColour,
+  type CategoryIcon,
   CONDITION_CATEGORIES,
   type ConditionCategory,
   CRITERION_KINDS,
@@ -55,8 +64,6 @@ export {
   type CriterionResult,
   IMAGE_STRATEGIES,
   type ImageStrategy,
-  ITEM_CATEGORIES,
-  type ItemCategory,
   NOTIFICATION_MODES,
   type NotificationMode,
   ON_UNKNOWN,

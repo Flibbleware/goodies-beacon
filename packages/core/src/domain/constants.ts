@@ -13,21 +13,47 @@ export const NOTIFICATION_MODES = ['realtime', 'digest'] as const;
 export type NotificationMode = (typeof NOTIFICATION_MODES)[number];
 
 /**
- * What a wish or a wanted item is, for sorting a collection rather than for searching (P1-19,
- * P1-20). `other` so that nothing is refused a place on either list.
+ * What a category (P1-22) can look like. The categories themselves are the owner's, made in
+ * Settings; these are the shapes and hues they choose from, fixed because each is drawn in code.
+ * Keyed by what is drawn rather than by what it is for, so "disc" can be a DVD or a CD.
  */
-export const ITEM_CATEGORIES = ['game', 'dvd', 'vhs', 'toy', 'figurine', 'book', 'other'] as const;
-export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
+export const CATEGORY_ICONS = [
+  'gamepad',
+  'disc',
+  'cassette',
+  'robot',
+  'figurine',
+  'book',
+  'star',
+  'heart',
+  'box',
+  'music',
+  'camera',
+  'monitor',
+  'gem',
+  'trophy',
+  'tag',
+  'coin',
+  'shirt',
+] as const;
+export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 
-export const CATEGORY_LABELS: Record<ItemCategory, string> = {
-  game: 'Game',
-  dvd: 'DVD',
-  vhs: 'VHS',
-  toy: 'Toy',
-  figurine: 'Figurine',
-  book: 'Book',
-  other: 'Other',
-};
+/** Clear of red, which means an error elsewhere in the app. */
+export const CATEGORY_COLOURS = [
+  'violet',
+  'indigo',
+  'blue',
+  'cyan',
+  'teal',
+  'green',
+  'amber',
+  'orange',
+  'copper',
+  'pink',
+  'fuchsia',
+  'slate',
+] as const;
+export type CategoryColour = (typeof CATEGORY_COLOURS)[number];
 
 /** What caused a new immutable spec version (§4). */
 export const SPEC_ORIGINS = [

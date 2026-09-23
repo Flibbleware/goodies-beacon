@@ -86,6 +86,21 @@ export {
 } from './candidates/schema.js';
 export { listCandidates, loadCandidate, setRetain } from './candidates/store.js';
 export {
+  type Category,
+  type CategorySaveInput,
+  categoryIdSchema,
+  categorySaveSchema,
+} from './categories/schema.js';
+export {
+  assertCategory,
+  createCategory,
+  DuplicateCategoryError,
+  deleteCategory,
+  listCategories,
+  UnknownCategoryError,
+  updateCategory,
+} from './categories/store.js';
+export {
   type AiKeys,
   BAKED_VARIABLES,
   type Config,
@@ -136,6 +151,7 @@ export {
   type Candidate,
   type CostLedgerEntry,
   candidates,
+  categories,
   costLedger,
   type Event,
   events,
@@ -186,9 +202,12 @@ export {
   type BuyingType,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
-  CATEGORY_LABELS,
+  CATEGORY_COLOURS,
+  CATEGORY_ICONS,
   type CandidateOrigin,
   type CandidateStage,
+  type CategoryColour,
+  type CategoryIcon,
   CONDITION_CATEGORIES,
   type ConditionCategory,
   CRITERION_KINDS,
@@ -205,8 +224,6 @@ export {
   type FeedbackType,
   IMAGE_STRATEGIES,
   type ImageStrategy,
-  ITEM_CATEGORIES,
-  type ItemCategory,
   MEDIA_KINDS,
   type MediaKind,
   NOTIFICATION_CHANNELS,

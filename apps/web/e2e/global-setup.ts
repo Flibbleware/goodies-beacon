@@ -1,6 +1,7 @@
 import {
   authSession,
   authUser,
+  categories,
   createDb,
   createPool,
   listings,
@@ -41,6 +42,7 @@ export default async function globalSetup(): Promise<void> {
     // cleared explicitly.
     await db.delete(wantedItems);
     await db.delete(wishItems);
+    await db.delete(categories);
     await db.delete(listings);
     await db.delete(seen);
     await db.delete(media);

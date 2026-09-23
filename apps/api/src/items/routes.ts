@@ -10,6 +10,7 @@ import {
   UnknownGradingScaleError,
 } from '@goodies-beacon/core';
 import { Hono } from 'hono';
+import { unknownCategoryError } from '../categories/unknown.js';
 import { errorResponse } from '../errors.js';
 import { parseBody } from '../parse.js';
 
@@ -37,7 +38,7 @@ export function createItemRoutes({ db }: ItemRouteDeps) {
       const saved = await createItem(db, body.value);
       return c.json(saved, 201);
     } catch (error) {
-      return gradingScaleError(c, error);
+      return saveError(c, error);
     }
   });
 
@@ -70,15 +71,15 @@ export function createItemRoutes({ db }: ItemRouteDeps) {
       if (!saved) return errorResponse(c, 404, 'not_found', 'No such wanted item.');
       return c.json(saved);
     } catch (error) {
-      return gradingScaleError(c, error);
+      return saveError(c, error);
     }
   });
 
   return routes;
 }
 
-/** A grading scale that does not exist is the editor's mistake, not the server's. */
-function gradingScaleError(c: Parameters<typeof errorResponse>[0], error: unknown): Response {
+/** A grading scale or category that does not exist is the editor's mistake, not the server's. */
+function saveError(c: Parameters<typeof errorResponse>[0], error: unknown): Response {
   if (error instanceof UnknownGradingScaleError) {
     return errorResponse(
       c,
@@ -87,5 +88,5 @@ function gradingScaleError(c: Parameters<typeof errorResponse>[0], error: unknow
       `spec.settings.gradingScaleId names no grading scale: ${error.gradingScaleId}`,
     );
   }
-  throw error;
+  return unknownCategoryError(c, error);
 }

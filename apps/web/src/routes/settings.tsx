@@ -3,6 +3,7 @@ import { createRoute } from '@tanstack/react-router';
 import { settingsQuery } from '../api/settings.js';
 import { AccountSection } from '../settings/account-section.js';
 import { AiSection } from '../settings/ai-section.js';
+import { CategoriesSection } from '../settings/categories-section.js';
 import { EmailSection } from '../settings/email-section.js';
 import { InstanceSection } from '../settings/instance-section.js';
 import { SourcesSection } from '../settings/sources-section.js';
@@ -14,7 +15,7 @@ export const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
-/** Account, email, sources, AI and instance. Later sections add themselves (§14). */
+/** Account, email, sources, AI, instance and categories. Later sections add themselves (§14). */
 function SettingsPage() {
   const { data, isPending, isError } = useQuery(settingsQuery);
 
@@ -38,6 +39,7 @@ function SettingsPage() {
           <SourcesSection ebay={data.settings.sources.ebay} />
           <AiSection ai={data.settings.ai} />
           <InstanceSection instance={data.settings.instance} host={data.instanceHost} />
+          <CategoriesSection />
         </>
       ) : null}
     </div>

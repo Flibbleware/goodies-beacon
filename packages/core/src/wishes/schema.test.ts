@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { wishSaveSchema } from './schema.js';
 
 describe('wishSaveSchema', () => {
-  it('takes a label and a category, and no link', () => {
-    expect(wishSaveSchema.parse({ label: '  Jurassic Park  ', category: 'vhs' })).toEqual({
+  it('takes a label alone: no category, no link, no tags', () => {
+    expect(wishSaveSchema.parse({ label: '  Jurassic Park  ' })).toEqual({
       label: 'Jurassic Park',
-      category: 'vhs',
+      categoryId: null,
       searchUrl: null,
       tags: [],
     });
@@ -15,7 +15,6 @@ describe('wishSaveSchema', () => {
     expect(
       wishSaveSchema.parse({
         label: 'x',
-        category: 'vhs',
         tags: [' big box', '', 'Big Box', '90s'],
       }).tags,
     ).toEqual(['big box', '90s']);
@@ -24,22 +23,15 @@ describe('wishSaveSchema', () => {
   it('keeps an http or https link', () => {
     const url = 'https://www.ebay.co.uk/sch/i.html?_nkw=jurassic+park+vhs';
 
-    expect(wishSaveSchema.parse({ label: 'x', category: 'vhs', searchUrl: url }).searchUrl).toBe(
-      url,
+    expect(wishSaveSchema.parse({ label: 'x', searchUrl: url }).searchUrl).toBe(url);
+    expect(wishSaveSchema.parse({ label: 'x', searchUrl: 'http://example.com' }).searchUrl).toBe(
+      'http://example.com',
     );
-    expect(
-      wishSaveSchema.parse({ label: 'x', category: 'vhs', searchUrl: 'http://example.com' })
-        .searchUrl,
-    ).toBe('http://example.com');
   });
 
   it('reads an empty link as no link', () => {
-    expect(wishSaveSchema.parse({ label: 'x', category: 'toy', searchUrl: '  ' }).searchUrl).toBe(
-      null,
-    );
-    expect(wishSaveSchema.parse({ label: 'x', category: 'toy', searchUrl: null }).searchUrl).toBe(
-      null,
-    );
+    expect(wishSaveSchema.parse({ label: 'x', searchUrl: '  ' }).searchUrl).toBe(null);
+    expect(wishSaveSchema.parse({ label: 'x', searchUrl: null }).searchUrl).toBe(null);
   });
 
   /** The link becomes an `href`, and these would run script in the app's origin when clicked. */
@@ -50,13 +42,15 @@ describe('wishSaveSchema', () => {
     'ftp://example.com/file',
     'ebay.co.uk',
   ])('refuses %s as a link', (searchUrl) => {
-    expect(wishSaveSchema.safeParse({ label: 'x', category: 'game', searchUrl }).success).toBe(
-      false,
-    );
+    expect(wishSaveSchema.safeParse({ label: 'x', searchUrl }).success).toBe(false);
   });
 
-  it('needs a label and one of the categories', () => {
-    expect(wishSaveSchema.safeParse({ label: ' ', category: 'game' }).success).toBe(false);
-    expect(wishSaveSchema.safeParse({ label: 'x', category: 'vinyl' }).success).toBe(false);
+  it('needs a label, and a category only as an id', () => {
+    expect(wishSaveSchema.safeParse({ label: ' ' }).success).toBe(false);
+    expect(wishSaveSchema.safeParse({ label: 'x', categoryId: 'vinyl' }).success).toBe(false);
+    expect(
+      wishSaveSchema.safeParse({ label: 'x', categoryId: '5b1f6c1e-6f0e-4b8a-9d1e-2f3a4b5c6d7e' })
+        .success,
+    ).toBe(true);
   });
 });

@@ -1,15 +1,8 @@
-import type { ItemCategory } from '@goodies-beacon/core/schemas';
-import {
-  CATEGORY_LABELS,
-  ITEM_CATEGORIES,
-  joinTags,
-  matchesTag,
-  splitTags,
-  wishSaveSchema,
-} from '@goodies-beacon/core/schemas';
+import { joinTags, matchesTag, splitTags, wishSaveSchema } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { type CategoryRow, categoriesQuery } from '../api/categories.js';
 import { itemsQuery } from '../api/items.js';
 import {
   createWish,
@@ -20,7 +13,16 @@ import {
   type WishSave,
   wishesQuery,
 } from '../api/wishes.js';
-import { CategoryFilter, filterChip } from '../components/category-filter.js';
+import {
+  type CategoryChoice,
+  CategoryFilter,
+  CategoryOptions,
+  choiceName,
+  filterChip,
+  inChoice,
+  knownChoice,
+  UNCATEGORISED,
+} from '../components/category-filter.js';
 import { CategoryTile } from '../components/category-icon.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { EditIcon, PromoteIcon, RemoveIcon, SearchIcon } from '../components/icons.js';
@@ -30,7 +32,8 @@ import { sortWishes } from '../wishes/sort.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface WishSearch {
-  category?: ItemCategory | undefined;
+  /** A category's id, or `none` for the uncategorised. */
+  category?: string | undefined;
   /** Absent means A–Z, so the default view has a plain URL. */
   sort?: 'newest' | undefined;
   /** Part of a tag, matched ignoring case (P1-21). */
@@ -41,16 +44,18 @@ export const wishesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/wishes',
   validateSearch: (search: Record<string, unknown>): WishSearch => ({
-    category: (ITEM_CATEGORIES as readonly unknown[]).includes(search.category)
-      ? (search.category as ItemCategory)
-      : undefined,
+    category: typeof search.category === 'string' ? search.category : undefined,
     sort: search.sort === 'newest' ? 'newest' : undefined,
     tag: tagParam(
       // The router reads `?tag=1990` as a number.
       typeof search.tag === 'number' ? String(search.tag) : search.tag,
     ),
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(wishesQuery),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(wishesQuery),
+      context.queryClient.ensureQueryData(categoriesQuery),
+    ]),
   component: Wishes,
 });
 
@@ -60,16 +65,19 @@ export const wishesRoute = createRoute({
  * when it is worth having Goodies Beacon look.
  */
 function Wishes() {
-  const { category, sort, tag } = wishesRoute.useSearch();
+  const search = wishesRoute.useSearch();
+  const { sort, tag } = search;
   const navigate = useNavigate({ from: '/wishes' });
   const { data, isPending, isError } = useQuery(wishesQuery);
+  const categories = useQuery(categoriesQuery).data?.categories ?? [];
+  const category = knownChoice(categories, search.category);
   const wishes = data?.wishes ?? [];
   // The box is driven by its own state and copied to the URL, not read back from it: the URL
   // settles a navigation later, and a controlled input a keystroke behind loses its caret.
   const [query, setQuery] = useState(tag ?? '');
   const tagged = wishes.filter((wish) => matchesTag(wish.tags, query));
   const shown = sortWishes(
-    category ? tagged.filter((wish) => wish.category === category) : tagged,
+    tagged.filter((wish) => inChoice(wish.categoryId, category)),
     sort ?? 'az',
   );
   // `null` is closed; an empty object is adding, and one holding a wish is editing it.
@@ -92,6 +100,7 @@ function Wishes() {
       <WishModal
         open={editing !== null}
         wish={editing?.wish}
+        categories={categories}
         category={category}
         onClose={() => setEditing(null)}
       />
@@ -110,6 +119,7 @@ function Wishes() {
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <Sort current={sort} category={category} tag={tagParam(query)} />
         <CategoryFilter
+          categories={categories}
           items={tagged}
           current={category}
           link={({ category: chosen, active, className, children }) => (
@@ -138,7 +148,7 @@ function Wishes() {
       {data && shown.length === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-edge p-8 text-center dark:border-edge-dark">
           <p className="text-sm text-ink-dim dark:text-ink-dim-dark">
-            {emptyMessage(category, tagParam(query))}
+            {emptyMessage(choiceName(categories, category), tagParam(query))}
           </p>
         </div>
       ) : null}
@@ -150,7 +160,12 @@ function Wishes() {
         >
           {shown.map((wish) => (
             <li key={wish.id} className="p-4">
-              <WishEntry wish={wish} onEdit={() => setEditing({ wish })} onPickTag={filterBy} />
+              <WishEntry
+                wish={wish}
+                category={categories.find((each) => each.id === wish.categoryId)}
+                onEdit={() => setEditing({ wish })}
+                onPickTag={filterBy}
+              />
             </li>
           ))}
         </ul>
@@ -160,13 +175,18 @@ function Wishes() {
 }
 
 /** What the form edits: the tags as the one comma-separated field they are typed into. */
-type WishValues = Omit<WishSave, 'tags'> & { tags: string };
+type WishValues = Omit<WishSave, 'tags' | 'categoryId'> & { tags: string; categoryId: string };
 
-const EMPTY: WishValues = { label: '', category: 'game', searchUrl: '', tags: '' };
+// '' is no category, which is what a select can hold.
+const EMPTY: WishValues = { label: '', categoryId: '', searchUrl: '', tags: '' };
 
 type Errors = Partial<Record<keyof WishValues, string>>;
 
-const toSave = (values: WishValues): WishSave => ({ ...values, tags: splitTags(values.tags) });
+const toSave = (values: WishValues): WishSave => ({
+  ...values,
+  categoryId: values.categoryId === '' ? null : values.categoryId,
+  tags: splitTags(values.tags),
+});
 
 /** The same schema the server applies, so a bad link is named before anything is sent. */
 function check(values: WishValues): Errors {
@@ -189,34 +209,48 @@ function check(values: WishValues): Errors {
 function WishModal({
   open,
   wish,
+  categories,
   category,
   onClose,
 }: {
   open: boolean;
   wish: WishRow | undefined;
-  category: ItemCategory | undefined;
+  categories: readonly CategoryRow[];
+  category: CategoryChoice;
   onClose: () => void;
 }) {
   return (
     <Modal open={open} onClose={onClose} title={wish ? `Edit ${wish.label}` : 'Add a wish'}>
-      {open ? <WishForm key={wish?.id} wish={wish} category={category} onDone={onClose} /> : null}
+      {open ? (
+        <WishForm
+          key={wish?.id}
+          wish={wish}
+          categories={categories}
+          category={category}
+          onDone={onClose}
+        />
+      ) : null}
     </Modal>
   );
 }
 
 function WishForm({
   wish,
+  categories,
   category,
   onDone,
 }: {
   wish: WishRow | undefined;
-  category: ItemCategory | undefined;
+  categories: readonly CategoryRow[];
+  category: CategoryChoice;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
   // Adding while a category is filtered starts in that category, so the new row lands in view.
   const [values, setValues] = useState<WishValues>(() =>
-    wish ? fromRow(wish) : { ...EMPTY, category: category ?? EMPTY.category },
+    wish
+      ? fromRow(wish)
+      : { ...EMPTY, categoryId: category && category !== UNCATEGORISED ? category : '' },
   );
   const [errors, setErrors] = useState<Errors>({});
 
@@ -240,7 +274,7 @@ function WishForm({
 
   return (
     <form noValidate onSubmit={onSubmit}>
-      <WishFields values={values} errors={errors} onChange={setValues} />
+      <WishFields values={values} errors={errors} categories={categories} onChange={setValues} />
       {save.isError ? <Alert tone="error">{(save.error as Error).message}</Alert> : null}
       <div className="mt-5 flex justify-end gap-3">
         <Button type="button" variant="quiet" onClick={onDone}>
@@ -257,10 +291,12 @@ function WishForm({
 function WishFields({
   values,
   errors,
+  categories,
   onChange,
 }: {
   values: WishValues;
   errors: Errors;
+  categories: readonly CategoryRow[];
   onChange: (values: WishValues) => void;
 }) {
   const ids = { label: useId(), category: useId(), url: useId(), tags: useId() };
@@ -277,20 +313,14 @@ function WishFields({
         />
       </Field>
 
-      <Field id={ids.category} label="Category" error={errors.category}>
+      <Field id={ids.category} label="Category" error={errors.categoryId}>
         <select
           id={ids.category}
-          value={values.category}
-          onChange={(event) =>
-            onChange({ ...values, category: event.target.value as ItemCategory })
-          }
+          value={values.categoryId}
+          onChange={(event) => onChange({ ...values, categoryId: event.target.value })}
           className={CONTROL}
         >
-          {ITEM_CATEGORIES.map((value) => (
-            <option key={value} value={value}>
-              {CATEGORY_LABELS[value]}
-            </option>
-          ))}
+          <CategoryOptions categories={categories} />
         </select>
       </Field>
 
@@ -339,7 +369,7 @@ function Sort({
   tag,
 }: {
   current: WishSearch['sort'];
-  category: ItemCategory | undefined;
+  category: CategoryChoice;
   tag: string | undefined;
 }) {
   return (
@@ -366,10 +396,12 @@ function Sort({
 
 function WishEntry({
   wish,
+  category,
   onEdit,
   onPickTag,
 }: {
   wish: WishRow;
+  category: CategoryRow | undefined;
   onEdit: () => void;
   onPickTag: (tag: string) => void;
 }) {
@@ -395,15 +427,15 @@ function WishEntry({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <CategoryTile category={wish.category} />
+        <CategoryTile category={category} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <p className="text-sm font-medium break-words">{wish.label}</p>
             <TagPills tags={wish.tags} onPick={onPickTag} />
           </div>
-          <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
-            {CATEGORY_LABELS[wish.category]}
-          </p>
+          {category ? (
+            <p className="text-xs text-ink-dim dark:text-ink-dim-dark">{category.name}</p>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -522,7 +554,7 @@ function IconButton({
 function fromRow(wish: WishRow): WishValues {
   return {
     label: wish.label,
-    category: wish.category,
+    categoryId: wish.categoryId ?? '',
     searchUrl: wish.searchUrl ?? '',
     tags: joinTags(wish.tags),
   };
@@ -533,13 +565,12 @@ function tagParam(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() !== '' ? value : undefined;
 }
 
-function emptyMessage(category: ItemCategory | undefined, tag: string | undefined): string {
+/** `category` is the chosen filter's name, empty when none is chosen. */
+function emptyMessage(category: string, tag: string | undefined): string {
   if (tag) {
     return category
-      ? `Nothing in ${CATEGORY_LABELS[category]} tagged “${tag.trim()}”.`
+      ? `Nothing in ${category} tagged “${tag.trim()}”.`
       : `No wishes tagged “${tag.trim()}”.`;
   }
-  return category
-    ? `Nothing in ${CATEGORY_LABELS[category]} yet.`
-    : 'Nothing on the wish list yet.';
+  return category ? `Nothing in ${category} yet.` : 'Nothing on the wish list yet.';
 }

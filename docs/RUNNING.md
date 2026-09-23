@@ -1041,7 +1041,12 @@ The pages are Dashboard, Wanted items (list, item and spec editor), Wish list, C
 and one candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
 but disabled, labelled with the task that brings it. Settings holds
 account (change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles,
-provider keys and the budget cap) and instance (time zone, digest time) sections. Dark and light
+provider keys and the budget cap), instance (time zone, digest time) and categories sections.
+Categories are yours to make — a name, an icon and a colour — and both the wish list and the wanted
+items choose from them; deleting one leaves whatever used it uncategorised. The upgrade to P1-22
+converts the seven categories that used to be built in: each one in use becomes a category of the
+same name, icon and colour with its wishes and items still in it, and anything that was Other
+becomes uncategorised. Nothing needs doing by hand. Dark and light
 follow the operating system — there is no toggle, and so no stored preference to get out of step
 with it.
 

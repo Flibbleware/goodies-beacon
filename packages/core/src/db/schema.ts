@@ -20,11 +20,12 @@ import {
   BUYING_TYPES,
   CANDIDATE_ORIGINS,
   CANDIDATE_STAGES,
+  CATEGORY_COLOURS,
+  CATEGORY_ICONS,
   EVENT_KINDS,
   EVENT_LEVELS,
   FEEDBACK_RESOLUTIONS,
   FEEDBACK_TYPES,
-  ITEM_CATEGORIES,
   MEDIA_KINDS,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_MODES,
@@ -125,6 +126,27 @@ export const instanceSecret = pgTable(
   (table) => [check('instance_secret_is_singleton', sql`${table.id} = 1`)],
 );
 
+/**
+ * The owner's categories (P1-22), shared by wishes and wanted items. Names are unique ignoring
+ * case, so "VHS" and "vhs" cannot sit side by side in a filter.
+ */
+export const categories = pgTable(
+  'categories',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    icon: text('icon').$type<(typeof CATEGORY_ICONS)[number]>().notNull(),
+    colour: text('colour').$type<(typeof CATEGORY_COLOURS)[number]>().notNull(),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [
+    check('categories_icon', oneOf(table.icon, CATEGORY_ICONS)),
+    check('categories_colour', oneOf(table.colour, CATEGORY_COLOURS)),
+    uniqueIndex('categories_name_idx').on(sql`lower(${table.name})`),
+  ],
+);
+
 export const wantedItems = pgTable(
   'wanted_items',
   {
@@ -151,10 +173,10 @@ export const wantedItems = pgTable(
     }),
     minimumGrade: text('minimum_grade'),
     /**
-     * What the item is, for the list (P1-20). On the item rather than in the spec: it sorts the
-     * owner's collection and nothing searches or judges by it.
+     * What the item is, for the list (P1-20, P1-22). On the item rather than in the spec: it sorts
+     * the owner's collection and nothing searches or judges by it. Null is uncategorised.
      */
-    category: text('category').$type<(typeof ITEM_CATEGORIES)[number]>().notNull().default('other'),
+    categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
     /** Nullable because version 1 is written after the item; the pair is circular by nature. */
     currentSpecVersionId: uuid('current_spec_version_id').references(
       (): AnyPgColumn => specVersions.id,
@@ -166,7 +188,6 @@ export const wantedItems = pgTable(
   (table) => [
     check('wanted_items_status', oneOf(table.status, WANTED_ITEM_STATUSES)),
     check('wanted_items_notification_mode', oneOf(table.notificationMode, NOTIFICATION_MODES)),
-    check('wanted_items_category', oneOf(table.category, ITEM_CATEGORIES)),
     index('wanted_items_status_idx').on(table.status),
   ],
 );
@@ -178,21 +199,17 @@ export const wantedItems = pgTable(
  * it from the pipeline and it reaches nothing — and promoting one deletes this row and writes a
  * `wanted_items` row in the same transaction, so a thing is a wish or wanted, never both.
  */
-export const wishItems = pgTable(
-  'wish_items',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    label: text('label').notNull(),
-    category: text('category').$type<(typeof ITEM_CATEGORIES)[number]>().notNull(),
-    /** A link the owner searches by hand: http(s) only, checked by `wishSaveSchema`. */
-    searchUrl: text('search_url'),
-    /** Free text, tidied by `tagsSchema` (P1-21). */
-    tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
-    createdAt,
-    updatedAt,
-  },
-  (table) => [check('wish_items_category', oneOf(table.category, ITEM_CATEGORIES))],
-);
+export const wishItems = pgTable('wish_items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  label: text('label').notNull(),
+  categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+  /** A link the owner searches by hand: http(s) only, checked by `wishSaveSchema`. */
+  searchUrl: text('search_url'),
+  /** Free text, tidied by `tagsSchema` (P1-21). */
+  tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
+  createdAt,
+  updatedAt,
+});
 
 /**
  * Immutable. Every change — a chat amendment, a direct edit, adding an image — writes a new row,
