@@ -4,6 +4,13 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-23 Settings pages. Each part of Settings — Categories, Sources, Models, Email, Instance and
+  Account — is now a page of its own, listed in the sidebar beneath a Settings heading, so
+  categories no longer sit at the bottom of one long page. An old link to `/settings` opens
+  Categories. The AI section is now called Models. The main navigation items have icons.
+- The candidate list opens on the matches, and its *Everything* verdict filter is gone; the
+  other verdicts are one click away. The Verdict and Origin labels no longer look like options, and the origins are
+  shortened to Any, Poll, Backfill and Scan.
 - P1-22 Custom categories. Categories are now yours: make them in Settings with a name, an icon and
   a colour, rename or recolour them at any time, and delete them — whatever used a deleted category
   is left uncategorised, and Settings says how many before it asks. The wish list and the wanted

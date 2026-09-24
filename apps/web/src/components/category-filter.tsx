@@ -91,7 +91,7 @@ export function CategoryFilter({
         : null}
       {categories.length === 0 ? (
         <Link
-          to="/settings"
+          to="/settings/categories"
           className="text-xs text-ink-dim underline hover:text-ink dark:text-ink-dim-dark dark:hover:text-ink-dark"
         >
           Add categories in Settings

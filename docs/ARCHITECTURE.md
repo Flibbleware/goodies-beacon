@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.39 — 23 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.40 — 24 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -446,15 +446,15 @@ Reference and grading example images are not swept by age: they belong to a spec
 
 ## 14. Web UI
 
-React + Vite, TanStack Router and Query, Tailwind. Pages:
+React + Vite, TanStack Router and Query, Tailwind. The sidebar lists the pages below, each with an icon drawn inline like the category icons. Pages:
 
 *Dashboard* — active items, today's new matches/uncertains, source health, AI spend this month.
 *Wish list* — wishes added and edited in one modal, filterable by category (each with its icon, plus the uncategorised) and by a text box matching part of a tag, sorted A–Z or newest first. Each wish shows its tags as pills beside its label, a Search button opening its link in a new tab, and a Promote action that turns it into a draft wanted item.
-*Wanted items* — list with status, mode, last poll, counts, each item with its category tile and the list filterable by category, as the wish list is. Item page: current spec card (settings, criteria, the search-plan table with per-query stats, labelled reference images — all editable in place), version history with diffs, candidate list filtered by verdict and origin, "Amend" opens the chat, "Scan current listings" runs a backfill.
+*Wanted items* — list with status, mode, last poll, counts, each item with its category tile and the list filterable by category, as the wish list is. Item page: current spec card (settings, criteria, the search-plan table with per-query stats, labelled reference images — all editable in place), version history with diffs, candidate list filtered by verdict and origin — opening on the matches, with each other verdict one filter away and no view of every verdict at once (v1.40) — "Amend" opens the chat, "Scan current listings" runs a backfill.
 *Interview* — streaming chat with the spec card alongside; Agree button; preview-search results panel.
 *Candidate* — listing photos and English summary, verdict with per-criterion evidence and "Show prompt", actions: Not a match / Challenge (with note), Retain, Use photo as reference, Mark as bought (moves item to `found`).
 *Grading scales* — create scales with example images per grade.
-*Settings* — categories (name, icon and colour; used by the wish list and the wanted items), sources and credentials with Test buttons (including per-source proxy URL with an exit-IP check), AI roles, SMTP, digest time and timezone, polling defaults, retention, budget cap.
+*Settings* — a group of pages rather than one (v1.40, P1-23), listed under a Settings heading in the sidebar that is not itself a link: categories (name, icon and colour; used by the wish list and the wanted items), sources and credentials with Test buttons (including per-source proxy URL with an exit-IP check), AI roles and the budget cap (the Models page), SMTP, the instance (digest time and timezone; polling defaults and retention when they arrive), and the account. Each is at `/settings/<name>`, and `/settings` redirects to the first.
 *Costs* — ledger by item, role and month.
 
 ---

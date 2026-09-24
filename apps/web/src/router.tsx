@@ -9,7 +9,7 @@ import { editItemRoute, newItemRoute } from './routes/item-editor.js';
 import { itemsRoute } from './routes/items.js';
 import { loginRoute } from './routes/login.js';
 import { rootRoute } from './routes/root.js';
-import { settingsRoute } from './routes/settings.js';
+import { settingsRouteTree } from './routes/settings.js';
 import { wishesRoute } from './routes/wishes.js';
 
 /**
@@ -27,7 +27,7 @@ const routeTree = rootRoute.addChildren([
     itemRoute,
     editItemRoute,
     wishesRoute,
-    settingsRoute,
+    settingsRouteTree,
   ]),
 ]);
 

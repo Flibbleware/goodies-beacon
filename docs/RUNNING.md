@@ -164,8 +164,8 @@ the `2>&1`, or grep finds nothing.
 ### 6. Claim it
 
 Open `https://beacon.example.co.uk` and **set your password immediately**. Until you do, anyone who
-reaches the host can claim the instance — see [Signing in](#signing-in). Then open Settings and
-configure email, and send yourself a test message.
+reaches the host can claim the instance — see [Signing in](#signing-in). Then open Settings → Email,
+configure it, and send yourself a test message.
 
 ---
 
@@ -915,7 +915,7 @@ The page you land on, and the fastest way to find out whether anything is wrong.
 
 Every figure is a link to the page that explains it, so a number is never something you have to
 take on trust: today's uncertains open the audit view filtered to them, a failing source opens the
-item whose plan is failing, and the spend opens the AI section of Settings.
+item whose plan is failing, and the spend opens Settings → Models.
 
 **A failing source is on the page, not in the log.** The row turns red and carries the adapter's
 own error, the date it was last working — "failing since", because that is the thing worth acting
@@ -1037,11 +1037,13 @@ phone: one column, no tables, and a gallery that scrolls sideways rather than wi
 
 ## The web app
 
-The pages are Dashboard, Wanted items (list, item and spec editor), Wish list, Candidates (list
-and one candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
-but disabled, labelled with the task that brings it. Settings holds
-account (change your password), email (SMTP), sources (the eBay keyset and a proxy), AI (roles,
-provider keys and the budget cap), instance (time zone, digest time) and categories sections.
+The pages are Dashboard, Wanted items (list, item and spec editor), Wish list, Candidates (list,
+which opens on the matches, and one candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
+but disabled, labelled with the task that brings it. Settings is a heading in the navigation
+rather than a page, with a page beneath it for each of categories, sources (the eBay keyset and a
+proxy), models (the AI roles, provider keys and the budget cap), email (SMTP), instance (time zone, digest
+time) and account (change your password), each at `/settings/<name>`; `/settings` itself opens
+categories, so a link from before P1-23 still works.
 Categories are yours to make — a name, an icon and a colour — and both the wish list and the wanted
 items choose from them; deleting one leaves whatever used it uncategorised. The upgrade to P1-22
 converts the seven categories that used to be built in: each one in use becomes a category of the
@@ -1054,7 +1056,7 @@ with it.
 
 In production the API container serves both the JSON API and the built web app: anything that is
 not `/api/*` or `/healthz` is answered from `apps/web/dist`, falling back to `index.html` so a deep
-link like `/settings` survives a refresh. An unknown `/api` path answers a JSON 404 rather than the
+link like `/settings/email` survives a refresh. An unknown `/api` path answers a JSON 404 rather than the
 page, so a typo in a URL is not mistaken for a working endpoint.
 
 `docs/API.md` lists every endpoint with whether it needs a session and whether it needs a CSRF

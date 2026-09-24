@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.39; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.40; section numbers below refer to it.*
 
-Version 1.17 — 23 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.18 — 24 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -300,6 +300,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-20 | Categories for wanted items | S | P1-19 |
 | P1-21 | Tags for wishes | S | P1-19 |
 | P1-22 | Custom categories | M | P1-20 |
+| P1-23 | Settings pages and navigation icons | S | P1-22 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1077,6 +1078,43 @@ correlated subquery written the same way elsewhere has the same trap.
 `category` ("Big box PC game") describing what a scale grades. Nothing uses it yet; Phase 5, which
 builds grading scales, should decide whether it becomes a reference to these categories or stays
 text, rather than inheriting the name by accident.
+
+#### P1-23 Settings pages and navigation icons — S
+
+Settings has grown to six sections on one page — account, email, sources, AI, instance and
+categories — and the one an owner visits most, categories, is at the bottom of it. Each becomes a
+page of its own at `/settings/<name>`, and the sidebar lists them as children of Settings, which is
+a group heading rather than a link. The main navigation items get icons; the settings children do
+not, and are indented to line up with the text beside them.
+
+Decided with the owner before it was built: the group is always expanded rather than a toggle, so
+nothing is hidden behind a click; the pages run Categories, Sources, Models, Email, Instance, Account —
+most used first, the account last as most apps place it, with the AI section renamed Models since
+choosing them is what it is for; `/settings` itself redirects to the first
+of them, so a bookmark or a link written before this still lands somewhere; and the icons are drawn
+inline in the style the category and button icons already use, rather than from a package.
+
+The links into Settings go to the page they mean: the dashboard's spend to AI, and the category
+filter's "Add categories in Settings" to Categories.
+
+Depends on P1-22.
+
+Done when:
+
+- [x] Each of the six sections is its own page at `/settings/categories`, `/settings/sources`, `/settings/models`, `/settings/email`, `/settings/instance` and `/settings/account`, headed with its own name, and survives a refresh. Each page is still a region named after its section, so the Playwright run's `section('Email')` locators kept working unchanged; it now reaches each page by its own link or URL, and refreshes `/settings/instance`.
+- [x] The sidebar lists them in that order under a Settings heading that is not a link, always visible, with the current page marked. The children are a list labelled by the heading, and the Playwright run asserts their order, that no link is named Settings, and `aria-current` on the page it is on.
+- [x] `/settings` redirects to `/settings/categories`, replacing the history entry so Back does not bounce through it.
+- [x] Every main navigation item — the disabled ones included — has an icon, and the settings children have none. The children are set lighter than the items above them. The sidebar is a rem wider, because an icon beside *Grading scales* and its Phase 5 badge wrapped the label onto two lines.
+- [x] The dashboard's AI spend opens `/settings/models`, and the category filter's link opens `/settings/categories`. Both are followed in the Playwright run.
+
+Two changes to the candidate list ride along on this branch at the owner's request. It opens on
+the matches, and the *Everything* verdict is gone: each other verdict, rejections included, is one
+chip away, which is what requirement 6 asks of it. The item page's total *Candidates* figure linked
+to that view, so it is now a figure and not a link; the four beside it add up to it and each still
+links. And the *Verdict* and *Origin* labels are set apart from the choices beside them — small
+capitals in a column of their own, with the choices in a bordered group — where before a label
+read as one more option. With the label plainly a label, the origins drop their "From a" and read
+Any, Poll, Backfill and Scan, which also keeps them on one line on a phone. Origin sits above Verdict.
 
 #### P1-XX Phase 1 exit — S
 
