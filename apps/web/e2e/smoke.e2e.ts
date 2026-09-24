@@ -54,6 +54,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   // Captured when the item is created, so the seeded candidates hang off the real one.
   let carmageddonId = '';
   const verdictFilter = page.getByRole('navigation', { name: 'Verdict' });
+  const sidebar = page.getByRole('navigation', { name: 'Main' });
+  const settingsLink = (name: string) => sidebar.getByRole('link', { name, exact: true });
 
   await test.step('the favicons are served as images, not as the app shell', async () => {
     for (const path of ['/favicon-32.png', '/icon-192.png', '/apple-touch-icon.png']) {
@@ -80,11 +82,34 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByText('Nothing is being watched yet.')).toBeVisible();
   });
 
-  await test.step('the navigation reaches settings, which shows the instance address', async () => {
-    await page.getByRole('link', { name: 'Settings' }).click();
+  await test.step('settings is a heading over its pages, not a page of its own', async () => {
+    await expect(sidebar.getByText('Settings', { exact: true })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Settings' })).toHaveCount(0);
+    await expect(sidebar.getByRole('list', { name: 'Settings' }).getByRole('link')).toHaveText([
+      'Categories',
+      'Sources',
+      'Models',
+      'Email',
+      'Instance',
+      'Account',
+    ]);
 
-    await expect(page).toHaveURL('/settings');
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    // A bookmark from when Settings was one page lands on the first of them.
+    await page.goto('/settings');
+    await expect(page).toHaveURL('/settings/categories');
+    await expect(page.getByRole('heading', { name: 'Categories', exact: true })).toBeVisible();
+
+    await page.getByRole('link', { name: 'Wish list' }).click();
+    await page.getByRole('link', { name: 'Add categories in Settings' }).click();
+    await expect(page).toHaveURL('/settings/categories');
+  });
+
+  await test.step('the navigation reaches the instance settings, which show the address', async () => {
+    await settingsLink('Instance').click();
+
+    await expect(page).toHaveURL('/settings/instance');
+    await expect(page.getByRole('heading', { name: 'Instance' })).toBeVisible();
+    await expect(settingsLink('Instance')).toHaveAttribute('aria-current', 'page');
     await expect(page.getByLabel('Time zone')).toHaveValue('Europe/London');
     await expect(page.getByLabel('Digest time')).toHaveValue('08:00');
   });
@@ -92,8 +117,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   await test.step('a deep link still works after a refresh, not a 404', async () => {
     await page.reload();
 
-    await expect(page).toHaveURL('/settings');
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page).toHaveURL('/settings/instance');
+    await expect(page.getByRole('heading', { name: 'Instance' })).toBeVisible();
   });
 
   await test.step('a setting can be saved and survives a reload', async () => {
@@ -139,7 +164,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('the SMTP settings save, and the password is stored but never shown', async () => {
-    await page.goto('/settings');
+    await page.goto('/settings/email');
 
     await page.getByLabel('SMTP host').fill('localhost');
     await page.getByLabel('Port').fill('1025');
@@ -200,6 +225,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('categories are made in Settings, each with an icon and a colour', async () => {
+    await settingsLink('Categories').click();
+    await expect(page).toHaveURL('/settings/categories');
     const categories = section('Categories');
     const dialog = page.getByRole('dialog', { name: 'Add a category' });
     await expect(categories.getByText('No categories yet.')).toBeVisible();
@@ -473,7 +500,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByRole('button', { name: 'Scan current listings' })).toBeDisabled();
   });
 
-  await test.step('judged candidates appear in the audit view, rejections included', async () => {
+  await test.step('judged candidates appear in the audit view, matches first', async () => {
     await seedCandidates(databaseUrl, carmageddonId, [
       {
         title: 'Carmageddon PC CD-ROM big box, complete',
@@ -521,11 +548,20 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('link', { name: 'Candidates', exact: true }).click();
 
     await expect(page).toHaveURL('/candidates');
-    await expect(page.getByText('3 candidates')).toBeVisible();
+    // It opens on the matches; there is no "everything" to choose instead.
+    await expect(verdictFilter.getByRole('link', { name: 'Matches' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    await expect(verdictFilter.getByRole('link')).toHaveText([
+      'Matches',
+      'Uncertain',
+      'Rejected',
+      'Not yet judged',
+    ]);
+    await expect(page.getByText('1 candidate', { exact: true })).toBeVisible();
     await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeVisible();
-    // The audit view: a rejection is listed beside the matches, not behind a toggle.
-    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
-    await expect(page.getByText('discarded by the pre-filter')).toBeVisible();
+    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeHidden();
   });
 
   await test.step('the filters narrow it and survive a reload, so a view can be linked to', async () => {
@@ -533,7 +569,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await expect(page).toHaveURL('/candidates?decision=reject');
     await expect(page.getByText('1 candidate', { exact: true })).toBeVisible();
+    // The audit view: a rejection is one chip from the matches, with what rejected it.
     await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
+    await expect(page.getByText('discarded by the pre-filter')).toBeVisible();
     await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeHidden();
 
     await page.reload();
@@ -546,6 +584,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   await test.step('the item page counts link straight into the filtered view', async () => {
     await nav.click();
     await page.getByRole('link', { name: 'Carmageddon big box' }).click();
+    // The total has no "everything" view to open, so it is a figure rather than a link.
+    await expect(page.getByRole('link', { name: /^Candidates\s*\d/ })).toHaveCount(0);
     await page.getByRole('link', { name: /Matched/ }).click();
 
     await expect(page).toHaveURL(/\/candidates\?item=[0-9a-f-]+&decision=match$/);
@@ -662,7 +702,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await page.getByRole('link', { name: 'Dashboard' }).click();
     await section('AI spend').getByRole('link').click();
-    await expect(page).toHaveURL('/settings');
+    await expect(page).toHaveURL('/settings/models');
+    await expect(page.getByRole('heading', { name: 'Models' })).toBeVisible();
   });
 
   const wishes = page.getByRole('list', { name: 'Wishes' });
@@ -838,7 +879,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('deleting a category says what uses it, and leaves that uncategorised', async () => {
-    await page.getByRole('link', { name: 'Settings' }).click();
+    await settingsLink('Categories').click();
     const categories = section('Categories');
     await categories.getByRole('button', { name: 'Delete VHS' }).click();
     const confirm = categories.getByRole('alertdialog', { name: 'Delete VHS' });
@@ -856,7 +897,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {
-    await page.goto('/settings');
+    await page.goto('/settings/account');
 
     await page.getByLabel('Current password').fill(PASSWORD);
     await page.getByLabel('New password').fill(NEW_PASSWORD);

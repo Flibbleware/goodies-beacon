@@ -128,13 +128,14 @@ function lastPoll(item: LoadedItem): string {
 /**
  * The counts, each one a link into the audit view filtered to what it counts (P1-15). A number
  * you cannot click through to is a number you have to take on trust, which is the opposite of
- * what requirement 6 asks of this page.
+ * what requirement 6 asks of this page. The total is the exception: the audit view has no
+ * "everything" filter, and the four beside it add up to it and each links.
  */
 function Counts({ item }: { item: LoadedItem }) {
   const { candidates, matched, uncertain, rejected, pending } = item.counts;
 
-  const cells: [string, number, CandidateSearch['decision'], string][] = [
-    ['Candidates', candidates, 'all', 'Listings this item has been given'],
+  const cells: [string, number, CandidateSearch['decision'] | undefined, string][] = [
+    ['Candidates', candidates, undefined, 'Listings this item has been given'],
     ['Matched', matched, 'match', 'Judged a match'],
     ['Uncertain', uncertain, 'uncertain', 'Something could not be established'],
     ['Rejected', rejected, 'reject', 'Filtered, discarded or judged against'],
@@ -143,18 +144,33 @@ function Counts({ item }: { item: LoadedItem }) {
 
   return (
     <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-      {cells.map(([label, value, decision, hint]) => (
-        <Link
-          key={label}
-          to="/candidates"
-          search={{ item: item.id, decision }}
-          title={hint}
-          className="rounded-xl border border-edge p-3 hover:bg-paper-raised dark:border-edge-dark dark:hover:bg-paper-raised-dark"
-        >
-          <dt className="text-xs text-ink-dim dark:text-ink-dim-dark">{label}</dt>
-          <dd className="mt-1 text-lg font-semibold tabular-nums">{value}</dd>
-        </Link>
-      ))}
+      {cells.map(([label, value, decision, hint]) => {
+        const figure = (
+          <>
+            <dt className="text-xs text-ink-dim dark:text-ink-dim-dark">{label}</dt>
+            <dd className="mt-1 text-lg font-semibold tabular-nums">{value}</dd>
+          </>
+        );
+        return decision ? (
+          <Link
+            key={label}
+            to="/candidates"
+            search={{ item: item.id, decision }}
+            title={hint}
+            className="rounded-xl border border-edge p-3 hover:bg-paper-raised dark:border-edge-dark dark:hover:bg-paper-raised-dark"
+          >
+            {figure}
+          </Link>
+        ) : (
+          <div
+            key={label}
+            title={hint}
+            className="rounded-xl border border-edge p-3 dark:border-edge-dark"
+          >
+            {figure}
+          </div>
+        );
+      })}
     </dl>
   );
 }

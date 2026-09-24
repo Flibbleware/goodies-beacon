@@ -259,7 +259,7 @@ function Spend({ budget }: { budget: Budget | null }) {
   return (
     <Panel title="AI spend" note="this calendar month">
       <Link
-        to="/settings"
+        to="/settings/models"
         className="mt-3 block rounded-xl border border-edge p-4 hover:bg-paper-raised dark:border-edge-dark dark:hover:bg-paper-raised-dark"
       >
         <span className="text-lg font-semibold tabular-nums">{spent ?? 'not known'}</span>

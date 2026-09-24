@@ -97,7 +97,7 @@ export function AiSection({ ai }: { ai: Ai }) {
   };
 
   return (
-    <Section title="AI">
+    <Section title="Models">
       <form onSubmit={onSubmit}>
         <p className="mt-2 text-sm text-ink-dim dark:text-ink-dim-dark">
           Each role is <code>provider:model</code>, so changing which model judges your listings is
@@ -120,7 +120,7 @@ export function AiSection({ ai }: { ai: Ai }) {
           ))}
         </div>
 
-        <h3 className="mt-8 text-sm font-medium">Provider keys</h3>
+        <h2 className="mt-8 text-sm font-medium">Provider keys</h2>
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
           {AI_PROVIDERS.map((provider: AiProvider) => {
             const configured = ai.providers[provider].configured;

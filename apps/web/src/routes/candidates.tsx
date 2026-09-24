@@ -32,11 +32,12 @@ export const candidatesRoute = createRoute({
   component: Candidates,
 });
 
-const DECISIONS = ['all', 'match', 'uncertain', 'reject', 'pending'];
+/** No "everything": the list opens on the matches, and each other verdict is one chip away. */
+const DECISIONS = ['match', 'uncertain', 'reject', 'pending'];
+const DEFAULT_DECISION = 'match';
 const ORIGINS = ['all', 'poll', 'backfill', 'scan'];
 
 const DECISION_LABELS: Record<string, string> = {
-  all: 'Everything',
   match: 'Matches',
   uncertain: 'Uncertain',
   reject: 'Rejected',
@@ -44,20 +45,22 @@ const DECISION_LABELS: Record<string, string> = {
 };
 
 const ORIGIN_LABELS: Record<string, string> = {
-  all: 'Any origin',
-  poll: 'From a poll',
-  backfill: 'From the backfill',
-  scan: 'From a scan',
+  all: 'Any',
+  poll: 'Poll',
+  backfill: 'Backfill',
+  scan: 'Scan',
 };
 
 /**
- * The audit view (requirement 6). Rejections are one chip away, not hidden behind a toggle that
- * defaults to off — "everything the reviewer rejected is visible so you can audit it" only holds
- * if browsing them is the same act as browsing the matches.
+ * The audit view (requirement 6). It opens on the matches, and rejections are one chip away beside
+ * them rather than behind a setting — "everything the reviewer rejected is visible so you can audit
+ * it" only holds if browsing them is the same act as browsing the matches.
  */
 function Candidates() {
   const search = candidatesRoute.useSearch();
-  const { data, isPending, isError } = useQuery(candidatesQuery(search));
+  const { data, isPending, isError } = useQuery(
+    candidatesQuery({ ...search, decision: search.decision ?? DEFAULT_DECISION }),
+  );
   const items = useQuery(itemsQuery);
 
   const rows = data?.candidates ?? [];
@@ -117,18 +120,7 @@ function Candidates() {
 
 function Filters({ search }: { search: CandidateSearch }) {
   return (
-    <div className="mt-4 space-y-2">
-      <Chips
-        label="Verdict"
-        values={DECISIONS}
-        labels={DECISION_LABELS}
-        current={search.decision ?? 'all'}
-        to={(value) => ({
-          ...search,
-          decision: value as CandidateSearch['decision'],
-          offset: undefined,
-        })}
-      />
+    <div className="mt-4 space-y-3">
       <Chips
         label="Origin"
         values={ORIGINS}
@@ -137,6 +129,17 @@ function Filters({ search }: { search: CandidateSearch }) {
         to={(value) => ({
           ...search,
           origin: value as CandidateSearch['origin'],
+          offset: undefined,
+        })}
+      />
+      <Chips
+        label="Verdict"
+        values={DECISIONS}
+        labels={DECISION_LABELS}
+        current={search.decision ?? DEFAULT_DECISION}
+        to={(value) => ({
+          ...search,
+          decision: value as CandidateSearch['decision'],
           offset: undefined,
         })}
       />
@@ -161,23 +164,27 @@ function Chips({
   return (
     // A named landmark per group, so "Rejected" the filter is addressable apart from "Rejected"
     // the chip on a row that happens to be one.
-    <nav aria-label={label} className="flex flex-wrap items-center gap-2">
-      <span className="text-xs text-ink-dim dark:text-ink-dim-dark">{label}</span>
-      {values.map((value) => (
-        <Link
-          key={value}
-          to="/candidates"
-          search={to(value)}
-          aria-current={value === current ? 'true' : undefined}
-          className={`rounded-lg px-2.5 py-1 text-xs ${
-            value === current
-              ? 'bg-paper-raised font-medium dark:bg-paper-raised-dark'
-              : 'text-ink-dim hover:bg-paper-raised dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark'
-          }`}
-        >
-          {labels[value]}
-        </Link>
-      ))}
+    <nav aria-label={label} className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+      <span className="w-14 shrink-0 text-[0.625rem] font-medium uppercase tracking-wider text-ink-dim dark:text-ink-dim-dark">
+        {label}
+      </span>
+      <span className="inline-flex flex-wrap gap-0.5 self-start rounded-lg border border-edge p-0.5 dark:border-edge-dark">
+        {values.map((value) => (
+          <Link
+            key={value}
+            to="/candidates"
+            search={to(value)}
+            aria-current={value === current ? 'true' : undefined}
+            className={`rounded-md px-2 py-1 text-xs sm:px-2.5 ${
+              value === current
+                ? 'bg-paper-raised font-medium shadow-sm dark:bg-paper-raised-dark'
+                : 'text-ink-dim hover:text-ink dark:text-ink-dim-dark dark:hover:text-ink-dark'
+            }`}
+          >
+            {labels[value]}
+          </Link>
+        ))}
+      </span>
     </nav>
   );
 }

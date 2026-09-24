@@ -32,21 +32,23 @@ export function Field({
 }
 
 /**
- * `aria-labelledby` makes each section a named landmark, so a screen reader can jump between
- * them — and so a test can say which section's Save button it means.
+ * A settings page: one section each since P1-23, so its title is the page heading. `aria-labelledby`
+ * makes it a named landmark, so a test can say which section's Save button it means.
  */
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   const headingId = useId();
 
   return (
-    <section
-      aria-labelledby={headingId}
-      className="mt-6 rounded-xl border border-edge bg-paper-raised p-6 dark:border-edge-dark dark:bg-paper-raised-dark"
-    >
-      <h2 id={headingId} className="font-medium">
+    <section aria-labelledby={headingId} className="mx-auto max-w-2xl">
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
+        Settings
+      </p>
+      <h1 id={headingId} className="mt-1 text-xl font-semibold tracking-tight">
         {title}
-      </h2>
-      {children}
+      </h1>
+      <div className="mt-6 rounded-xl border border-edge bg-paper-raised px-6 pt-4 pb-6 dark:border-edge-dark dark:bg-paper-raised-dark">
+        {children}
+      </div>
     </section>
   );
 }
