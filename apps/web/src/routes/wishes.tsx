@@ -93,7 +93,7 @@ function Wishes() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Wish list</h1>
         <Button type="button" onClick={() => setEditing({})}>
-          Add a wish
+          Add a Wish
         </Button>
       </div>
 
@@ -220,7 +220,7 @@ function WishModal({
   onClose: () => void;
 }) {
   return (
-    <Modal open={open} onClose={onClose} title={wish ? `Edit ${wish.label}` : 'Add a wish'}>
+    <Modal open={open} onClose={onClose} title={wish ? `Edit ${wish.label}` : 'Add a Wish'}>
       {open ? (
         <WishForm
           key={wish?.id}
@@ -270,7 +270,7 @@ function WishForm({
   };
   const submit = wish
     ? { idle: 'Save', pending: 'Saving…' }
-    : { idle: 'Add to wish list', pending: 'Adding…' };
+    : { idle: 'Add to Wish List', pending: 'Adding…' };
 
   return (
     <form noValidate onSubmit={onSubmit}>

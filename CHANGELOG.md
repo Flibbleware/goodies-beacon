@@ -4,6 +4,19 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-24 Item page sections. A wanted item's page is now a column of sections — Details,
+  Settings, Criteria, Reference Images and Search Plans — each of which folds away, and the version
+  history opens from a clock button at the top. Only Details starts open, and whatever you open or
+  fold stays that way next time. A pencil beside each part of the spec edits just that part in a
+  pop-up and saves it as a new version, without opening the full editor. The counts are coloured by
+  verdict (green for matches, amber for uncertain), as are the dashboard's counts for today, and
+  the total comes last as *Total*. *Edit the spec* is replaced by a *JSON* button that edits the
+  whole spec as JSON in a pop-up, and an item's title, category and status are now changed in
+  Details.
+- Buttons across the app are in title case — *Add a Wish*, *Send Test Email*, *Start Polling* — so
+  they read as actions rather than sentences. A wanted item's page shows its notification mode and
+  version as chips beside its status. Dropdown arrows sit in from the edge of the field, and a
+  primary button beside a plain one is now the same height.
 - P1-23 Settings pages. Each part of Settings — Categories, Sources, Models, Email, Instance and
   Account — is now a page of its own, listed in the sidebar beneath a Settings heading, so
   categories no longer sit at the bottom of one long page. An old link to `/settings` opens

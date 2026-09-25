@@ -134,7 +134,7 @@ function AppLayout() {
             disabled={signOut.isPending}
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-ink-dim hover:bg-paper-raised disabled:opacity-50 dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark"
           >
-            Sign out
+            Sign Out
           </button>
         </div>
       </nav>

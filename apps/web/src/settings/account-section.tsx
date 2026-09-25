@@ -75,7 +75,7 @@ export function AccountSection() {
 
         <div className="mt-6">
           <Button type="submit" disabled={change.isPending || !parsed.success}>
-            Change password
+            Change Password
           </Button>
         </div>
       </form>

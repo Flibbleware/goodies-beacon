@@ -1,56 +1,55 @@
 import type { Criterion, ReferenceImage, WantedSpec } from '@goodies-beacon/core/schemas';
 import { lintSpec } from '@goodies-beacon/core/schemas';
-import { useId } from 'react';
+import type { ReactNode } from 'react';
 
 /**
- * The current spec, rendered in full and human-readable (§8).
+ * The current spec, rendered in full and human-readable (§8), in the parts the item page shows as
+ * sections of their own (P1-24): what is being looked for, the settings, the criteria, and the
+ * reference images. Each is a reading view; the pencil beside its heading opens its editor.
  *
  * "Nothing is a black box" is the requirement this satisfies: every criterion in plain English
  * with its hard/soft, quantifiable and on-unknown flags, the settings as the bounded values they
- * are, and the reference images with the labels the reviewer is shown. Editing it is still the
- * JSON editor next door — §17 gives the typed form to the interviewer phase — so this is a
- * reading view with a link, not a form.
+ * are, and the reference images with the labels the reviewer is shown.
  */
-export function SpecCard({ spec }: { spec: WantedSpec }) {
-  const headingId = useId();
-  const warnings = new Map(lintSpec(spec).map((warning) => [warning.criterionId, warning.message]));
-
+export function SpecDescription({ spec }: { spec: WantedSpec }) {
   return (
-    <section aria-labelledby={headingId} className="mt-8">
-      <h2 id={headingId} className="font-medium">
-        Current spec
-      </h2>
-
-      <div className="mt-3 space-y-6 rounded-xl border border-edge p-5 dark:border-edge-dark">
-        <div>
-          <h3 className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
-            Summary
-          </h3>
-          <p className="mt-1.5 text-sm">
-            {spec.summary || <Absent>No summary was written.</Absent>}
-          </p>
-          {spec.plausibilityNote ? (
-            <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
-              <span className="font-medium">Note for the pre-filter: </span>
-              {spec.plausibilityNote}
-            </p>
-          ) : null}
-        </div>
-
-        <Settings spec={spec} />
-        <Criteria criteria={spec.criteria} warnings={warnings} />
-        <References images={spec.referenceImages} />
+    <Card>
+      <div>
+        <Label>Summary</Label>
+        <p className="mt-1.5 text-sm">{spec.summary || <Absent>No summary was written.</Absent>}</p>
       </div>
-    </section>
+      <div>
+        <Label>How sellers list this</Label>
+        <p className="mt-1.5 text-sm">
+          {spec.plausibilityNote || <Absent>Nothing written for the pre-filter.</Absent>}
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+function Label({ children }: { children: string }) {
+  return (
+    <h3 className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
+      {children}
+    </h3>
+  );
+}
+
+function Card({ children }: { children: ReactNode }) {
+  return (
+    <div className="mt-3 space-y-6 rounded-xl border border-edge p-5 dark:border-edge-dark">
+      {children}
+    </div>
   );
 }
 
 /**
  * §4's settings/criteria split made visible: everything with a bounded set of values, shown as the
  * value it is. A price or a country appearing under Criteria instead would be the leak §4 warns
- * about, and the two groups are side by side so it would be obvious.
+ * about, and the Criteria section sits directly beneath so it would be obvious.
  */
-function Settings({ spec }: { spec: WantedSpec }) {
+export function SpecSettings({ spec }: { spec: WantedSpec }) {
   const s = spec.settings;
   const ceiling = s.priceCeiling;
 
@@ -73,11 +72,8 @@ function Settings({ spec }: { spec: WantedSpec }) {
   ];
 
   return (
-    <div>
-      <h3 className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
-        Settings
-      </h3>
-      <dl className="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+    <Card>
+      <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
         {rows.map(([label, value]) => (
           <div key={label} className="flex items-baseline justify-between gap-3 text-sm">
             <dt className="text-ink-dim dark:text-ink-dim-dark">{label}</dt>
@@ -85,7 +81,7 @@ function Settings({ spec }: { spec: WantedSpec }) {
           </div>
         ))}
       </dl>
-    </div>
+    </Card>
   );
 }
 
@@ -95,25 +91,22 @@ const SHIPS_TO_UK = {
   only: 'only listings that ship here',
 } as const;
 
-function Criteria({
-  criteria,
-  warnings,
-}: {
-  criteria: Criterion[];
-  warnings: Map<string, string>;
-}) {
-  return (
-    <div>
-      <h3 className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
-        Criteria
-      </h3>
+/**
+ * The warnings come from the whole spec, because `lintSpec` judges a criterion against the item's
+ * settings as well as its own flags.
+ */
+export function CriteriaList({ spec }: { spec: WantedSpec }) {
+  const criteria: Criterion[] = spec.criteria;
+  const warnings = new Map(lintSpec(spec).map((warning) => [warning.criterionId, warning.message]));
 
+  return (
+    <Card>
       {criteria.length === 0 ? (
-        <p className="mt-2 text-sm">
+        <p className="text-sm">
           <Absent>Nothing is judged by reading or looking; the settings decide everything.</Absent>
         </p>
       ) : (
-        <ul className="mt-2 space-y-3">
+        <ul className="space-y-3">
           {criteria.map((criterion) => (
             <li key={criterion.id}>
               <p className="text-sm">{criterion.text}</p>
@@ -135,25 +128,21 @@ function Criteria({
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
 /** The label is what the reviewer is told each photograph is of, so it is shown, not the id. */
-function References({ images }: { images: ReferenceImage[] }) {
+export function ReferenceList({ images }: { images: ReferenceImage[] }) {
   return (
-    <div>
-      <h3 className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
-        Reference images
-      </h3>
-
+    <Card>
       {images.length === 0 ? (
-        <p className="mt-2 text-sm">
+        <p className="text-sm">
           <Absent>None. The reviewer judges from the criteria alone.</Absent>
         </p>
       ) : (
         <>
-          <ul className="mt-2 flex flex-wrap gap-4">
+          <ul className="flex flex-wrap gap-4">
             {images.map((image) => (
               <li key={image.id} className="w-28">
                 <img
@@ -175,7 +164,7 @@ function References({ images }: { images: ReferenceImage[] }) {
           </p>
         </>
       )}
-    </div>
+    </Card>
   );
 }
 

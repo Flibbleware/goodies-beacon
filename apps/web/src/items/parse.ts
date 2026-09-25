@@ -203,3 +203,14 @@ export function withReferenceImage(text: string, image: ReferenceImageEntry): st
   const referenceImages = [...(existing ?? []), image];
   return `${JSON.stringify({ ...document, referenceImages }, null, 2)}\n`;
 }
+
+/** Drops the reference image with this id from the document, leaving everything else as it was. */
+export function withoutReferenceImage(text: string, id: string): string | undefined {
+  return withDocument(text, (document) => {
+    if (!Array.isArray(document.referenceImages)) return;
+    document.referenceImages = document.referenceImages.filter(
+      (entry) =>
+        entry === null || typeof entry !== 'object' || (entry as { id?: unknown }).id !== id,
+    );
+  });
+}

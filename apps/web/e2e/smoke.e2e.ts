@@ -49,6 +49,16 @@ async function inbox(): Promise<InboxMessage[]> {
 test('first run, settings, a wanted item, and deep links survive a refresh', async ({ page }) => {
   const section = (name: string) => page.getByRole('region', { name });
   const history = section('Version history');
+  /** On the item page the history is a modal behind a clock button (P1-24). */
+  const itemHistory = async () => {
+    await page.getByRole('button', { name: 'Version History', exact: true }).click();
+    return page.getByRole('dialog', { name: 'Version History' });
+  };
+  const closeHistory = async () => {
+    const dialog = page.getByRole('dialog', { name: 'Version History' });
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect(dialog).toBeHidden();
+  };
   // The editor has its own back link with the same name, so the sidebar one is named exactly.
   const nav = page.getByRole('link', { name: 'Wanted items', exact: true });
   // Captured when the item is created, so the seeded candidates hang off the real one.
@@ -456,22 +466,40 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
     await expect(page.getByRole('heading', { name: 'Carmageddon big box' })).toBeVisible();
 
-    const spec = section('Current spec');
+    // Only Details starts open; every other section is one click away.
+    const toggle = (name: string) => page.getByRole('button', { name, exact: true });
+    await expect(toggle('Details')).toHaveAttribute('aria-expanded', 'true');
+    for (const name of ['Settings', 'Criteria', 'Reference Images', 'Search Plans']) {
+      await expect(toggle(name)).toHaveAttribute('aria-expanded', 'false');
+      await toggle(name).click();
+    }
+
+    const details = section('Details');
+    await expect(details).toContainText('Carmageddon, the original 1997 big-box release');
+    await expect(details).toContainText('How sellers list this');
+
+    const spec = section('Settings');
     // The settings, as the bounded values they are — not as criteria (§4's split).
     await expect(spec).toContainText('£120');
     await expect(spec).toContainText('real-time email');
     await expect(spec).toContainText('auction and fixed');
-    // Every criterion in plain English with its flags.
-    await expect(spec).toContainText('Big box release, not the jewel case or budget re-release');
-    await expect(spec).toContainText('hard — rejects');
-    await expect(spec).toContainText('the photos may not settle it');
+    await expect(spec).not.toContainText('Carmageddon, the original 1997 big-box release');
+    // Every criterion in plain English with its flags, in a section of its own.
+    const criteria = section('Criteria');
+    await expect(criteria).toContainText(
+      'Big box release, not the jewel case or budget re-release',
+    );
+    await expect(criteria).toContainText('hard — rejects');
+    await expect(criteria).toContainText('the photos may not settle it');
+    await expect(spec).not.toContainText('hard — rejects');
     // And the reference image uploaded earlier, under the label the reviewer is shown.
-    await expect(spec).toContainText('UK big box, front');
-    await expect(spec).toContainText('1 image sent with every review of this item.');
+    const images = section('Reference Images');
+    await expect(images).toContainText('UK big box, front');
+    await expect(images).toContainText('1 image sent with every review of this item.');
   });
 
   await test.step('every search plan is listed with its stats, unrun ones included', async () => {
-    const plans = section('Search plans');
+    const plans = section('Search Plans');
 
     await expect(plans.getByRole('row')).toHaveCount(4);
     await expect(plans).toContainText('ebay · EBAY_GB');
@@ -481,8 +509,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('polling is paused and resumed without writing a spec version', async () => {
-    const history = section('Version history');
-    await expect(history.getByRole('listitem')).toHaveCount(2);
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(2);
+    await closeHistory();
 
     await page.getByRole('button', { name: 'Pause polling' }).click();
     await expect(page.getByText('paused', { exact: true })).toBeVisible();
@@ -490,7 +518,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.reload();
     await expect(page.getByRole('button', { name: 'Start polling' })).toBeVisible();
     // Still two versions: pausing says nothing about what the item is looking for.
-    await expect(history.getByRole('listitem')).toHaveCount(2);
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(2);
+    await closeHistory();
 
     await page.getByRole('button', { name: 'Start polling' }).click();
     await expect(page.getByRole('button', { name: 'Pause polling' })).toBeVisible();
@@ -498,6 +527,93 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
   await test.step('Scan current listings is present and disabled until Phase 5', async () => {
     await expect(page.getByRole('button', { name: 'Scan current listings' })).toBeDisabled();
+  });
+
+  await test.step('a section folds away, and stays folded after a reload', async () => {
+    const toggle = page.getByRole('button', { name: 'Search Plans', exact: true });
+    const table = section('Search Plans').getByRole('table');
+
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.click();
+    await expect(table).toBeHidden();
+
+    await page.reload();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(table).toBeHidden();
+
+    await toggle.click();
+    await expect(table).toBeVisible();
+  });
+
+  await test.step('the pencil beside a section edits that section alone, as a new version', async () => {
+    await page.getByRole('button', { name: 'Edit criteria' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Edit Criteria' });
+    const save = dialog.getByRole('button', { name: 'Save as version 3' });
+    // Only the criteria: the settings and search plans are other sections' editors.
+    await expect(dialog.getByLabel('Price ceiling')).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Add a search plan' })).toHaveCount(0);
+    await expect(save).toBeDisabled();
+
+    await dialog.getByRole('button', { name: 'Add a criterion' }).click();
+    await dialog
+      .getByLabel(/^Criterion \d+$/)
+      .last()
+      .fill('The manual is the original print');
+
+    // Esc with an edit in hand asks rather than throwing it away.
+    await page.keyboard.press('Escape');
+    const ask = dialog.getByRole('alertdialog', { name: 'Unsaved changes' });
+    await expect(ask).toBeVisible();
+    await ask.getByRole('button', { name: 'Keep editing' }).click();
+
+    await save.click();
+    await expect(dialog).toBeHidden();
+    await expect(section('Criteria')).toContainText('The manual is the original print');
+    const versions = await itemHistory();
+    await expect(versions.getByRole('listitem')).toHaveCount(3);
+    // Left empty, the note says which section changed rather than repeating the last one.
+    await expect(versions.getByRole('listitem').first()).toContainText('Edited the criteria.');
+    await closeHistory();
+  });
+
+  await test.step('the JSON button edits the whole document, and a broken one cannot be saved', async () => {
+    await expect(page.getByRole('link', { name: 'Edit the spec' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'JSON', exact: true }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Edit JSON' });
+    const spec = dialog.getByLabel('Spec');
+    await expect(spec).toHaveValue(/The manual is the original print/);
+    await expect(dialog.getByText('No problems found')).toBeVisible();
+
+    await spec.fill('{ "summary": ');
+    await expect(dialog.getByText('One problem stops this saving:')).toBeVisible();
+    await expect(dialog.getByText('No problems found')).toBeHidden();
+    await expect(dialog.getByRole('button', { name: 'Save as version 4' })).toBeDisabled();
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await dialog.getByRole('button', { name: 'Discard' }).click();
+    await expect(dialog).toBeHidden();
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
+    await closeHistory();
+  });
+
+  await test.step('Details renames the item alongside its summary', async () => {
+    await page.getByRole('button', { name: 'Edit details' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Edit Details' });
+    await expect(dialog.getByLabel('Status')).toHaveValue('active');
+    await dialog.getByLabel('Title').fill('Carmageddon big box, Mac or PC');
+    await dialog.getByRole('button', { name: 'Save as version 4' }).click();
+
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole('heading', { name: 'Carmageddon big box, Mac or PC', level: 1 }),
+    ).toBeVisible();
+    await expect((await itemHistory()).getByRole('listitem').first()).toContainText(
+      'Edited the details.',
+    );
+    await closeHistory();
   });
 
   await test.step('judged candidates appear in the audit view, matches first', async () => {
@@ -585,7 +701,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await nav.click();
     await page.getByRole('link', { name: 'Carmageddon big box' }).click();
     // The total has no "everything" view to open, so it is a figure rather than a link.
-    await expect(page.getByRole('link', { name: /^Candidates\s*\d/ })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /^Total\s*\d/ })).toHaveCount(0);
+    await expect(page.getByText('Total', { exact: true })).toBeVisible();
     await page.getByRole('link', { name: /Matched/ }).click();
 
     await expect(page).toHaveURL(/\/candidates\?item=[0-9a-f-]+&decision=match$/);

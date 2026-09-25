@@ -54,6 +54,26 @@ export function RemoveIcon({ className }: { className?: string | undefined }) {
   );
 }
 
+/** Points down; turned a quarter to point right when what it opens is closed. */
+export function ChevronIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <path d="M6 9l6 6 6-6" />
+    </Icon>
+  );
+}
+
+/** A clock with an arrow running back round it: what came before. */
+export function HistoryIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" />
+      <path d="M3 3.5V8h4.5" />
+      <path d="M12 7.5V12l3 2" />
+    </Icon>
+  );
+}
+
 /** Up out of a circle: moving something up a level, here from wished-for to wanted. */
 export function PromoteIcon({ className }: { className?: string | undefined }) {
   return (

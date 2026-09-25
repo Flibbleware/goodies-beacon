@@ -67,7 +67,7 @@ export function CategoriesSection() {
           For sorting the wish list and the wanted items. Nothing searches or judges by them.
         </p>
         <Button type="button" onClick={() => setEditing({})}>
-          Add a category
+          Add a Category
         </Button>
       </div>
 
@@ -95,7 +95,7 @@ export function CategoriesSection() {
       <Modal
         open={editing !== null}
         onClose={() => setEditing(null)}
-        title={editing?.category ? `Edit ${editing.category.name}` : 'Add a category'}
+        title={editing?.category ? `Edit ${editing.category.name}` : 'Add a Category'}
       >
         {/* Mounted only while open, so each opening starts fresh (see the wish list's modal). */}
         {editing !== null ? (
@@ -268,7 +268,7 @@ function CategoryForm({
           Cancel
         </Button>
         <Button type="submit" disabled={save.isPending}>
-          {category ? 'Save' : 'Add category'}
+          {category ? 'Save' : 'Add Category'}
         </Button>
       </div>
     </form>
