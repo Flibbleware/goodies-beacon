@@ -8,10 +8,16 @@ import { ApiError } from '../api/client.js';
 import { createItem, itemQuery, itemsQuery, type LoadedItem, saveItem } from '../api/items.js';
 import { CategoryOptions } from '../components/category-filter.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
-import { parseSpecText, STARTING_SPEC, withDocument, withReferenceImage } from '../items/parse.js';
+import {
+  parseSpecText,
+  STARTING_SPEC,
+  withoutReferenceImage,
+  withReferenceImage,
+} from '../items/parse.js';
 import { ReferenceImages } from '../items/reference-images.js';
 import { SpecEditor } from '../items/spec-editor.js';
 import { SpecForm } from '../items/spec-form.js';
+import { STATUS_LABELS } from '../items/status.js';
 import { VersionHistory } from '../items/version-history.js';
 import { appLayoutRoute } from './app-layout.js';
 
@@ -27,14 +33,6 @@ export const editItemRoute = createRoute({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(itemQuery(params.itemId)),
   component: EditItem,
 });
-
-const STATUS_LABELS: Record<WantedItemStatus, string> = {
-  draft: 'Draft — not polled',
-  active: 'Active — polled on schedule',
-  paused: 'Paused',
-  found: 'Found',
-  archived: 'Archived',
-};
 
 /** Only ever used to ask whether an image *could* be added; never written anywhere. */
 const PROBE = { id: 'probe', path: 'probe', label: 'probe', addedAt: '1970-01-01T00:00:00.000Z' };
@@ -137,13 +135,7 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
   };
 
   const removeImage = (id: string) => {
-    const updated = withDocument(text, (document) => {
-      if (!Array.isArray(document.referenceImages)) return;
-      document.referenceImages = document.referenceImages.filter(
-        (entry) =>
-          entry === null || typeof entry !== 'object' || (entry as { id?: unknown }).id !== id,
-      );
-    });
+    const updated = withoutReferenceImage(text, id);
     if (updated !== undefined) setText(updated);
   };
 
@@ -206,10 +198,10 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
           </p>
           <div className="mt-3 flex gap-3">
             <Button type="button" variant="quiet" onClick={blocker.reset}>
-              Stay and save
+              Stay and Save
             </Button>
             <Button type="button" variant="quiet" onClick={blocker.proceed}>
-              Leave anyway
+              Leave Anyway
             </Button>
           </div>
         </div>
@@ -282,7 +274,7 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
                 onKeyDown={onTabKey}
                 className={`rounded-lg px-3 py-1.5 text-sm ${
                   surface === choice
-                    ? 'bg-beacon text-white'
+                    ? 'border border-transparent bg-beacon text-white'
                     : 'border border-edge dark:border-edge-dark'
                 }`}
               >
@@ -360,7 +352,7 @@ function Editor({ item }: { item: LoadedItem | undefined }) {
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={save.isPending || !parsed.ok || title.trim() === ''}>
-            {save.isPending ? 'Saving…' : item ? 'Save new version' : 'Create item'}
+            {save.isPending ? 'Saving…' : item ? 'Save New Version' : 'Create Item'}
           </Button>
         </div>
       </form>

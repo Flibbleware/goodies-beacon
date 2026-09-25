@@ -221,7 +221,7 @@ export function EmailSection({ email }: { email: Email }) {
             onClick={() => test.mutate()}
             disabled={busy || invalid || !isEmailConfigured(form)}
           >
-            {test.isPending ? 'Sending…' : 'Send test email'}
+            {test.isPending ? 'Sending…' : 'Send Test Email'}
           </Button>
           {save.isSuccess && !dirty ? (
             <span role="status" className="text-sm text-ink-dim dark:text-ink-dim-dark">

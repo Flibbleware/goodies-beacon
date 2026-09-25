@@ -12,10 +12,12 @@ export function SpecEditor({
   value,
   onChange,
   parsed,
+  rows = 28,
 }: {
   value: string;
   onChange: (text: string) => void;
   parsed: SpecParse;
+  rows?: number;
 }) {
   const id = useId();
 
@@ -33,7 +35,7 @@ export function SpecEditor({
         id={id}
         name="spec"
         spellCheck={false}
-        rows={28}
+        rows={rows}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-lg border border-edge bg-paper p-3 font-mono text-xs leading-relaxed outline-none focus:border-beacon dark:border-edge-dark dark:bg-paper-dark"
@@ -56,6 +58,21 @@ export function SpecEditor({
           </ul>
         </div>
       )}
+
+      {/* Always a box, so the textarea does not jump as the document goes valid and back. */}
+      {parsed.ok && parsed.warnings.length === 0 ? (
+        <div
+          role="status"
+          className="mt-3 rounded-lg border border-emerald-300 p-3 dark:border-emerald-900"
+        >
+          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            No problems found
+          </p>
+          <p className="mt-2 text-xs text-ink-dim dark:text-ink-dim-dark">
+            Valid JSON, and a spec the server will accept.
+          </p>
+        </div>
+      ) : null}
 
       {parsed.ok && parsed.warnings.length > 0 ? (
         <div

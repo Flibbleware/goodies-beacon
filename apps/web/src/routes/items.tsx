@@ -50,7 +50,7 @@ function Items() {
           to="/items/new"
           className="rounded-lg bg-beacon px-4 py-2 text-sm font-medium text-white"
         >
-          New wanted item
+          New Wanted Item
         </Link>
       </div>
 

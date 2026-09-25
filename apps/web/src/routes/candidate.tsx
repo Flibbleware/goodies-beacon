@@ -131,13 +131,13 @@ function Actions({ candidate }: { candidate: CandidateDetailLike }) {
           onClick={() => retain.mutate()}
           disabled={retain.isPending}
         >
-          {candidate.retain ? 'Stop retaining' : 'Retain'}
+          {candidate.retain ? 'Stop Retaining' : 'Retain'}
         </Button>
 
         {/* The challenge loop is Phase 5: a note re-reviews and can be folded into the spec (§1). */}
         <span title="Arrives in Phase 5" className="flex gap-3">
           <Button type="button" variant="quiet" disabled>
-            Not a match
+            Not a Match
           </Button>
           <Button type="button" variant="quiet" disabled>
             Challenge
@@ -291,7 +291,7 @@ function Prompt({ verdict }: { verdict: VerdictLike }) {
         aria-expanded={open}
         className="text-xs font-medium text-ink-dim underline dark:text-ink-dim-dark"
       >
-        {open ? 'Hide prompt' : 'Show prompt'}
+        {open ? 'Hide Prompt' : 'Show Prompt'}
       </button>
 
       {open ? (

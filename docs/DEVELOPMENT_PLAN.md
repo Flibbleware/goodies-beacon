@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.40; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.41; section numbers below refer to it.*
 
-Version 1.18 — 24 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.19 — 25 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -301,6 +301,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-21 | Tags for wishes | S | P1-19 |
 | P1-22 | Custom categories | M | P1-20 |
 | P1-23 | Settings pages and navigation icons | S | P1-22 |
+| P1-24 | Item page sections and their editors | M | P1-18, P1-23 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1115,6 +1116,45 @@ links. And the *Verdict* and *Origin* labels are set apart from the choices besi
 capitals in a column of their own, with the choices in a bordered group — where before a label
 read as one more option. With the label plainly a label, the origins drop their "From a" and read
 Any, Poll, Backfill and Scan, which also keeps them on one line on a phone. Origin sits above Verdict.
+
+#### P1-24 Item page sections and their editors — M
+
+The item page shows the spec in one card and edits it on another page entirely, so changing one
+criterion means opening the full editor, finding the row among the settings and plans, and saving
+the lot. The page becomes a column of sections — *Details* (the summary and how sellers list it),
+*Settings*, *Criteria*, *Reference Images* and *Search Plans*
+— each folding away under its heading, and each part of the spec with a pencil beside its heading
+that opens an editor for that section alone, in a modal. The version history leaves the page for a modal behind a clock button beside *JSON*.
+Only *Details* starts open, since it
+says what the item is; the rest is detail a click away.
+
+Decided with the owner while it was built: the item page no longer links to the full editor. The
+title, category and status are edited in the Details modal beside the summary, and a *JSON* button
+in the header opens the whole document in a modal — the escape hatch for a paste or a wholesale
+rewrite, and the only way to repair a spec the schema no longer reads, which the typed sections
+cannot draw. The editor page is kept, unlinked from here, for creating an item (a new item and a
+promoted wish both land on it) until that flow is reworked. The description, criteria and
+reference images leave the spec card for sections of their own, which leaves it holding the
+settings and named for them; and the counts above the
+sections gain the verdict colours the candidate list already uses, with the total moved last and
+called *Total*.
+
+A section editor is the typed form cut down to one part (`SpecForm`'s `parts`), over its own copy of
+the document. Saving sends the whole spec through `saveItem` like any save, so it is version N+1
+and nothing about versioning changes; left empty, the change note names the section rather than
+repeating the previous version's note, which is what the document otherwise carries forward.
+
+Depends on P1-18, P1-23.
+
+Done when:
+
+- [x] A *JSON* button, bordered in the style of the count tiles, sits beside the title where *Edit the spec* was, and opens the whole spec as JSON in a modal, validated as it is typed with the schema's problems and the linter's warnings listed; a document that does not parse cannot be saved. When the stored spec no longer matches the schema, the page points to it rather than to the editor.
+- [x] The counts read Matched, Uncertain, Rejected, Waiting, Total. Matched is green, Uncertain amber and Rejected stone — the candidate list's chip colours — Waiting is the app's blue, and Total is plain. Total is a figure, not a link, as *Candidates* was. The dashboard's *Today* tiles take the same colours, from the one `DECISION_TILES` map beside the chip colours in `candidates/bits.tsx`.
+- [x] Details, Settings, Criteria, Reference Images and Search Plans are sections of their own, headed in title case,, each folding under a heading button that says whether it is open. Details starts open and the rest start folded; once the owner opens or folds one, that is remembered per section in the browser (`localStorage`, so it survives a reload and never reaches the server), and the page works when storage refuses.
+- [x] The five spec sections have a pencil beside the heading opening a modal that edits that section alone — the title, category and status with the summary and how sellers list it, the settings, the criteria, the reference images (upload, label, remove), the search plans — and saving writes one new version. A spec the schema no longer reads offers no section editors, only the full one.
+- [x] The version history is a modal opened by a clock button beside *JSON*, rather than a section, listing every version newest first with its date and change note.
+- [x] Esc, the backdrop, Cancel or Back with an unsaved edit in a modal asks before discarding it, and says when an uploaded image would be left on the server with nothing pointing at it; a reload warns through the browser.
+- [x] The Playwright run finds only Details open on arrival, folds a section and finds it folded after a reload, edits the criteria through their pencil — checking the modal holds only the criteria, that Esc asks first, and that the save is version 3 with the note *Edited the criteria.* — and finds the description, settings, criteria and reference image each in its own section. It opens the JSON, breaks it, finds Save refused and discards it without a version being written, and renames the item from Details. Every version count it checks on the item page is read from the history modal.
 
 #### P1-XX Phase 1 exit — S
 

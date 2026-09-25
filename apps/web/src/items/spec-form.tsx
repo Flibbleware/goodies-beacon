@@ -28,6 +28,10 @@ import { type ReactNode, useEffect, useId, useState } from 'react';
 import { Button, CONTROL, Field } from '../components/form.js';
 import { type SpecDocument, type SpecIssue, withDocument, withSetting } from './parse.js';
 
+export type SpecFormPart = 'describe' | 'settings' | 'criteria' | 'searchPlans';
+
+const ALL_PARTS: readonly SpecFormPart[] = ['describe', 'settings', 'criteria', 'searchPlans'];
+
 /**
  * The typed editing surface for a spec (P1-18), beside the JSON editor rather than instead of it.
  *
@@ -35,6 +39,9 @@ import { type SpecDocument, type SpecIssue, withDocument, withSetting } from './
  * is a control, and the two tables hold the things that need writing in English. Reads come from
  * `spec`, which the schema has normalised, and writes go to the raw document through `parse.ts`
  * — see `withDocument` for why the two are not the same object.
+ *
+ * `parts` narrows it to what one of the item page's section editors changes (P1-24). A single
+ * part drops its own heading, because the modal around it already says what it is.
  */
 export function SpecForm({
   spec,
@@ -42,6 +49,7 @@ export function SpecForm({
   onChange,
   warnings,
   issues,
+  parts = ALL_PARTS,
 }: {
   spec: WantedSpec;
   text: string;
@@ -49,6 +57,7 @@ export function SpecForm({
   warnings: SpecWarning[];
   /** The strict schema's objections, shown beside the field each one names. */
   issues: readonly SpecIssue[];
+  parts?: readonly SpecFormPart[];
 }) {
   const edit = (mutate: (document: SpecDocument) => void) => {
     const updated = withDocument(text, mutate);
@@ -62,12 +71,20 @@ export function SpecForm({
 
   const errors: Errors = (path) => issues.find((issue) => issue.path === path)?.message;
 
+  const titled = parts.length > 1;
+
   return (
     <div className="space-y-8">
-      <Describe spec={spec} edit={edit} />
-      <Settings spec={spec} setting={setting} errors={errors} />
-      <Criteria spec={spec} edit={edit} warnings={warnings} errors={errors} />
-      <SearchPlans spec={spec} edit={edit} errors={errors} />
+      {parts.includes('describe') ? <Describe spec={spec} edit={edit} titled={titled} /> : null}
+      {parts.includes('settings') ? (
+        <Settings spec={spec} setting={setting} errors={errors} titled={titled} />
+      ) : null}
+      {parts.includes('criteria') ? (
+        <Criteria spec={spec} edit={edit} warnings={warnings} errors={errors} titled={titled} />
+      ) : null}
+      {parts.includes('searchPlans') ? (
+        <SearchPlans spec={spec} edit={edit} errors={errors} titled={titled} />
+      ) : null}
     </div>
   );
 }
@@ -100,15 +117,30 @@ function FieldError({ message }: { message: string | undefined }) {
   ) : null;
 }
 
-function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+function Group({
+  title,
+  titled,
+  hint,
+  children,
+}: {
+  title: string;
+  titled: boolean;
+  hint?: string;
+  children: ReactNode;
+}) {
   const headingId = useId();
 
   return (
-    <section aria-labelledby={headingId}>
-      <h3 id={headingId} className="text-sm font-medium">
-        {title}
-      </h3>
-      {hint ? <p className="mt-1 text-xs text-ink-dim dark:text-ink-dim-dark">{hint}</p> : null}
+    <section
+      aria-labelledby={titled ? headingId : undefined}
+      aria-label={titled ? undefined : title}
+    >
+      {titled ? (
+        <h3 id={headingId} className="mb-1 text-sm font-medium">
+          {title}
+        </h3>
+      ) : null}
+      {hint ? <p className="text-xs text-ink-dim dark:text-ink-dim-dark">{hint}</p> : null}
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -172,11 +204,11 @@ function Check({
   );
 }
 
-function Describe({ spec, edit }: { spec: WantedSpec; edit: Edit }) {
+function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled: boolean }) {
   const ids = { summary: useId(), note: useId() };
 
   return (
-    <Group title="What you are looking for">
+    <Group title="What you are looking for" titled={titled}>
       <div className="space-y-5">
         <Field
           id={ids.summary}
@@ -222,10 +254,12 @@ function Settings({
   spec,
   setting,
   errors,
+  titled,
 }: {
   spec: WantedSpec;
   setting: Setting;
   errors: Errors;
+  titled: boolean;
 }) {
   const s = spec.settings;
   const ids = { price: useId(), poll: useId(), grade: useId(), scale: useId() };
@@ -234,7 +268,7 @@ function Settings({
     on ? [...list, value] : list.filter((entry) => entry !== value);
 
   return (
-    <Group title="Settings" hint="Everything with a bounded set of values (§4).">
+    <Group title="Settings" titled={titled} hint="Everything with a bounded set of values (§4).">
       <div className="space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
@@ -529,11 +563,13 @@ function Criteria({
   edit,
   warnings,
   errors,
+  titled,
 }: {
   spec: WantedSpec;
   edit: Edit;
   warnings: SpecWarning[];
   errors: Errors;
+  titled: boolean;
 }) {
   const warningFor = new Map(warnings.map((warning) => [warning.criterionId, warning.message]));
 
@@ -543,6 +579,7 @@ function Criteria({
   return (
     <Group
       title="Criteria"
+      titled={titled}
       hint="Only judgement calls that need reading the description or looking at the photos. A price or a country belongs above, not here."
     >
       <ul className="space-y-3">
@@ -626,19 +663,30 @@ function Criteria({
             })
           }
         >
-          Add a criterion
+          Add a Criterion
         </Button>
       </div>
     </Group>
   );
 }
 
-function SearchPlans({ spec, edit, errors }: { spec: WantedSpec; edit: Edit; errors: Errors }) {
+function SearchPlans({
+  spec,
+  edit,
+  errors,
+  titled,
+}: {
+  spec: WantedSpec;
+  edit: Edit;
+  errors: Errors;
+  titled: boolean;
+}) {
   const source = spec.settings.sources.find(isMarketplaceSourceId) ?? 'ebay';
 
   return (
     <Group
       title="Search plans"
+      titled={titled}
       hint="Search broad, judge narrow (§1). Several plain queries beat one clever one, and overlapping plans cost nothing — a listing found twice becomes one candidate and is reviewed once."
     >
       <ul className="space-y-3">
@@ -669,7 +717,7 @@ function SearchPlans({ spec, edit, errors }: { spec: WantedSpec; edit: Edit; err
             })
           }
         >
-          Add a search plan
+          Add a Search Plan
         </Button>
       </div>
     </Group>

@@ -16,6 +16,23 @@ const CHIPS: Record<VerdictDecision | 'pending', string> = {
   pending: 'border border-edge dark:border-edge-dark',
 };
 
+/**
+ * A count tile for each verdict, in the colour its chip has, so green means a match wherever it
+ * appears — the item page's counts and the dashboard's today (P1-24). Waiting takes the app's own
+ * blue; a total stays plain.
+ */
+export const DECISION_TILES = {
+  match:
+    'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-950/70',
+  uncertain:
+    'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400 dark:hover:bg-amber-950/70',
+  reject:
+    'border-stone-300 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:border-stone-700 dark:bg-stone-800/40 dark:text-stone-300 dark:hover:bg-stone-800/70',
+  pending:
+    'border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-400 dark:hover:bg-sky-950/70',
+  total: 'border-edge dark:border-edge-dark',
+} as const;
+
 const LABELS: Record<VerdictDecision | 'pending', string> = {
   match: 'Match',
   uncertain: 'Uncertain',

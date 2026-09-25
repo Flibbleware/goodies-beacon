@@ -456,7 +456,7 @@ Two settings govern the rest, both in the `polling` section of the settings row:
 |---|---|---|
 | `defaultInterval` | `PT8H` | Used by any item whose own interval is null. ISO 8601 |
 | `pollCap` | 50 | Most new listings one routine poll will take |
-| `backfillCap` | 200 | Most one backfill or "Scan current listings" will take |
+| `backfillCap` | 200 | Most one backfill or "Scan Current Listings" will take |
 
 A run that stops at the cap does not lose the rest. Marketplaces page newest-first, so it takes the
 newest N, advances the watermark and records the window it skipped; the next runs search that
@@ -562,7 +562,7 @@ is the quickest if you have a Google account and no domain. The password is encr
 is stored, and the API never sends it back — the page is told only whether one is set, which is why
 saving the section without retyping it keeps it.
 
-**Send test email** mails the notification address and nothing else; the endpoint takes no address,
+**Send Test Email** mails the notification address and nothing else; the endpoint takes no address,
 so a session cannot be used to make the instance mail a stranger. On success it says where it went.
 On failure it shows what the mail server actually said — `550 5.7.1 Relaying denied` rather than
 "sending failed" — which is usually enough to fix it.
@@ -981,7 +981,7 @@ in red is a plan whose last run failed, with the error and the date it was last 
 break reads as "failing since Tuesday" rather than only "failed". A plan you take out of the spec
 keeps its stats and is shown as removed, because the candidates it found are still here.
 
-**Scan current listings** is on the page and disabled: the on-demand sweep, its rate limit and its
+**Scan Current Listings** is on the page and disabled: the on-demand sweep, its rate limit and its
 summary email are Phase 5.
 
 Four settings live in the spec *and* on the item row, because they are one field on screen:
@@ -1016,14 +1016,14 @@ model columns are empty rather than pretending a model was consulted.
 
 Opening one shows the photographs, the English summary, the seller's description and the verdict
 in full: a pass, fail or unknown for every criterion with a line of evidence for each, and beneath
-them the reasons the rules reached the decision they did. **Show prompt** reveals the exact text
+them the reasons the rules reached the decision they did. **Show Prompt** reveals the exact text
 the model was sent and the exact images, in order — read back from the verdict, not rebuilt, so it
 is what was sent on the day rather than what would be sent today.
 
 **Retain** keeps a candidate for good. Without it, candidates older than the retention period
 (thirty days by default) are deleted with their photographs once the nightly sweep exists — that
 job arrives in Phase 2, so nothing is being deleted yet and the toggle is what will spare it. The
-**Not a match** and **Challenge** buttons are visible and disabled — the re-review-and-fold-back
+**Not a Match** and **Challenge** buttons are visible and disabled — the re-review-and-fold-back
 loop is Phase 5.
 
 Descriptions are stored as **text**, not as the seller's HTML. eBay returns a full HTML document,

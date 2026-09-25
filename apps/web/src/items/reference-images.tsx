@@ -21,6 +21,7 @@ export function ReferenceImages({
   onRemove,
   unsaved,
   canInsert,
+  framed = true,
 }: {
   /** Undefined while the document cannot be read, which is not the same as having none. */
   images: readonly ReferenceImage[] | undefined;
@@ -30,6 +31,8 @@ export function ReferenceImages({
   /** Ids uploaded in this session and not yet saved into a version. */
   unsaved: ReadonlySet<string>;
   canInsert: boolean;
+  /** False inside the item page's modal (P1-24), whose own title already names the panel. */
+  framed?: boolean;
 }) {
   const ids = { label: useId(), file: useId() };
   const fileInput = useRef<HTMLInputElement>(null);
@@ -63,9 +66,9 @@ export function ReferenceImages({
   const onFile = (event: ChangeEvent<HTMLInputElement>) => setFile(event.target.files?.[0] ?? null);
 
   return (
-    <div className="rounded-xl border border-edge p-4 dark:border-edge-dark">
-      <h3 className="text-sm font-medium">Reference images</h3>
-      <p className="mt-1.5 text-xs text-ink-dim dark:text-ink-dim-dark">
+    <div className={framed ? 'rounded-xl border border-edge p-4 dark:border-edge-dark' : undefined}>
+      {framed ? <h3 className="mb-1.5 text-sm font-medium">Reference images</h3> : null}
+      <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
         Shown to the reviewer with every review of this item, so the label should say which variant
         each one is: “UK big box, front”.
       </p>
@@ -160,7 +163,7 @@ export function ReferenceImages({
           onClick={() => upload.mutate()}
           disabled={upload.isPending || !file || label.trim() === '' || !canInsert}
         >
-          {upload.isPending ? 'Uploading…' : 'Upload and add'}
+          {upload.isPending ? 'Uploading…' : 'Upload and Add'}
         </Button>
       </div>
     </div>

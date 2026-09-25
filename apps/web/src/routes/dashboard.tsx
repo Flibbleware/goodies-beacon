@@ -8,6 +8,7 @@ import {
   type SourceRow,
   type WorkerRow,
 } from '../api/dashboard.js';
+import { DECISION_TILES } from '../candidates/bits.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export const dashboardRoute = createRoute({
@@ -87,7 +88,7 @@ function Empty() {
         to="/items/new"
         className="mt-6 inline-block rounded-lg bg-beacon px-4 py-2 text-sm font-medium text-white"
       >
-        New wanted item
+        New Wanted Item
       </Link>
     </div>
   );
@@ -117,10 +118,23 @@ function Panel({ title, note, children }: { title: string; note?: string; childr
 const FIGURE =
   'rounded-xl border border-edge p-3 hover:bg-paper-raised dark:border-edge-dark dark:hover:bg-paper-raised-dark';
 
-function Figure({ label, value, tone }: { label: string; value: string | number; tone?: 'warn' }) {
+function Figure({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  /** `tinted` sits on a coloured tile, whose own colour the label takes. */
+  tone?: 'warn' | 'tinted';
+}) {
   return (
     <>
-      <span className="block text-xs text-ink-dim dark:text-ink-dim-dark">{label}</span>
+      <span
+        className={`block text-xs ${tone === 'tinted' ? 'opacity-80' : 'text-ink-dim dark:text-ink-dim-dark'}`}
+      >
+        {label}
+      </span>
       <span
         className={`mt-1 block text-lg font-semibold tabular-nums ${
           tone === 'warn' ? 'text-amber-700 dark:text-amber-500' : ''
@@ -132,23 +146,27 @@ function Figure({ label, value, tone }: { label: string; value: string | number;
   );
 }
 
+/** Today's counts in the verdict colours the item page uses. */
+const tile = (decision: keyof typeof DECISION_TILES) =>
+  `rounded-xl border p-3 ${DECISION_TILES[decision]}`;
+
 function Today({ dashboard }: { dashboard: Dashboard }) {
   const { matched, uncertain, rejected, waiting } = dashboard.today;
 
   return (
     <Panel title="Today" note={`since midnight, ${dashboard.timezone}`}>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Link to="/candidates" search={{ decision: 'match' }} className={FIGURE}>
-          <Figure label="Matched" value={matched} />
+        <Link to="/candidates" search={{ decision: 'match' }} className={tile('match')}>
+          <Figure label="Matched" value={matched} tone="tinted" />
         </Link>
-        <Link to="/candidates" search={{ decision: 'uncertain' }} className={FIGURE}>
-          <Figure label="Uncertain" value={uncertain} />
+        <Link to="/candidates" search={{ decision: 'uncertain' }} className={tile('uncertain')}>
+          <Figure label="Uncertain" value={uncertain} tone="tinted" />
         </Link>
-        <Link to="/candidates" search={{ decision: 'reject' }} className={FIGURE}>
-          <Figure label="Rejected" value={rejected} />
+        <Link to="/candidates" search={{ decision: 'reject' }} className={tile('reject')}>
+          <Figure label="Rejected" value={rejected} tone="tinted" />
         </Link>
-        <Link to="/candidates" search={{ decision: 'pending' }} className={FIGURE}>
-          <Figure label="Waiting" value={waiting} />
+        <Link to="/candidates" search={{ decision: 'pending' }} className={tile('pending')}>
+          <Figure label="Waiting" value={waiting} tone="tinted" />
         </Link>
       </div>
     </Panel>

@@ -58,9 +58,10 @@ export function Button({
   variant = 'primary',
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'quiet' }) {
+  // The primary's border is transparent rather than absent, so the two stand the same height.
   const style =
     variant === 'primary'
-      ? 'bg-beacon text-white'
+      ? 'border border-transparent bg-beacon text-white'
       : 'border border-edge dark:border-edge-dark bg-paper dark:bg-paper-dark';
   return (
     <button
