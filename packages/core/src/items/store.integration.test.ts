@@ -10,6 +10,7 @@ import { wantedSpecSchema } from '../domain/spec.js';
 import { itemSaveSchema } from './schema.js';
 import {
   createItem,
+  ItemNotReadyError,
   listItems,
   loadItem,
   saveItem,
@@ -290,6 +291,63 @@ describe.skipIf(!databaseUrl)('the wanted item store against a real Postgres', (
       expect(
         await updateItem(db, '00000000-0000-4000-8000-000000000000', { title: 'Nothing' }),
       ).toBeUndefined();
+    });
+  });
+
+  describe('an item becomes active only when its spec can poll (P1-26)', () => {
+    const empty = () => ({
+      ...(example('carmageddon') as Record<string, unknown>),
+      criteria: [],
+      searchPlans: [],
+    });
+
+    it('refuses to create an active item with nothing to search or judge by', async () => {
+      await expect(createItem(db, input('Empty', empty(), { status: 'active' }))).rejects.toThrow(
+        ItemNotReadyError,
+      );
+      expect(await listItems(db)).toEqual([]);
+    });
+
+    it('refuses a patch or a save that would start an incomplete draft polling', async () => {
+      const { itemId } = await createItem(db, input('Empty', empty()));
+
+      await expect(updateItem(db, itemId, { status: 'active' })).rejects.toThrow(ItemNotReadyError);
+      await expect(
+        saveItem(db, itemId, input('Empty', empty(), { status: 'active' })),
+      ).rejects.toThrow(ItemNotReadyError);
+
+      const loaded = await loadItem(db, itemId);
+      expect(loaded?.status).toBe('draft');
+      expect(loaded?.versions).toHaveLength(1);
+    });
+
+    it('names what is missing in the words the item page marks it with', async () => {
+      const { itemId } = await createItem(db, input('Empty', empty()));
+
+      const refused = await updateItem(db, itemId, { status: 'active' }).catch((error) => error);
+      expect(refused).toBeInstanceOf(ItemNotReadyError);
+      expect((refused as ItemNotReadyError).gaps).toEqual([
+        expect.stringMatching(/criterion/),
+        expect.stringMatching(/search plan/),
+      ]);
+    });
+
+    it('starts a complete draft polling', async () => {
+      const { itemId } = await createItem(db, input('Carmageddon', example('carmageddon')));
+
+      expect(await updateItem(db, itemId, { status: 'active' })).toMatchObject({
+        status: 'active',
+      });
+    });
+
+    it('does not stop an item already polling from being saved', async () => {
+      const { itemId } = await createItem(
+        db,
+        input('Carmageddon', example('carmageddon'), { status: 'active' }),
+      );
+
+      const saved = await saveItem(db, itemId, input('Carmageddon', empty(), { status: 'active' }));
+      expect(saved?.version).toBe(2);
     });
   });
 });

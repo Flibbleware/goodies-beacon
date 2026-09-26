@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.42; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.43; section numbers below refer to it.*
 
-Version 1.20 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.21 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -303,6 +303,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-23 | Settings pages and navigation icons | S | P1-22 |
 | P1-24 | Item page sections and their editors | M | P1-18, P1-23 |
 | P1-25 | Wanted item cards and display images | M | P1-24 |
+| P1-26 | Creating an item from a dialog | M | P1-25 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1242,6 +1243,82 @@ An image uploaded for the card only is stored as `reference`, like any upload th
 the dedupe cannot keep true, since the same bytes uploaded later as a reference would come back as
 the display row. What an image is *for* is where it is referenced from, which is also what §13's
 sweep asks — and the sweep now counts a display image as a reference, carried below.
+
+#### P1-26 Creating an item from a dialog — M
+
+Since P1-24 an item has been edited section by section on its own page, but it was still *created*
+on the full editor page — every setting, criterion and plan on one long form, with the JSON behind a
+tab — which P1-24 kept only for that. Creating becomes the Details editor in a dialog: *Create* on
+the list opens it, titled *Create a Wanted Item*, with the title, category, summary and how sellers
+list it, and the status shown but locked to a draft. *Create* writes version 1 and opens the new
+item's page, and the rest of the spec is filled in there through the section editors the page
+already has.
+
+A new draft cannot poll usefully until two sections are filled in, and the page says so: a red mark
+beside **Criteria** until there is one, and beside **Search Plans** until one is enabled on a
+marketplace the settings switch on. *Start Polling* is disabled meanwhile, with the missing parts
+listed beneath it, and the store refuses to make an item active while any remain — so the JSON
+editor, a Details save or a hand-made request cannot start it either. Nothing else is asked for:
+Details is complete from the moment the dialog creates the item, the settings all have defaults,
+and reference images are optional.
+
+Decided with the owner before it was built: the dialog is the Details editor rather than a smaller
+form of its own, and it requires the summary, which is why Details never carries a mark; the
+criteria are required alongside the search plans, since with no criterion the rules have nothing to
+fail and every listing the pre-filter keeps would be emailed as a match; activation is refused by
+the server as well as the page; and the old editor page is removed here rather than later, since
+nothing links to it once *Create* is a dialog and promoting a wish opens the item's page.
+
+Depends on P1-25.
+
+Done when:
+
+- [x] *Create* on the wanted items list opens *Create a Wanted Item*: the Details fields, the status shown as *Draft* and disabled, and *Create* disabled until there is a title and a summary. The dialog is in the URL (`/items?create=true`), so the dashboard's empty-state button opens it too. Esc, the backdrop or Cancel with something typed asks before discarding it.
+- [x] *Create* writes version 1, noted *Created.*, and replaces the dialog's URL with the new item's page, so Back does not reopen the dialog.
+- [x] `readinessGaps` in `packages/core` says what a spec lacks — no criterion; no enabled search plan; enabled plans only on marketplaces switched off — in words the page and the server share. Unit-tested against both worked examples and each gap.
+- [x] The item page marks each gap with a red *!* beside its section heading, and *Start Polling* is disabled with the gaps listed beneath it. The Details editor offers *Active* only when there are none.
+- [x] The store refuses a create, save or patch that would make a not-yet-active item active while a gap remains, and the API answers it with a 400 `not_ready` naming what is missing. An item already active is not stopped by an edit. Tested in the store and through the route.
+- [x] `/items/new` and `/items/:id/edit` are gone, with the component and the pieces only it used; promoting a wish opens the new item's page.
+- [x] The Playwright run creates both worked examples through the dialog, finds the two marks and *Start Polling* disabled on the new draft, puts the spec in through the JSON editor — which still refuses a broken spec by path and allows the lint warning — finds the marks gone, and starts it polling. It uploads the reference image through its section editor, where Esc asks and says the file would be left on the server.
+
+The item page's sections are reordered at the owner's request while the task was open: Details,
+Search Plans, Criteria, Settings, Reference Images. The two a new draft has to fill in now come
+straight after the details it was created with, ahead of the settings, which have defaults.
+
+The settings editor is cleaned up in the same way, also at the owner's request. Only eBay is
+offered as a marketplace, in the settings and in a search plan's source, since the other three have
+no adapter until Phase 4 and ticking one would search nothing; a spec that already names one still
+shows it, so nothing is switched on out of sight. The poll interval is typed in whole hours rather
+than as ISO 8601, stored as the duration it always was, with a hint giving the period the scheduler
+will really use — `durationToMinutes` and `snapToExpressible` moved from `poll/interval.ts` into
+`domain/duration.ts` so the browser can share them, since `interval.ts` imports `node:crypto`. The
+grading fields are hidden until Phase 5 builds grading scales. Every stored value is shown in
+words — *Newest 200*, *Fixed price*, *For parts or not working* — from one `labels.ts` the editor
+and the item page's settings card both use. And Condition and Poll every, and Negative keywords and
+Shipping to the UK, swap places.
+
+#### What P1-26 found
+
+**A promoted wish is the one way to reach an item without a summary.** Promotion writes a draft from
+the wish's label, category, tags and link, and a wish has no summary to bring; the page shows *No
+summary was written* under Details, with no mark, because the summary is not what a poll needs.
+Promoting through the dialog — prefilled from the wish, and deleting it on *Create* — would close
+it, but promotion is one transaction today so that a thing is never a wish and wanted at once, and
+changing that is a task of its own.
+
+**One Playwright check had nothing left to run against.** P1-18's run typed into the settings form
+and read the result back out of the JSON on the same page; a section editor has no JSON beside it,
+so the run now types the same awkward values into the settings editor — a duration a key at a time,
+a price with pence — and checks that Discard writes nothing. That the form writes what the JSON
+then holds is still covered by `parse.test.ts`, which tests the functions both go through.
+
+**The removed page took three things with it**: `VersionHistory` (the editor's plain heading over
+the list the item page shows in a modal), and the image panel's `canInsert` and `framed`, which
+only ever differed on that page.
+
+**`spec-form.tsx` holds a literal NUL byte**, as the separator in a string join (line 486), so
+`grep` and `file` treat the file as binary and quietly skip it. It works; `'\0'` would say the
+same thing in a form tools can read. Left for the next task that touches the form.
 
 #### P1-XX Phase 1 exit — S
 

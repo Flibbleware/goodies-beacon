@@ -51,7 +51,6 @@ async function inbox(): Promise<InboxMessage[]> {
  */
 test('first run, settings, a wanted item, and deep links survive a refresh', async ({ page }) => {
   const section = (name: string) => page.getByRole('region', { name });
-  const history = section('Version history');
   /** On the item page the history is a modal behind a clock button (P1-24). */
   const itemHistory = async () => {
     await page.getByRole('button', { name: 'Version History', exact: true }).click();
@@ -277,158 +276,187 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(rows).toHaveText([/^Game/, /^Toy/, /^VHS/]);
   });
 
-  await test.step('the Carmageddon example is entered as a wanted item', async () => {
+  await test.step("Create opens a dialog, and lands on the new draft's own page", async () => {
     await nav.click();
 
     await expect(page).toHaveURL('/items');
     await expect(page.getByText('No wanted items yet.')).toBeVisible();
 
     await page.getByRole('link', { name: 'Create a wanted item' }).click();
-    await page.getByLabel('Title').fill('Carmageddon big box');
-    await page.getByLabel('Status').selectOption('active');
-    await page.getByLabel('Category').selectOption({ label: 'Game' });
-    await page.getByRole('tab', { name: 'JSON' }).click();
-    await page.getByLabel('Spec').fill(JSON.stringify(carmageddon, null, 2));
-    await page.getByRole('button', { name: 'Create item' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Create a Wanted Item' });
+    const create = dialog.getByRole('button', { name: 'Create', exact: true });
 
-    // Creating navigates to the item's own editor, which is where the version history lives.
-    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
+    // A new item is a draft: it starts polling from its own page once it can (P1-26).
+    await expect(dialog.getByLabel('Status')).toBeDisabled();
+    await expect(dialog.getByLabel('Status')).toHaveValue('draft');
+    // An item's title is not a person's, so password managers are told to leave it alone.
+    await expect(dialog.getByLabel('Title')).toHaveAttribute('data-bwignore', 'true');
+    await expect(dialog.getByLabel('Title')).toHaveAttribute('autocomplete', 'off');
+    await dialog.getByLabel('Title').fill('Carmageddon big box');
+    await dialog.getByLabel('Category').selectOption({ label: 'Game' });
+    // A summary is what the item is, so it is asked for up front.
+    await expect(create).toBeDisabled();
+    await dialog.getByLabel('Summary').fill(carmageddon.summary as string);
+    await create.click();
+
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
     carmageddonId = new URL(page.url()).pathname.split('/')[2] as string;
-    await expect(page.getByText('Version 1 is the one polling uses.')).toBeVisible();
-    await expect(history.getByText('Version 1', { exact: true })).toBeVisible();
-    await expect(history.getByText('First version, entered by hand.')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Carmageddon big box', level: 1 }),
+    ).toBeVisible();
+    const versions = await itemHistory();
+    await expect(versions.getByRole('listitem')).toHaveCount(1);
+    await expect(versions.getByRole('listitem').first()).toContainText('Created.');
+    await closeHistory();
+  });
+
+  await test.step('a new draft says what it needs before it can poll', async () => {
+    const marks = page.getByRole('img', { name: /^Needed before polling/ });
+    await expect(marks).toHaveCount(2);
+    await expect(section('Criteria').getByRole('img', { name: /criterion/ })).toBeVisible();
+    await expect(section('Search Plans').getByRole('img', { name: /search plan/ })).toBeVisible();
+
+    await expect(page.getByRole('button', { name: 'Start polling' })).toBeDisabled();
+    await expect(page.getByText('Before it can start polling:')).toBeVisible();
   });
 
   await test.step('a spec the schema rejects cannot be saved, and the error names the path', async () => {
-    await page.getByRole('tab', { name: 'JSON' }).click();
-    const broken = { ...carmageddon, criteria: [{ ...carmageddon.criteria[0], text: '' }] };
-    await page.getByLabel('Spec').fill(JSON.stringify(broken, null, 2));
+    await page.getByRole('button', { name: 'JSON', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit JSON' });
+    const spec = dialog.getByLabel('Spec');
 
-    // The first alert is the editor's own; the upload panel adds a second when it cannot insert.
-    const problems = page.getByRole('alert').first();
-    await expect(problems).toContainText('criteria.0.text');
-    await expect(problems).toContainText('a criterion needs text');
-    await expect(page.getByRole('button', { name: 'Save new version' })).toBeDisabled();
+    const broken = { ...carmageddon, criteria: [{ ...carmageddon.criteria[0], text: '' }] };
+    await spec.fill(JSON.stringify(broken, null, 2));
+    await expect(dialog).toContainText('criteria.0.text');
+    await expect(dialog).toContainText('a criterion needs text');
+    await expect(dialog.getByRole('button', { name: 'Save as version 2' })).toBeDisabled();
 
     // And a document that is not JSON at all says so rather than pretending it is a schema fault.
-    await page.getByLabel('Spec').fill('{ "summary": }');
-    await expect(problems).toContainText('JSON');
+    await spec.fill('{ "summary": }');
+    await expect(dialog).toContainText('JSON');
   });
 
   await test.step('a hard criterion the photos cannot settle is a warning, not a refusal', async () => {
+    const dialog = page.getByRole('dialog', { name: 'Edit JSON' });
     const hardened = {
       ...carmageddon,
       criteria: carmageddon.criteria.map((criterion) =>
         criterion.id === 'disc-readable' ? { ...criterion, kind: 'hard' } : criterion,
       ),
     };
-    await page.getByLabel('Spec').fill(JSON.stringify(hardened, null, 2));
+    await dialog.getByLabel('Spec').fill(JSON.stringify(hardened, null, 2));
 
-    await expect(page.getByRole('status').filter({ hasText: 'disc-readable' })).toContainText(
+    await expect(dialog.getByRole('status').filter({ hasText: 'disc-readable' })).toContainText(
       'hard but not quantifiable',
     );
-    await expect(page.getByRole('button', { name: 'Save new version' })).toBeEnabled();
+    await expect(dialog.getByRole('button', { name: 'Save as version 2' })).toBeEnabled();
   });
 
-  await test.step('the form edits the same document the JSON surface holds', async () => {
-    await page.getByRole('tab', { name: 'Form' }).click();
+  await test.step('the whole example goes in, and the item can then start polling', async () => {
+    const dialog = page.getByRole('dialog', { name: 'Edit JSON' });
+    await dialog.getByLabel('Spec').fill(JSON.stringify(carmageddon, null, 2));
+    await dialog.getByRole('button', { name: 'Save as version 2' }).click();
+    await expect(dialog).toBeHidden();
 
-    await expect(page.getByLabel('Summary')).toHaveValue(/Carmageddon/);
-    await page.getByLabel('Price ceiling').fill('95');
-    await page.getByLabel('Relists').selectOption('suppress');
-    await page.getByLabel('Polled').first().uncheck();
+    await expect(page.getByRole('img', { name: /^Needed before polling/ })).toHaveCount(0);
+    await expect(page.getByText('Before it can start polling:')).toBeHidden();
+    await page.getByRole('button', { name: 'Start polling' }).click();
+    await expect(page.getByRole('button', { name: 'Pause polling' })).toBeVisible();
+  });
 
-    // One key at a time, because `P` and `PT` are not durations and once took the form away.
-    await page.getByLabel('Poll every').pressSequentially('PT8H');
-    await expect(page.getByLabel('Poll every')).toHaveValue('PT8H');
+  await test.step('the settings editor holds what is typed into it, and Discard writes nothing', async () => {
+    await page.getByRole('button', { name: 'Edit settings' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit Settings' });
+
+    await dialog.getByLabel('Price ceiling').fill('95');
+    await dialog.getByLabel('Relists').selectOption('suppress');
+
+    // Hours, not ISO 8601, and the hint says what a schedule can actually run (P1-26).
+    await dialog.getByLabel('Poll every').pressSequentially('5');
+    await expect(dialog.getByLabel('Poll every')).toHaveValue('5');
+    await expect(dialog).toContainText('so this polls every 6 hours');
+
+    // Only the marketplace there is an adapter for, grading not at all, and words not codes.
+    await expect(dialog.getByRole('checkbox', { name: 'eBay' })).toBeChecked();
+    await expect(dialog.getByRole('checkbox', { name: /vinted/i })).toHaveCount(0);
+    await expect(dialog.getByLabel('Grading scale')).toHaveCount(0);
+    await expect(dialog.getByLabel('Minimum grade')).toHaveCount(0);
+    await expect(dialog.getByLabel('How far back').locator('option')).toHaveText([
+      'Newest 50',
+      'Newest 200',
+      'Last 30 days',
+    ]);
 
     // A price with pence must not trip the browser's own validation and block Save.
-    await page.getByLabel('Price ceiling').fill('149.99');
-    const valid = await page
+    await dialog.getByLabel('Price ceiling').fill('149.99');
+    const valid = await dialog
       .getByLabel('Price ceiling')
       .evaluate((input) => (input as unknown as { checkValidity(): boolean }).checkValidity());
     expect(valid).toBe(true);
-    await page.getByLabel('Price ceiling').fill('95');
+    await expect(dialog.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
 
-    await page.getByRole('tab', { name: 'JSON' }).click();
-    const spec = page.getByLabel('Spec');
-    await expect(spec).toHaveValue(/"amount": 95/);
-    await expect(spec).toHaveValue(/"relists": "suppress"/);
-    await expect(spec).toHaveValue(/"enabled": false/);
-    await expect(spec).toHaveValue(/"pollEvery": "PT8H"/);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await dialog.getByRole('button', { name: 'Discard' }).click();
+    await expect(dialog).toBeHidden();
 
-    // Put it back, so the steps below still describe the spec they were written for.
-    await spec.fill(JSON.stringify(carmageddon, null, 2));
+    await page.getByRole('button', { name: 'JSON', exact: true }).click();
+    const json = page.getByRole('dialog', { name: 'Edit JSON' });
+    await expect(json.getByLabel('Spec')).toHaveValue(/"amount": 120/);
+    await expect(json.getByLabel('Spec')).toHaveValue(/"relists": "show"/);
+    await json.getByRole('button', { name: 'Cancel' }).click();
+    await expect(json).toBeHidden();
   });
 
-  await test.step('a criterion is added and removed from the form', async () => {
-    await page.getByRole('tab', { name: 'Form' }).click();
+  await test.step('a reference image is uploaded, labelled, and saved as a version', async () => {
+    await page.getByRole('button', { name: 'Edit reference images' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit Reference Images' });
 
-    const criteria = page.getByRole('region', { name: 'Criteria' });
-    const rows = criteria.getByRole('listitem');
-    await expect(rows).toHaveCount(carmageddon.criteria.length);
-
-    await criteria.getByRole('button', { name: 'Add a criterion' }).click();
-    await expect(rows).toHaveCount(carmageddon.criteria.length + 1);
-
-    await rows.last().getByRole('button', { name: 'Remove' }).click();
-    await expect(rows).toHaveCount(carmageddon.criteria.length);
-  });
-
-  await test.step('a reference image is uploaded, labelled, and added to the spec', async () => {
-    await page.getByLabel('Label').fill('UK big box, front');
-    await page.getByLabel('Image').setInputFiles({
+    await dialog.getByLabel('Label').fill('UK big box, front');
+    await dialog.getByLabel('Image').setInputFiles({
       name: 'box.png',
       mimeType: 'image/png',
       buffer: Buffer.from(PNG_1PX, 'base64'),
     });
-    await page.getByRole('button', { name: 'Upload and add' }).click();
+    await dialog.getByRole('button', { name: 'Upload and add' }).click();
 
-    // The panel shows what it stored, says it is not saved yet, and writes it into the document.
-    await expect(page.getByRole('img', { name: 'UK big box, front' })).toBeVisible();
-    await expect(page.getByText('not saved yet')).toBeVisible();
-    await page.getByRole('tab', { name: 'JSON' }).click();
-    await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
-  });
+    // The panel shows what it stored and says it is not saved yet.
+    await expect(dialog.getByRole('img', { name: 'UK big box, front' })).toBeVisible();
+    await expect(dialog.getByText('not saved yet')).toBeVisible();
 
-  await test.step('leaving with an unsaved image warns rather than orphaning it', async () => {
-    await nav.click();
+    // Leaving now would strand the file, and the question says so.
+    await page.keyboard.press('Escape');
+    const ask = dialog.getByRole('alertdialog', { name: 'Unsaved changes' });
+    await expect(ask).toContainText('The uploaded image stays on the server');
+    await ask.getByRole('button', { name: 'Keep editing' }).click();
 
-    const warning = page.getByRole('alertdialog', { name: 'Unsaved reference images' });
-    await expect(warning).toContainText('uploaded but not in a saved version');
-    await warning.getByRole('button', { name: 'Stay and save' }).click();
+    await dialog.getByLabel('Change note').fill('Added a photo of the box.');
+    await dialog.getByRole('button', { name: 'Save as version 3' }).click();
+    await expect(dialog).toBeHidden();
 
-    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
-    await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
-  });
-
-  await test.step('saving again writes version 2 and leaves version 1 in the history', async () => {
-    await page.getByLabel('Change note').fill('Hardened the disc criterion; added a photo.');
-    await page.getByRole('button', { name: 'Save new version' }).click();
-
-    await expect(page.getByText('Saved as version 2.')).toBeVisible();
-
-    await page.reload();
-    await expect(page.getByText('Version 2 is the one polling uses.')).toBeVisible();
-    await expect(history.getByText('Hardened the disc criterion; added a photo.')).toBeVisible();
-    await expect(history.getByText('First version, entered by hand.')).toBeVisible();
-    // The editor reopens on the stored document, image and all.
-    await expect(page.getByRole('img', { name: 'UK big box, front' })).toBeVisible();
-    await expect(page.getByText('not saved yet')).toBeHidden();
-    await page.getByRole('tab', { name: 'JSON' }).click();
-    await expect(page.getByLabel('Spec')).toHaveValue(/UK big box, front/);
+    await expect(section('Reference Images')).toContainText('UK big box, front');
+    const versions = await itemHistory();
+    await expect(versions.getByRole('listitem')).toHaveCount(3);
+    await expect(versions.getByRole('listitem').first()).toContainText('Added a photo of the box.');
+    await closeHistory();
   });
 
   await test.step('the Power Mac 5500 example goes in as a second item', async () => {
     await nav.click();
     await page.getByRole('link', { name: 'Create a wanted item' }).click();
 
-    await page.getByLabel('Title').fill('Power Macintosh 5500');
-    await page.getByRole('tab', { name: 'JSON' }).click();
-    await page.getByLabel('Spec').fill(JSON.stringify(powerMac, null, 2));
-    await page.getByRole('button', { name: 'Create item' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Create a Wanted Item' });
+    await dialog.getByLabel('Title').fill('Power Macintosh 5500');
+    await dialog.getByLabel('Summary').fill(powerMac.summary as string);
+    await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Power Macintosh 5500', level: 1 }),
+    ).toBeVisible();
 
-    await expect(page.getByText('Version 1 is the one polling uses.')).toBeVisible();
+    await page.getByRole('button', { name: 'JSON', exact: true }).click();
+    const json = page.getByRole('dialog', { name: 'Edit JSON' });
+    await json.getByLabel('Spec').fill(JSON.stringify(powerMac, null, 2));
+    await json.getByRole('button', { name: 'Save as version 2' }).click();
+    await expect(json).toBeHidden();
 
     await nav.click();
     await expect(page.getByRole('link', { name: 'Carmageddon big box' })).toBeVisible();
@@ -487,8 +515,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     const spec = section('Settings');
     // The settings, as the bounded values they are — not as criteria (§4's split).
     await expect(spec).toContainText('£120');
-    await expect(spec).toContainText('real-time email');
-    await expect(spec).toContainText('auction and fixed');
+    await expect(spec).toContainText('Real-time email');
+    await expect(spec).toContainText('Auction and Fixed price');
+    await expect(spec).not.toContainText('Grading');
     await expect(spec).not.toContainText('Carmageddon, the original 1997 big-box release');
     // Every criterion in plain English with its flags, in a section of its own.
     const criteria = section('Criteria');
@@ -515,7 +544,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('polling is paused and resumed without writing a spec version', async () => {
-    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(2);
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
     await closeHistory();
 
     await page.getByRole('button', { name: 'Pause polling' }).click();
@@ -523,8 +552,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await page.reload();
     await expect(page.getByRole('button', { name: 'Start polling' })).toBeVisible();
-    // Still two versions: pausing says nothing about what the item is looking for.
-    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(2);
+    // Still three versions: pausing says nothing about what the item is looking for.
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
     await closeHistory();
 
     await page.getByRole('button', { name: 'Start polling' }).click();
@@ -555,7 +584,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('button', { name: 'Edit criteria' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Edit Criteria' });
-    const save = dialog.getByRole('button', { name: 'Save as version 3' });
+    const save = dialog.getByRole('button', { name: 'Save as version 4' });
     // Only the criteria: the settings and search plans are other sections' editors.
     await expect(dialog.getByLabel('Price ceiling')).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Add a search plan' })).toHaveCount(0);
@@ -577,7 +606,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(dialog).toBeHidden();
     await expect(section('Criteria')).toContainText('The manual is the original print');
     const versions = await itemHistory();
-    await expect(versions.getByRole('listitem')).toHaveCount(3);
+    await expect(versions.getByRole('listitem')).toHaveCount(4);
     // Left empty, the note says which section changed rather than repeating the last one.
     await expect(versions.getByRole('listitem').first()).toContainText('Edited the criteria.');
     await closeHistory();
@@ -595,12 +624,12 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await spec.fill('{ "summary": ');
     await expect(dialog.getByText('One problem stops this saving:')).toBeVisible();
     await expect(dialog.getByText('No problems found')).toBeHidden();
-    await expect(dialog.getByRole('button', { name: 'Save as version 4' })).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'Save as version 5' })).toBeDisabled();
 
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await dialog.getByRole('button', { name: 'Discard' }).click();
     await expect(dialog).toBeHidden();
-    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(4);
     await closeHistory();
   });
 
@@ -618,7 +647,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(
       page.getByRole('heading', { name: 'Carmageddon big box, Mac or PC', level: 1 }),
     ).toBeVisible();
-    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(4);
     await closeHistory();
   });
 
@@ -631,7 +660,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await dialog.getByRole('button', { name: 'Use UK big box, front' }).click();
     await expect(dialog).toBeHidden();
     await expect(display.getByRole('img')).toBeVisible();
-    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(4);
     await closeHistory();
 
     // One used for nothing else: uploaded here, it never enters the spec.
@@ -1042,11 +1071,16 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       .getByRole('button', { name: 'Promote' })
       .click();
 
-    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\/edit$/);
-    await expect(page.getByLabel('Title')).toHaveValue('Tamagotchi');
-    await expect(page.getByLabel('Status')).toHaveValue('draft');
+    // It opens on the new item's own page, a draft, to be filled in there (P1-26).
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
+    await expect(page.getByRole('heading', { name: 'Tamagotchi', level: 1 })).toBeVisible();
+    await expect(page.getByText('draft', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start polling' })).toBeDisabled();
     // The wish's category comes with it.
-    await expect(page.getByLabel('Category').locator('option:checked')).toHaveText('Toy');
+    await page.getByRole('button', { name: 'Edit details' }).click();
+    const details = page.getByRole('dialog', { name: 'Edit Details' });
+    await expect(details.getByLabel('Category').locator('option:checked')).toHaveText('Toy');
+    await details.getByRole('button', { name: 'Cancel' }).click();
 
     await page.getByRole('link', { name: 'Wish list' }).click();
     await expect(wishes.getByRole('listitem')).toHaveCount(1);

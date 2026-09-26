@@ -5,7 +5,6 @@ import { candidateRoute } from './routes/candidate.js';
 import { candidatesRoute } from './routes/candidates.js';
 import { dashboardRoute } from './routes/dashboard.js';
 import { itemRoute } from './routes/item.js';
-import { editItemRoute, newItemRoute } from './routes/item-editor.js';
 import { itemsRoute } from './routes/items.js';
 import { loginRoute } from './routes/login.js';
 import { rootRoute } from './routes/root.js';
@@ -23,9 +22,7 @@ const routeTree = rootRoute.addChildren([
     candidatesRoute,
     candidateRoute,
     itemsRoute,
-    newItemRoute,
     itemRoute,
-    editItemRoute,
     wishesRoute,
     settingsRouteTree,
   ]),

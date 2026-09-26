@@ -256,6 +256,11 @@ export {
   resolveOnUnknown,
 } from './domain/decide.js';
 export {
+  durationToHours,
+  hoursToDuration,
+  scheduledHours,
+} from './domain/duration.js';
+export {
   LINT_CODES,
   type LintCode,
   lintCriterion,
@@ -270,6 +275,7 @@ export {
   type RawListingShape,
   rawListingSchema,
 } from './domain/listing.js';
+export { type ReadinessGap, readinessGaps } from './domain/readiness.js';
 export {
   loadSellerSalt,
   SELLER_SALT_BYTES,
@@ -329,6 +335,7 @@ export {
 export { candidateCounts, planStats, pollStates } from './items/stats.js';
 export {
   createItem,
+  ItemNotReadyError,
   type LoadedItem,
   listItems,
   loadItem,

@@ -85,7 +85,8 @@ function Empty() {
         will appear.
       </p>
       <Link
-        to="/items/new"
+        to="/items"
+        search={{ create: true }}
         className="mt-6 inline-block rounded-lg bg-beacon px-4 py-2 text-sm font-medium text-white"
       >
         New Wanted Item

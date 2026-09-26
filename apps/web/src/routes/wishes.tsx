@@ -24,7 +24,7 @@ import {
   UNCATEGORISED,
 } from '../components/category-filter.js';
 import { CategoryTile } from '../components/category-icon.js';
-import { Alert, Button, CONTROL, Field } from '../components/form.js';
+import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
 import { EditIcon, PromoteIcon, RemoveIcon, SearchIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
 import { TagPills } from '../components/tag-pills.js';
@@ -306,6 +306,7 @@ function WishFields({
       <Field id={ids.label} label="Label" error={errors.label}>
         <input
           id={ids.label}
+          {...NO_AUTOFILL}
           value={values.label}
           onChange={(event) => onChange({ ...values, label: event.target.value })}
           placeholder="Jurassic Park, big box"
@@ -419,7 +420,7 @@ function WishEntry({
         refresh(),
         queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey }),
       ]);
-      await navigate({ to: '/items/$itemId/edit', params: { itemId: saved.itemId } });
+      await navigate({ to: '/items/$itemId', params: { itemId: saved.itemId } });
     },
   });
   const failed = remove.error ?? promote.error;
@@ -492,7 +493,7 @@ function WishEntry({
         >
           <p>
             {mode === 'promote'
-              ? 'Make this a wanted item? It leaves the wish list and opens in the spec editor as a draft, where you describe what to search for.'
+              ? 'Make this a wanted item? It leaves the wish list and opens as a draft, where you describe what to search for and how to judge it.'
               : 'Remove this from the wish list?'}
           </p>
           <div className="mt-3 flex gap-3">

@@ -2,6 +2,8 @@ import { desc, eq, max } from 'drizzle-orm';
 import { assertCategory } from '../categories/store.js';
 import type { Database } from '../db/client.js';
 import { gradingScales, media, specVersions, wantedItems } from '../db/schema.js';
+import { readinessGaps } from '../domain/readiness.js';
+import { type WantedSpec, wantedSpecSchema } from '../domain/spec.js';
 import type {
   CandidateCounts,
   ItemPatchInput,
@@ -57,6 +59,17 @@ export class UnknownGradingScaleError extends Error {
   override readonly name = 'UnknownGradingScaleError';
   constructor(readonly gradingScaleId: string) {
     super(`No grading scale with id ${gradingScaleId}.`);
+  }
+}
+
+/**
+ * An item asked to become active while its spec still lacks what a poll needs (P1-26). Carries
+ * the gaps in the words the item page marks them with.
+ */
+export class ItemNotReadyError extends Error {
+  override readonly name = 'ItemNotReadyError';
+  constructor(readonly gaps: readonly string[]) {
+    super(`This item cannot start polling yet. ${gaps.join(' ')}`);
   }
 }
 
@@ -119,6 +132,7 @@ export async function updateItem(
 ): Promise<UpdatedItem | undefined> {
   if (patch.categoryId !== undefined) await assertCategory(db, patch.categoryId);
   if (patch.displayImageId !== undefined) await assertImage(db, patch.displayImageId);
+  if (patch.status === 'active') await assertCurrentSpecReady(db, id);
 
   const [row] = await db
     .update(wantedItems)
@@ -214,6 +228,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
 export async function createItem(db: Database, input: ItemSaveInput): Promise<SavedVersion> {
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
   await assertCategory(db, input.categoryId);
+  if (input.status === 'active') assertReady(input.spec);
 
   return db.transaction((tx) => insertItem(tx, input));
 }
@@ -244,11 +259,13 @@ export async function saveItem(
 
   return db.transaction(async (tx) => {
     const [existing] = await tx
-      .select({ id: wantedItems.id })
+      .select({ id: wantedItems.id, status: wantedItems.status })
       .from(wantedItems)
       .where(eq(wantedItems.id, id))
       .limit(1);
     if (!existing) return undefined;
+    // Becoming active is what is checked; an item already polling is not stopped by an edit.
+    if (input.status === 'active' && existing.status !== 'active') assertReady(input.spec);
 
     const [highest] = await tx
       .select({ version: max(specVersions.version) })
@@ -338,4 +355,41 @@ async function assertImage(db: Database, id: string | null): Promise<void> {
 
   const [row] = await db.select({ id: media.id }).from(media).where(eq(media.id, id)).limit(1);
   if (!row) throw new UnknownImageError(id);
+}
+
+function assertReady(spec: WantedSpec): void {
+  const gaps = readinessGaps(spec);
+  if (gaps.length > 0) throw new ItemNotReadyError(gaps.map((gap) => gap.message));
+}
+
+/**
+ * `updateItem`'s half of the rule: the patch carries no spec, so the one the item points at is
+ * read. An item already active passes, as it does on a save. A stored spec the schema no longer
+ * reads cannot be judged ready, and says where to fix it.
+ */
+async function assertCurrentSpecReady(db: Database, id: string): Promise<void> {
+  const [row] = await db
+    .select({
+      status: wantedItems.status,
+      summary: specVersions.summary,
+      plausibilityNote: specVersions.plausibilityNote,
+      settings: specVersions.settings,
+      criteria: specVersions.criteria,
+      searchPlans: specVersions.searchPlans,
+      referenceImages: specVersions.referenceImages,
+    })
+    .from(wantedItems)
+    .leftJoin(specVersions, eq(specVersions.id, wantedItems.currentSpecVersionId))
+    .where(eq(wantedItems.id, id))
+    .limit(1);
+  if (!row || row.status === 'active') return;
+
+  const { status: _, ...document } = row;
+  const spec = wantedSpecSchema.safeParse(document);
+  if (!spec.success) {
+    throw new ItemNotReadyError([
+      'Its spec no longer matches the schema; correct it in the JSON editor first.',
+    ]);
+  }
+  assertReady(spec.data);
 }

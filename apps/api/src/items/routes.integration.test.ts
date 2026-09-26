@@ -427,6 +427,21 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     });
   });
 
+  it('refuses to start an incomplete draft polling, naming what it lacks (P1-26)', async () => {
+    const created = await send('POST', '/api/items', {
+      title: 'Carmageddon',
+      spec: { ...example('carmageddon'), criteria: [], searchPlans: [] },
+    });
+    const { itemId } = (await created.json()) as { itemId: string };
+
+    const res = await send('PATCH', `/api/items/${itemId}`, { status: 'active' });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('not_ready');
+    expect(body.error.message).toContain('criterion');
+    expect(body.error.message).toContain('search plan');
+  });
+
   describe('what the list and the item page carry', () => {
     it('gives every item its counts and its poll state', async () => {
       await send('POST', '/api/items', { title: 'Carmageddon', spec: example('carmageddon') });

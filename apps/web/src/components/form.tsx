@@ -1,5 +1,17 @@
 import { type ReactNode, useId } from 'react';
 
+/**
+ * For a text field a password manager takes for personal details — "Title", "Name", "Label" read
+ * as an identity's title or name — which here names a thing, not a person. `autocomplete="off"`
+ * alone is only a hint most of them override, so each is also told in its own documented way.
+ */
+export const NO_AUTOFILL = {
+  autoComplete: 'off',
+  'data-bwignore': 'true',
+  'data-1p-ignore': 'true',
+  'data-lpignore': 'true',
+} as const;
+
 const CONTROL =
   'mt-2 w-full rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-beacon dark:border-edge-dark dark:bg-paper-dark';
 

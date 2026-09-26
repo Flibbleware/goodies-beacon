@@ -1,5 +1,5 @@
 import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
-import { WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
+import { readinessGaps, WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBlocker } from '@tanstack/react-router';
 import { useEffect, useId, useState } from 'react';
@@ -7,7 +7,7 @@ import { categoriesQuery } from '../api/categories.js';
 import { ApiError } from '../api/client.js';
 import { itemQuery, itemsQuery, type LoadedItem, saveItem, updateItem } from '../api/items.js';
 import { CategoryOptions } from '../components/category-filter.js';
-import { Alert, Button, CONTROL, Field } from '../components/form.js';
+import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
 import { Modal } from '../components/modal.js';
 import { parseSpecText, withoutReferenceImage, withReferenceImage } from './parse.js';
 import { ReferenceImages } from './reference-images.js';
@@ -230,6 +230,7 @@ function Body({
           setCategoryId={setCategoryId}
           status={status}
           setStatus={setStatus}
+          canActivate={shown !== undefined && readinessGaps(shown).length === 0}
         />
       ) : null}
 
@@ -253,9 +254,7 @@ function Body({
         />
       ) : (
         <ReferenceImages
-          framed={false}
           images={shown.referenceImages}
-          canInsert
           unsaved={unsaved}
           onRemove={(id) => {
             const updated = withoutReferenceImage(text, id);
@@ -340,14 +339,19 @@ function Body({
   );
 }
 
-/** What the item is called and how it is kept, which only the Details editor changes. */
-function ItemFields({
+/**
+ * What the item is called and how it is kept: the Details editor's, and the Create dialog's with
+ * the status locked to a draft (P1-26). *Active* is offered only when the spec could poll.
+ */
+export function ItemFields({
   title,
   setTitle,
   categoryId,
   setCategoryId,
   status,
   setStatus,
+  statusLocked = false,
+  canActivate = true,
 }: {
   title: string;
   setTitle: (title: string) => void;
@@ -355,6 +359,8 @@ function ItemFields({
   setCategoryId: (categoryId: string) => void;
   status: WantedItemStatus;
   setStatus: (status: WantedItemStatus) => void;
+  statusLocked?: boolean;
+  canActivate?: boolean;
 }) {
   const ids = { title: useId(), category: useId(), status: useId() };
   const categories = useQuery(categoriesQuery).data?.categories ?? [];
@@ -366,6 +372,7 @@ function ItemFields({
           <input
             id={ids.title}
             name="title"
+            {...NO_AUTOFILL}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             className={CONTROL}
@@ -392,17 +399,28 @@ function ItemFields({
       <Field
         id={ids.status}
         label="Status"
-        hint="Only an active item is polled; the rest keep their spec and do nothing."
+        hint={
+          statusLocked
+            ? 'A new item starts as a draft. Fill in its criteria and search plans, then start polling.'
+            : canActivate
+              ? 'Only an active item is polled; the rest keep their spec and do nothing.'
+              : 'Active needs a criterion and an enabled search plan first.'
+        }
       >
         <select
           id={ids.status}
           name="status"
           value={status}
+          disabled={statusLocked}
           onChange={(event) => setStatus(event.target.value as WantedItemStatus)}
           className={CONTROL}
         >
           {WANTED_ITEM_STATUSES.map((value) => (
-            <option key={value} value={value}>
+            <option
+              key={value}
+              value={value}
+              disabled={value === 'active' && !canActivate && status !== 'active'}
+            >
               {STATUS_LABELS[value]}
             </option>
           ))}

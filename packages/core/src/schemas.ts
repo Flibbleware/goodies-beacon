@@ -83,6 +83,11 @@ export {
   type WantedItemStatus,
 } from './domain/constants.js';
 export {
+  durationToHours,
+  hoursToDuration,
+  scheduledHours,
+} from './domain/duration.js';
+export {
   LINT_CODES,
   type LintCode,
   lintCriterion,
@@ -95,6 +100,7 @@ export {
   type NormalisedListing,
   normalisedListingSchema,
 } from './domain/listing.js';
+export { type ReadinessGap, readinessGaps } from './domain/readiness.js';
 export {
   backfillSchema,
   type Criterion,

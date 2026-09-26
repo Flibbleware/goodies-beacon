@@ -1,6 +1,16 @@
 import type { Criterion, ReferenceImage, WantedSpec } from '@goodies-beacon/core/schemas';
-import { lintSpec } from '@goodies-beacon/core/schemas';
+import { durationToHours, lintSpec, scheduledHours } from '@goodies-beacon/core/schemas';
 import type { ReactNode } from 'react';
+import {
+  BACKFILL_DEPTH_LABELS,
+  CONDITION_LABELS,
+  LISTING_TYPE_LABELS,
+  NOTIFICATION_LABELS,
+  ON_UNKNOWN_LABELS,
+  RELIST_LABELS,
+  SHIPS_TO_UK_LABELS,
+  sourceLabel,
+} from './labels.js';
 
 /**
  * The current spec, rendered in full and human-readable (§8), in the parts the item page shows as
@@ -53,22 +63,19 @@ export function SpecSettings({ spec }: { spec: WantedSpec }) {
   const s = spec.settings;
   const ceiling = s.priceCeiling;
 
+  // In the editor's order and words; grading waits for Phase 5 and is not shown (P1-26).
   const rows: [string, string][] = [
-    ['Marketplaces', s.sources.length > 0 ? s.sources.join(', ') : 'none'],
-    ['Listing types', s.listingTypes.join(' and ')],
-    ['Price ceiling', ceiling ? `£${ceiling.amount}` : 'any price'],
-    ['Condition', s.conditionCategory],
-    ['Ships to the UK', SHIPS_TO_UK[s.shipsToUk]],
-    ['Notifications', s.notificationMode === 'realtime' ? 'real-time email' : 'daily digest'],
-    ['Poll every', s.pollEvery ?? 'the instance default'],
-    ['Relists', s.relists === 'show' ? 'shown, flagged as seen before' : 'suppressed'],
-    ['When unknown', s.defaultOnUnknown === 'surface' ? 'surface as uncertain' : 'reject'],
-    ['Negative keywords', s.negativeKeywords.join(', ') || 'none'],
-    ['Grading', s.minimumGrade ? `at least ${s.minimumGrade}` : 'no scale attached'],
-    [
-      'Backfill',
-      s.backfill.enabled ? `on first agreement, ${s.backfill.depth.replace('_', ' ')}` : 'off',
-    ],
+    ['Marketplaces', s.sources.length > 0 ? s.sources.map(sourceLabel).join(', ') : 'none'],
+    ['Listing types', s.listingTypes.map((type) => LISTING_TYPE_LABELS[type]).join(' and ')],
+    ['Price ceiling', ceiling ? `£${ceiling.amount}` : 'Any price'],
+    ['Negative keywords', s.negativeKeywords.join(', ') || 'None'],
+    ['Poll every', pollEvery(s.pollEvery)],
+    ['Notifications', NOTIFICATION_LABELS[s.notificationMode]],
+    ['Relists', RELIST_LABELS[s.relists]],
+    ['When unknown', ON_UNKNOWN_LABELS[s.defaultOnUnknown]],
+    ['Condition', CONDITION_LABELS[s.conditionCategory]],
+    ['Ships to the UK', SHIPS_TO_UK_LABELS[s.shipsToUk]],
+    ['Backfill', s.backfill.enabled ? `On: ${BACKFILL_DEPTH_LABELS[s.backfill.depth]}` : 'Off'],
   ];
 
   return (
@@ -85,11 +92,15 @@ export function SpecSettings({ spec }: { spec: WantedSpec }) {
   );
 }
 
-const SHIPS_TO_UK = {
-  show_all: 'show everything, flagged',
-  flag: 'show everything, flagged',
-  only: 'only listings that ship here',
-} as const;
+/** The interval as it will run: hours, rounded up as the scheduler rounds them. */
+function pollEvery(duration: string | null): string {
+  if (duration === null) return 'Every 8 hours (the default)';
+  const hours = durationToHours(duration);
+  if (hours === undefined) return duration;
+  const runs = scheduledHours(hours);
+  const every = `Every ${runs} hour${runs === 1 ? '' : 's'}`;
+  return runs === hours ? every : `${every} (${hours} asked for)`;
+}
 
 /**
  * The warnings come from the whole spec, because `lintSpec` judges a criterion against the item's

@@ -12,7 +12,7 @@ import {
   updateCategory,
 } from '../api/categories.js';
 import { CategoryTile, ColourSwatch, Glyph } from '../components/category-icon.js';
-import { Alert, Button, CONTROL, Field, Section } from '../components/form.js';
+import { Alert, Button, CONTROL, Field, NO_AUTOFILL, Section } from '../components/form.js';
 import { Modal } from '../components/modal.js';
 
 const ICON_LABELS: Record<CategoryIcon, string> = {
@@ -213,6 +213,7 @@ function CategoryForm({
           <Field id={nameId} label="Name" error={nameError}>
             <input
               id={nameId}
+              {...NO_AUTOFILL}
               value={values.name}
               onChange={(event) => setValues({ ...values, name: event.target.value })}
               placeholder="Vinyl"
