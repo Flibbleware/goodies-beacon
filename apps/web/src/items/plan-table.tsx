@@ -41,7 +41,9 @@ export function PlanTable({
         </thead>
         <tbody className="divide-y divide-edge dark:divide-edge-dark">
           {plans.map((plan) => (
-            <tr key={plan.planId} className={plan.enabled ? '' : 'opacity-60'}>
+            // Top-aligned, so the figures and buttons read along the query's line however tall a
+            // failing plan's message makes the row.
+            <tr key={plan.planId} className={`align-top ${plan.enabled ? '' : 'opacity-60'}`}>
               <td className="p-3">
                 <span className="font-medium">{plan.query || plan.planId}</span>
                 <span className="block text-xs text-ink-dim dark:text-ink-dim-dark">
@@ -68,11 +70,11 @@ export function PlanTable({
               <td className="p-3 text-right tabular-nums">{plan.candidatesMatched}</td>
               <td className="p-3 text-right tabular-nums">{plan.candidatesUncertain}</td>
               <td className="p-3 text-right tabular-nums">{money(plan.prefilterCostUsd)}</td>
-              <td className="p-3 text-xs text-ink-dim dark:text-ink-dim-dark">
+              <td className="p-3 text-xs leading-5 text-ink-dim dark:text-ink-dim-dark">
                 {plan.lastRunAt ? new Date(plan.lastRunAt).toLocaleString() : 'never'}
               </td>
               {actions ? (
-                <td className="p-2 align-top">
+                <td className="px-2 py-2.5">
                   {plan.inSpec ? <div className="flex gap-1">{actions(plan)}</div> : null}
                 </td>
               ) : null}

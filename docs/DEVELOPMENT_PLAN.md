@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.44; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.45; section numbers below refer to it.*
 
-Version 1.22 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.23 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -305,6 +305,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-25 | Wanted item cards and display images | M | P1-24 |
 | P1-26 | Creating an item from a dialog | M | P1-25 |
 | P1-27 | Shared criteria | M | P1-26 |
+| P1-28 | Item page tabs | S | P1-27 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1453,6 +1454,82 @@ reads as the link it is.
 a moment before the account page is replaced, and `getByLabel('Password')` matched *Current
 password* and *New password* on the way out — a strict-mode failure one run in several. The run
 matches the label exactly now.
+
+#### P1-28 Item page tabs — S
+
+The item page's five sections are a column, each folding away under its heading (P1-24). They
+become **tabs** in a strip under the coloured counts — Details, Search
+Plans, Criteria, Settings, Images, in P1-26's order — with one panel showing at a time. The last is
+*Images* rather than *Reference Images*, at the owner's request, and its URL name is `images`.
+Nothing about what each section shows or how it is edited changes.
+
+Decided with the owner before it was built: the open tab is kept in the URL as `?tab=`, rather than
+remembered per browser as the folding was, so a reload, a link and Back keep their place and an
+item opened from the list always lands on Details; the red mark for what a draft still needs sits on
+the tab, so it shows from any tab; each section's pencil or plus moves from beside its heading to
+the top of its panel as a labelled button, with the gap's message beside it; Details and Settings
+lose the box around them, since the tab already frames the panel; the version history stays a modal behind the clock rather than becoming a sixth tab; and on a phone the strip scrolls
+sideways within itself rather than wrapping or turning into a menu.
+
+Depends on P1-27.
+
+Done when:
+
+- [x] The item page shows its sections as tabs under the counts, in the order Details, Search Plans, Criteria, Settings, Images, with only the open tab's panel on the page. A spec the schema no longer reads has one tab, Search Plans, drawn from the plans' own records as before.
+- [x] The strip follows the ARIA tabs pattern: a `tablist` of `tab`s and one `tabpanel` named by its tab, one tab stop for the strip, and the arrow keys, Home and End moving between tabs and opening what they reach.
+- [x] The open tab is `?tab=` in the URL — absent for Details, and a name the page does not know read as Details — so it survives a reload and Back returns to the tab before. Clicking a tab adds a history entry; an arrow key replaces it, so stepping along the strip does not fill the history. Changing tab does not scroll the page to the top.
+- [x] A section's gap is a red *!* on its tab, with its message as the tab's accessible description so the tab's name stays the section's, and again in words at the top of its panel. Each spec section's editor is a labelled button at the top of its panel — *Edit Details*, *Add a Search Plan*, *Add a Criterion*, *Edit Settings*, *Edit Reference Images* — the pencils' and pluses' names in title case, so the run's locators still find them. Details and Settings are drawn without a box; Criteria and Reference Images keep theirs.
+- [x] On a phone the strip scrolls sideways within itself, with no page scroll, and keeps the open tab in view, a deep link to the last tab included.
+- [x] The folding is gone with `ItemSection` and the chevron only it drew; what it stored in `localStorage` is no longer read.
+- [x] The Playwright run finds the five tabs in order with Details open and one panel on the page, finds the draft's two marks on their tabs by description, opens each section through its tab where it used to unfold one, and checks that the tab survives a reload, that Back returns to the previous tab, and that the arrow keys, Home and End move and open tabs with one tab stop for the strip.
+
+The Settings tab is one column rather than two, at the owner's request while the task was open:
+a fixed column of labels with each value left-aligned beside it, so a pair reads as one line.
+And the pencil and bin on each search plan and criterion line up with the row they belong to: the
+plan table's cells are top-aligned, where the buttons were at the top and the figures centred, so
+a failing plan's message no longer leaves its figures floating mid-row; a criterion's buttons are
+raised a touch to centre on its first line.
+The header's *Last polled* (or *Never polled*, or the failing plans) moves from the end of the
+pills to beneath the history and JSON buttons, right-aligned under them on a desktop and after them
+on a phone; its date tip opens leftwards from the right edge there, so it stays on the page.
+
+**The status is a dropdown in the header**, also at the owner's request, in place of *Start Polling*
+and *Pause Polling*. The button and the Details editor's Status field did one job — both sent the
+status through `PATCH /api/items/:id`, writing no version — and the button reached only active and
+paused, so found and archived meant opening a modal. The dropdown offers all five, saved as it is
+chosen like the display image, with *Active* disabled and the list of what is missing beneath it
+until the spec can poll; the server's refusal (P1-26) is unchanged. The status pill beside the mode
+and version goes, since the dropdown says it. The Details editor loses its Status field, and so the
+create dialog loses the locked *Draft* one that P1-26's first *done when* line described: every new
+item is a draft, and a spec saved from a section editor carries the current status through as it is.
+The Playwright run pauses and resumes the Carmageddon item and starts it polling through the
+dropdown, and finds *Active* disabled on both new drafts and no Status field in either dialog.
+
+The quiet button — every *Cancel*, *Discard*, *Change* and the like — is a soft grey fill with no
+border, at the owner's request: drawn as a border round a dark fill, a modal's *Cancel* looked
+smaller than the *Save* beside it though the two were the same size.
+And every dialog's buttons sit at its right, *Cancel* first and the action last, as the category,
+shared criterion and wish dialogs already had them: the section editors, the create dialog and the
+removal dialog, with their unsaved-changes prompts, had theirs at the left with the action first.
+The change note moves into the section editors' footer, filling the space to the left of the
+buttons, with *Change note* as its placeholder and accessible name rather than a label, and without
+the hint that quoted the note used when it is left empty — that note is still what is saved.
+
+**Settings is two groups, each edited on its own**, at the owner's request: *Marketplace Settings*
+(the marketplaces, listing types, negative keywords, relists, condition, shipping to the UK and the
+backfill sweep) and *General Settings* (the price ceiling, poll interval, notifications and what an
+unsettled criterion does). They stay one tab, one column, each group under its own *Edit
+Marketplace Settings* or *Edit General Settings* button on a row of its own, in place of the single
+*Edit Settings* at the top of the panel; a visible subtitle over each was tried and dropped, since the
+button already names the group, and each keeps its name as a region for a screen reader. `SpecForm`'s `settings` part is `marketplaceSettings` and
+`generalSettings`, and each editor's empty note says which: *Edited the general settings.* The
+spec is unchanged — each still saves the whole document as one version. The Playwright run opens
+both, finds each holds only its own group, and finds the tab's values in the right group.
+
+The item's category icon sits to the right of its title, in the category's colour, named
+*Category: Game* for a screen reader and by its tooltip, since nothing beside it says the name; an
+uncategorised item shows none. The page loads the categories alongside the item, so it does not
+appear a moment after the title.
 
 #### P1-XX Phase 1 exit — S
 

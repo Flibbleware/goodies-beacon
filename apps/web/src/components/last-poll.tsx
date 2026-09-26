@@ -15,7 +15,16 @@ export interface PollFacts {
  *
  * Raised above its surroundings so the item card's stretched link does not swallow the hover.
  */
-export function LastPoll({ poll, countPlans = false }: { poll: PollFacts; countPlans?: boolean }) {
+export function LastPoll({
+  poll,
+  countPlans = false,
+  tipPosition = 'left-0',
+}: {
+  poll: PollFacts;
+  countPlans?: boolean;
+  /** Where the date's tip is anchored; one set against the right edge opens leftwards. */
+  tipPosition?: string;
+}) {
   const [open, setOpen] = useState(false);
   const { label, at } = describe(poll, countPlans);
   const failing = poll.failingPlans > 0;
@@ -42,7 +51,7 @@ export function LastPoll({ poll, countPlans = false }: { poll: PollFacts; countP
           </button>
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute bottom-full left-0 mb-1 whitespace-nowrap rounded bg-ink px-2 py-1 text-xs text-paper shadow transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 dark:bg-ink-dark dark:text-paper-dark ${open ? 'opacity-100' : 'opacity-0'}`}
+            className={`pointer-events-none absolute bottom-full ${tipPosition} mb-1 whitespace-nowrap rounded bg-ink px-2 py-1 text-xs text-paper shadow transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 dark:bg-ink-dark dark:text-paper-dark ${open ? 'opacity-100' : 'opacity-0'}`}
           >
             <time dateTime={at}>{when}</time>
           </span>

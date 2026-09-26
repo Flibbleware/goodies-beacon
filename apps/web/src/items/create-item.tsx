@@ -10,8 +10,8 @@ import { ItemFields } from './section-editor.js';
 import { SpecForm } from './spec-form.js';
 
 /**
- * Creating a wanted item (P1-26): the Details editor's fields in a dialog of their own, with the
- * status locked to a draft and a summary required. Create writes version 1 and opens the item's
+ * Creating a wanted item (P1-26): the Details editor's fields in a dialog of their own, with a
+ * summary required. Every new item is a draft. Create writes version 1 and opens the item's
  * page, where the rest of the spec is filled in section by section and the red marks say what
  * polling still needs.
  *
@@ -104,9 +104,6 @@ function CreateForm({
         setTitle={setTitle}
         categoryId={categoryId}
         setCategoryId={setCategoryId}
-        status="draft"
-        setStatus={() => {}}
-        statusLocked
       />
 
       {shown ? (
@@ -128,7 +125,7 @@ function CreateForm({
         </Alert>
       ) : null}
 
-      <div className="sticky bottom-0 -mx-5 -mb-5 border-t border-edge bg-paper-raised px-5 py-3 dark:border-edge-dark dark:bg-paper-raised-dark">
+      <div className="sticky bottom-0 -mx-5 mt-10 -mb-5 border-t border-edge bg-paper-raised px-5 py-3 dark:border-edge-dark dark:bg-paper-raised-dark">
         {confirming ? (
           <div
             role="alertdialog"
@@ -136,7 +133,7 @@ function CreateForm({
             className="rounded-lg border border-amber-300 p-4 dark:border-amber-900"
           >
             <p className="text-sm font-medium">Discard this new item?</p>
-            <div className="mt-3 flex gap-3">
+            <div className="mt-3 flex justify-end gap-3">
               <Button type="button" variant="quiet" onClick={() => setConfirming(false)}>
                 Keep Editing
               </Button>
@@ -146,10 +143,12 @@ function CreateForm({
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={create.isPending || !complete || !parsed.ok}>
-              {create.isPending ? 'Creating…' : 'Create'}
-            </Button>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {complete ? null : (
+              <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
+                A title and a summary are needed to create it.
+              </span>
+            )}
             <Button
               type="button"
               variant="quiet"
@@ -157,11 +156,9 @@ function CreateForm({
             >
               Cancel
             </Button>
-            {complete ? null : (
-              <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
-                A title and a summary are needed to create it.
-              </span>
-            )}
+            <Button type="submit" disabled={create.isPending || !complete || !parsed.ok}>
+              {create.isPending ? 'Creating…' : 'Create'}
+            </Button>
           </div>
         )}
       </div>

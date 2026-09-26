@@ -1,5 +1,4 @@
-import type { WantedItemStatus, WantedSpec } from '@goodies-beacon/core/schemas';
-import { readinessGaps, WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
+import type { WantedSpec } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBlocker } from '@tanstack/react-router';
 import { useId, useLayoutEffect, useState } from 'react';
@@ -21,11 +20,11 @@ import {
   SpecForm,
   type SpecFormPart,
 } from './spec-form.js';
-import { STATUS_LABELS } from './status.js';
 
 export type EditableSection =
   | 'describe'
-  | 'settings'
+  | 'marketplaceSettings'
+  | 'generalSettings'
   | 'addCriterion'
   | 'images'
   | 'addSearchPlan'
@@ -49,10 +48,16 @@ const SECTIONS: Record<EditableSection, SectionConfig> = {
     note: 'Edited the details.',
     wide: true,
   },
-  settings: {
-    title: 'Edit Settings',
-    parts: ['settings'],
-    note: 'Edited the settings.',
+  marketplaceSettings: {
+    title: 'Edit Marketplace Settings',
+    parts: ['marketplaceSettings'],
+    note: 'Edited the marketplace settings.',
+    wide: true,
+  },
+  generalSettings: {
+    title: 'Edit General Settings',
+    parts: ['generalSettings'],
+    note: 'Edited the general settings.',
     wide: true,
   },
   addCriterion: {
@@ -190,7 +195,6 @@ function Body({
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
-  const noteId = useId();
   const config = configOf(section);
   // Adding starts from the spec with a blank entry already on the end, so that entry is what the
   // form edits and leaving it blank is no change at all.
@@ -221,7 +225,6 @@ function Body({
   const [text, setText] = useState(initial);
   const [title, setTitle] = useState(item.title);
   const [categoryId, setCategoryId] = useState(item.categoryId ?? '');
-  const [status, setStatus] = useState<WantedItemStatus>(item.status);
   const [note, setNote] = useState('');
   const [uploaded, setUploaded] = useState<ReadonlySet<string>>(new Set());
 
@@ -231,11 +234,7 @@ function Body({
   const defaultNote = entryNote(entry, focus, shown) ?? config.note;
   // Only Details has anything to save that is not the spec.
   const versioned = section !== 'describe' || specChanged;
-  const dirty =
-    specChanged ||
-    title !== item.title ||
-    categoryId !== (item.categoryId ?? '') ||
-    status !== item.status;
+  const dirty = specChanged || title !== item.title || categoryId !== (item.categoryId ?? '');
   const unsaved: ReadonlySet<string> = new Set(
     (shown?.referenceImages ?? []).map((image) => image.id).filter((id) => uploaded.has(id)),
   );
@@ -254,15 +253,13 @@ function Body({
 
   const save = useMutation({
     mutationFn: async () => {
-      const fields = {
-        title: title.trim(),
-        status,
-        categoryId: categoryId === '' ? null : categoryId,
-      };
+      const fields = { title: title.trim(), categoryId: categoryId === '' ? null : categoryId };
       if (!specChanged) return updateItem(item.id, fields);
       if (!parsed.ok) throw new Error('The spec has to be valid before it can be saved.');
+      // The status is changed from the page's header (P1-28); a save carries it through as it is.
       return saveItem(item.id, {
         ...fields,
+        status: item.status,
         spec: parsed.spec,
         changeNote: note.trim() === '' ? defaultNote : note.trim(),
       });
@@ -303,9 +300,6 @@ function Body({
           setTitle={setTitle}
           categoryId={categoryId}
           setCategoryId={setCategoryId}
-          status={status}
-          setStatus={setStatus}
-          canActivate={shown !== undefined && readinessGaps(shown).length === 0}
         />
       ) : null}
 
@@ -347,19 +341,6 @@ function Body({
         />
       )}
 
-      {/* A note describes a version, so it is asked for only when there will be one. */}
-      {versioned ? (
-        <Field id={noteId} label="Change note" hint={`Left empty: “${defaultNote}”`}>
-          <input
-            id={noteId}
-            name="changeNote"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            className={CONTROL}
-          />
-        </Field>
-      ) : null}
-
       {save.isError ? (
         <Alert tone="error">
           {save.error instanceof ApiError ? save.error.message : (save.error as Error).message}
@@ -367,7 +348,7 @@ function Body({
       ) : null}
 
       {/* Pinned to the modal's foot, because the settings editor is taller than most screens. */}
-      <div className="sticky bottom-0 -mx-5 -mb-5 border-t border-edge bg-paper-raised px-5 py-3 dark:border-edge-dark dark:bg-paper-raised-dark">
+      <div className="sticky bottom-0 -mx-5 mt-10 -mb-5 border-t border-edge bg-paper-raised px-5 py-3 dark:border-edge-dark dark:bg-paper-raised-dark">
         {held ? (
           <div
             role="alertdialog"
@@ -381,7 +362,7 @@ function Body({
                 ? ` ${unsaved.size === 1 ? 'The uploaded image stays' : 'The uploaded images stay'} on the server with nothing pointing at ${unsaved.size === 1 ? 'it' : 'them'}.`
                 : ''}
             </p>
-            <div className="mt-3 flex gap-3">
+            <div className="mt-3 flex justify-end gap-3">
               <Button type="button" variant="quiet" onClick={keepEditing}>
                 Keep Editing
               </Button>
@@ -391,24 +372,37 @@ function Body({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <Button
-              type="submit"
-              disabled={save.isPending || !parsed.ok || !dirty || title.trim() === ''}
-            >
-              {save.isPending
-                ? 'Saving…'
-                : versioned
-                  ? `Save as Version ${(item.current?.version ?? 0) + 1}`
-                  : 'Save'}
-            </Button>
-            <Button
-              type="button"
-              variant="quiet"
-              onClick={() => (dirty ? setConfirming(true) : onDone())}
-            >
-              Cancel
-            </Button>
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+            {/* A note describes a version, so it is asked for only when there will be one. */}
+            {versioned ? (
+              <input
+                name="changeNote"
+                aria-label="Change note"
+                placeholder="change note"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                className="w-75 max-w-full rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-beacon dark:border-edge-dark dark:bg-paper-dark"
+              />
+            ) : null}
+            <div className="ml-auto flex gap-3">
+              <Button
+                type="button"
+                variant="quiet"
+                onClick={() => (dirty ? setConfirming(true) : onDone())}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={save.isPending || !parsed.ok || !dirty || title.trim() === ''}
+              >
+                {save.isPending
+                  ? 'Saving…'
+                  : versioned
+                    ? `Save as Version ${(item.current?.version ?? 0) + 1}`
+                    : 'Save'}
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -433,45 +427,35 @@ function entryNote(
 }
 
 /**
- * What the item is called and how it is kept: the Details editor's, and the Create dialog's with
- * the status locked to a draft (P1-26). *Active* is offered only when the spec could poll.
+ * What the item is called and how it is sorted: the Details editor's, and the Create dialog's
+ * (P1-26). The status is not here; it is chosen from the item page's header (P1-28).
  */
 export function ItemFields({
   title,
   setTitle,
   categoryId,
   setCategoryId,
-  status,
-  setStatus,
-  statusLocked = false,
-  canActivate = true,
 }: {
   title: string;
   setTitle: (title: string) => void;
   categoryId: string;
   setCategoryId: (categoryId: string) => void;
-  status: WantedItemStatus;
-  setStatus: (status: WantedItemStatus) => void;
-  statusLocked?: boolean;
-  canActivate?: boolean;
 }) {
-  const ids = { title: useId(), category: useId(), status: useId() };
+  const ids = { title: useId(), category: useId() };
   const categories = useQuery(categoriesQuery).data?.categories ?? [];
 
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      <div className="sm:col-span-2">
-        <Field id={ids.title} label="Title" hint="What you call it. Shown in emails and lists.">
-          <input
-            id={ids.title}
-            name="title"
-            {...NO_AUTOFILL}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            className={CONTROL}
-          />
-        </Field>
-      </div>
+      <Field id={ids.title} label="Title" hint="What you call it. Shown in emails and lists.">
+        <input
+          id={ids.title}
+          name="title"
+          {...NO_AUTOFILL}
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          className={CONTROL}
+        />
+      </Field>
 
       <Field
         id={ids.category}
@@ -486,37 +470,6 @@ export function ItemFields({
           className={CONTROL}
         >
           <CategoryOptions categories={categories} />
-        </select>
-      </Field>
-
-      <Field
-        id={ids.status}
-        label="Status"
-        hint={
-          statusLocked
-            ? 'A new item starts as a draft. Fill in its criteria and search plans, then start polling.'
-            : canActivate
-              ? 'Only an active item is polled; the rest keep their spec and do nothing.'
-              : 'Active needs a criterion and an enabled search plan first.'
-        }
-      >
-        <select
-          id={ids.status}
-          name="status"
-          value={status}
-          disabled={statusLocked}
-          onChange={(event) => setStatus(event.target.value as WantedItemStatus)}
-          className={CONTROL}
-        >
-          {WANTED_ITEM_STATUSES.map((value) => (
-            <option
-              key={value}
-              value={value}
-              disabled={value === 'active' && !canActivate && status !== 'active'}
-            >
-              {STATUS_LABELS[value]}
-            </option>
-          ))}
         </select>
       </Field>
     </div>
