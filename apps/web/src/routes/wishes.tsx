@@ -1,7 +1,7 @@
 import { joinTags, matchesTag, splitTags, wishSaveSchema } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link, useNavigate } from '@tanstack/react-router';
-import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { type FormEvent, useId, useState } from 'react';
 import { type CategoryRow, categoriesQuery } from '../api/categories.js';
 import { itemsQuery } from '../api/items.js';
 import {
@@ -25,6 +25,7 @@ import {
 } from '../components/category-filter.js';
 import { CategoryTile } from '../components/category-icon.js';
 import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
+import { IconButton } from '../components/icon-button.js';
 import { EditIcon, PromoteIcon, RemoveIcon, SearchIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
 import { TagPills } from '../components/tag-pills.js';
@@ -513,42 +514,6 @@ function WishEntry({
 
       {failed ? <Alert tone="error">{(failed as Error).message}</Alert> : null}
     </div>
-  );
-}
-
-const ICON_BUTTON_HOVER = {
-  neutral: 'hover:text-ink dark:hover:text-ink-dark',
-  accent: 'hover:text-beacon',
-  danger: 'hover:text-red-600 dark:hover:text-red-400',
-};
-
-/**
- * A square button showing only an icon. `label` is its accessible name; `hint` is the tooltip,
- * when the icon needs more explaining than the name gives.
- */
-function IconButton({
-  label,
-  hint = label,
-  tone = 'neutral',
-  onClick,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  tone?: keyof typeof ICON_BUTTON_HOVER;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={hint}
-      onClick={onClick}
-      className={`inline-flex size-8 items-center justify-center rounded-lg border border-edge text-ink-dim hover:bg-paper-raised dark:border-edge-dark dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark ${ICON_BUTTON_HOVER[tone]}`}
-    >
-      {children}
-    </button>
   );
 }
 

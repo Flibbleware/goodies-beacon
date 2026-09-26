@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.45; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.46; section numbers below refer to it.*
 
-Version 1.23 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.24 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -306,6 +306,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-26 | Creating an item from a dialog | M | P1-25 |
 | P1-27 | Shared criteria | M | P1-26 |
 | P1-28 | Item page tabs | S | P1-27 |
+| P1-29 | Search plan regions from the source's list | S | P1-28 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1530,6 +1531,75 @@ The item's category icon sits to the right of its title, in the category's colou
 *Category: Game* for a screen reader and by its tooltip, since nothing beside it says the name; an
 uncategorised item shows none. The page loads the categories alongside the item, so it does not
 appear a moment after the title.
+
+#### P1-29 Search plan regions from the source's list — S
+
+A search plan's region was free text. The plan editor's Region was a plain input whose hint named
+three of eBay's nine marketplaces, the schema asked only that it be non-empty, and the eBay adapter
+sends it unchanged as the `X-EBAY-C-MARKETPLACE-ID` header. So a region eBay does not have saved
+without complaint and was found out only by the poll: `EBAY_GB, EBAY_US`, typed by an owner who
+wanted one query on two sites, gave a plan that searched neither and showed as failing. The
+adapter has always held the nine marketplaces with readable names, and exposed them through
+`describeSearchOptions()` for exactly this (§4), but nothing read them.
+
+Region becomes a dropdown of the source's regions, and a region its source does not have is
+refused when it is saved rather than when it is polled. Wanting one query on several sites is
+still met as §4 meets it — a plan per site — and the field's hint now says so.
+
+Decided with the owner before it was built: a `regions[]` field on a plan, or an *Add a Search
+Plan* that writes one plan per ticked site, is left for now; this task closes the gap on its own.
+Decided in the building, and recorded in §4: the list moves into the core domain as
+`SOURCE_REGIONS`, since the web app and the store can import neither the adapter nor anything that
+reaches one, and the adapter returns core's entry; and the refusal is the store's, not the
+schema's, because the review pipeline parses a stored spec whole and a schema rule would stop every
+review for an item saved with a bad region before the rule existed.
+
+Depends on P1-28.
+
+Done when:
+
+- [x] `SOURCE_REGIONS` in `packages/core` holds eBay's nine marketplaces with their names, and the eBay adapter's `describeSearchOptions()` returns that entry rather than a copy of it. A source with no entry — the three without an adapter, and the template — is not checked.
+- [x] `unknownRegions` names each plan whose region its source does not have, by position — a list such as `EBAY_GB, EBAY_US`, a lowercase id, another source's region — with a message listing the regions it could be. Unit-tested.
+- [x] The store refuses a create or save holding one, writing nothing, and the API answers a 400 `unknown_region` naming the plan's path (`searchPlans.1.region`). Tested in the store and through the route.
+- [x] The plan editor's Region is a dropdown of the source's regions by name, hinting that several sites means a plan for each. A region saved before this shows as itself, marked as not one of the source's sites, with the refusal beside it, so it can be seen and changed. A plan on a source with no list keeps the text field.
+- [x] The form checks the same rule the store does, so the refusal is beside the field and on the JSON editor before a save is tried, and Save stays disabled until it is fixed. An empty region is named once, in the schema's words. Unit-tested in `parse.test.ts`.
+- [x] The Playwright run finds nine regions in the dropdown, changes a plan's region by choosing one, and finds the JSON editor refusing a plan on `EBAY_GB, EBAY_US` by its path, with Save disabled.
+
+`docs/ADAPTERS.md` says a new source's regions go in `SOURCE_REGIONS`, and `docs/WRITING_A_SPEC.md`
+that a region is exactly one of the nine ids.
+
+**Changing a plan's region starts a new plan**, at the owner's request while the task was open, as
+changing its source always has. The region kept the plan's id, and the id is what its watermark,
+stats and schedule hang off (§4, §6), so a plan moved from `EBAY_GB` to `EBAY_DE` carried its figures
+across and counted two sites' listings as one plan's. The editor now gives it a new id, so the old
+plan keeps its row and stats as a dropped plan does and the new one starts afresh; choosing the
+stored site again before saving gives the old id back, so a change that comes to nothing is no
+change and Save stays disabled. The Region hint says so. The Playwright run checks both: the plan's
+id is unchanged after another site and back, and new after a save on `EBAY_DE`.
+
+The two criterion dialogs are brought into line, at the owner's request while the task was open.
+*Add a Criterion* and *Edit Criterion* had *Photos can settle it* as a checkbox, while the Criteria
+page's dialog had it as a select, since a shared criterion can leave it to each item and a checkbox
+has no third state; that one also put it between the other two, in the schema's order, where every
+other place reads Failure, Unknown, Photos. Both are now three selects in that order, the item's
+offering *Yes* and *No*, and the field is *Photos can settle* in both. *When unknown* offers *Uncertain* and *Reject*, the words *Failure action* uses, where it said *Surface as uncertain* — in both dialogs and in General Settings, all now through `ON_UNKNOWN_LABELS`. The Polled checkbox in the
+search plan editor, and the criterion one while it lasted, sat at the foot of their grid row, so a
+hint that wrapped beside them left them below the controls; Polled is level with the Source
+select now.
+
+The Criteria page and Settings → Categories edit and delete through the wish list's pencil and bin,
+also at the owner's request, where they had *Edit* and *Delete* in words: three list pages of rows,
+now with one set of row actions. `IconButton` moves out of the wish list into `components/`, and
+the buttons keep their accessible names (*Edit Toys*, *Delete complete-in-box*), so the Playwright
+run's locators are unchanged. The item page's pencil and bin stay smaller and borderless, being
+inside a table's rows rather than on a card's.
+
+#### What P1-29 found
+
+**A spec saved with a bad region before this task is refused on its next save of any section**, not
+only one that touches the plan, because the store checks the whole spec as it does for shared
+criteria. The Search Plans tab shows the plan and its failures as before; the fix is to open it and
+choose a site.
 
 #### P1-XX Phase 1 exit — S
 

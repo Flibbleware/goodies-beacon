@@ -19,6 +19,7 @@ const example = (name: string): Spec =>
 
 interface Spec {
   criteria: { id: string; text: string; kind: string }[];
+  searchPlans: Record<string, unknown>[];
   [key: string]: unknown;
 }
 
@@ -350,6 +351,16 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await spec.fill(JSON.stringify(broken, null, 2));
     await expect(dialog).toContainText('criteria.0.text');
     await expect(dialog).toContainText('a criterion needs text');
+    await expect(dialog.getByRole('button', { name: 'Save as version 2' })).toBeDisabled();
+
+    // Two eBay sites in one plan's region is refused before it is saved, not when it polls (P1-29).
+    const listed = {
+      ...carmageddon,
+      searchPlans: [{ ...carmageddon.searchPlans[0], region: 'EBAY_GB, EBAY_US' }],
+    };
+    await spec.fill(JSON.stringify(listed, null, 2));
+    await expect(dialog).toContainText('searchPlans.0.region');
+    await expect(dialog).toContainText('add a plan for each');
     await expect(dialog.getByRole('button', { name: 'Save as version 2' })).toBeDisabled();
 
     // And a document that is not JSON at all says so rather than pretending it is a schema fault.
@@ -1203,7 +1214,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(dialog.getByText(/lowercase letters, digits and single hyphens/)).toBeVisible();
     await dialog.getByLabel('Identifier').fill(CLASSICS);
     await dialog.getByLabel('Failure action').selectOption('hard');
-    await dialog.getByLabel('Photos can settle it').selectOption('yes');
+    await dialog.getByLabel('Photos can settle').selectOption('yes');
     await dialog.getByRole('button', { name: 'Create', exact: true }).click();
     await expect(dialog).toBeHidden();
 
@@ -1360,9 +1371,30 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       .click();
     dialog = page.getByRole('dialog', { name: 'Edit Search Plan' });
     await expect(dialog.getByLabel('Query')).toHaveValue('carmageddon mac');
-    await dialog.getByLabel('Region').fill('EBAY_DE');
+    // A list of eBay's nine sites rather than free text, which accepted anything (P1-29).
+    await expect(dialog.getByLabel('Region').getByRole('option')).toHaveCount(9);
+    const planId = async () => {
+      const res = await page.request.get(`/api/items/${carmageddonId}`);
+      const { item } = (await res.json()) as {
+        item: {
+          current: { document: { searchPlans: { id: string; query: string }[] } };
+        };
+      };
+      return item.current.document.searchPlans.find((plan) => plan.query === 'carmageddon mac')?.id;
+    };
+    const idOnGb = await planId();
+    // Another site and back again is no change: the plan gets its own id back.
+    await dialog.getByLabel('Region').selectOption('EBAY_DE');
+    await dialog.getByLabel('Region').selectOption('EBAY_GB');
+    await expect(
+      dialog.getByRole('button', { name: `Save as version ${before + 2}` }),
+    ).toBeDisabled();
+    await dialog.getByLabel('Region').selectOption('EBAY_DE');
     await dialog.getByRole('button', { name: `Save as version ${before + 2}` }).click();
     await expect(dialog).toBeHidden();
+    // A new site is a new plan, so no watermark or stats carry over from the old one.
+    expect(idOnGb).toBeDefined();
+    expect(await planId()).not.toBe(idOnGb);
     await expect(table.getByRole('row').filter({ hasText: 'carmageddon mac' })).toContainText(
       'EBAY_DE',
     );

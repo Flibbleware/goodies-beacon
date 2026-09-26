@@ -5,6 +5,7 @@ import {
   lintSpec,
   searchPlanSchema,
   specSettingsSchema,
+  unknownRegions,
   wantedSpecSchema,
 } from '@goodies-beacon/core/schemas';
 import { z } from 'zod';
@@ -108,11 +109,33 @@ export function parseSpecText(text: string): SpecParse {
 
     const draft = draftSpecSchema.safeParse(document);
     return draft.success
-      ? { ok: false, issues, draft: draft.data, warnings: lintSpec(draft.data) }
+      ? {
+          ok: false,
+          issues: [
+            ...issues,
+            // An empty region already has the schema's word for it.
+            ...regionIssues(draft.data).filter(({ path }) => !issues.some((i) => i.path === path)),
+          ],
+          draft: draft.data,
+          warnings: lintSpec(draft.data),
+        }
       : { ok: false, issues };
   }
 
+  // Not the schema's rule but the store's (P1-29), checked here so the form says it first.
+  const regions = regionIssues(result.data);
+  if (regions.length > 0) {
+    return { ok: false, issues: regions, draft: result.data, warnings: lintSpec(result.data) };
+  }
+
   return { ok: true, spec: result.data, warnings: lintSpec(result.data) };
+}
+
+function regionIssues(spec: WantedSpec): SpecIssue[] {
+  return unknownRegions(spec.searchPlans).map(({ index, message }) => ({
+    path: `searchPlans.${index}.region`,
+    message,
+  }));
 }
 
 /** §4's `ReferenceImage`, before it has been through the schema that turns `addedAt` into a Date. */

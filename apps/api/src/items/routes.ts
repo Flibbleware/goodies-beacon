@@ -10,6 +10,7 @@ import {
   saveItem,
   UnknownGradingScaleError,
   UnknownImageError,
+  UnknownRegionError,
   UnknownSharedCriterionError,
   updateItem,
 } from '@goodies-beacon/core';
@@ -89,7 +90,7 @@ export function createItemRoutes({ db }: ItemRouteDeps) {
 }
 
 /**
- * A grading scale, category, image or shared criterion that does not exist is the editor's
+ * A grading scale, category, image, shared criterion or region that does not exist is the editor's
  * mistake, not the server's; so is asking an item to poll before its spec can (P1-26).
  */
 function saveError(c: Parameters<typeof errorResponse>[0], error: unknown): Response {
@@ -109,6 +110,9 @@ function saveError(c: Parameters<typeof errorResponse>[0], error: unknown): Resp
   }
   if (error instanceof RepeatedCriterionError) {
     return errorResponse(c, 400, 'repeated_criterion', error.message);
+  }
+  if (error instanceof UnknownRegionError) {
+    return errorResponse(c, 400, 'unknown_region', error.message);
   }
   if (error instanceof UnknownGradingScaleError) {
     return errorResponse(

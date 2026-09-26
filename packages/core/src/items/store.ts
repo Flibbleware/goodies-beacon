@@ -4,6 +4,7 @@ import { resolveSharedCriteria } from '../criteria/store.js';
 import type { Database } from '../db/client.js';
 import { gradingScales, media, specVersions, wantedItems } from '../db/schema.js';
 import { readinessGaps } from '../domain/readiness.js';
+import { unknownRegions } from '../domain/regions.js';
 import { type WantedSpec, wantedSpecSchema } from '../domain/spec.js';
 import type {
   CandidateCounts,
@@ -71,6 +72,14 @@ export class ItemNotReadyError extends Error {
   override readonly name = 'ItemNotReadyError';
   constructor(readonly gaps: readonly string[]) {
     super(`This item cannot start polling yet. ${gaps.join(' ')}`);
+  }
+}
+
+/** A search plan on a region its source does not have (P1-29), named by the path the form uses. */
+export class UnknownRegionError extends Error {
+  override readonly name = 'UnknownRegionError';
+  constructor(readonly issues: readonly { index: number; message: string }[]) {
+    super(issues.map(({ index, message }) => `searchPlans.${index}.region: ${message}`).join(' '));
   }
 }
 
@@ -227,6 +236,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
 
 /** A new item and its version 1, in one transaction so neither can exist without the other. */
 export async function createItem(db: Database, given: ItemSaveInput): Promise<SavedVersion> {
+  assertRegions(given.spec);
   const input = { ...given, spec: await resolveSharedCriteria(db, given.spec) };
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
   await assertCategory(db, input.categoryId);
@@ -256,6 +266,7 @@ export async function saveItem(
   id: string,
   given: ItemSaveInput,
 ): Promise<SavedVersion | undefined> {
+  assertRegions(given.spec);
   const input = { ...given, spec: await resolveSharedCriteria(db, given.spec) };
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
   await assertCategory(db, input.categoryId);
@@ -358,6 +369,11 @@ async function assertImage(db: Database, id: string | null): Promise<void> {
 
   const [row] = await db.select({ id: media.id }).from(media).where(eq(media.id, id)).limit(1);
   if (!row) throw new UnknownImageError(id);
+}
+
+function assertRegions(spec: WantedSpec): void {
+  const issues = unknownRegions(spec.searchPlans);
+  if (issues.length > 0) throw new UnknownRegionError(issues);
 }
 
 function assertReady(spec: WantedSpec): void {

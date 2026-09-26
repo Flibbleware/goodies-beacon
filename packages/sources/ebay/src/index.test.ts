@@ -3,6 +3,7 @@ import {
   createHarness,
   type FixtureRoute,
   type SearchPlan,
+  SOURCE_REGIONS,
   sellerHash,
 } from '@goodies-beacon/core';
 import { describe, expect, it } from 'vitest';
@@ -396,5 +397,11 @@ describe('request pacing', () => {
     await test.search(plan(), { cap: 50 });
 
     expect(peak).toBe(1);
+  });
+});
+
+describe('describeSearchOptions', () => {
+  it('offers the regions the spec form lists and the store accepts (P1-29)', () => {
+    expect(ebayAdapter.describeSearchOptions().regions).toEqual(SOURCE_REGIONS.ebay);
   });
 });

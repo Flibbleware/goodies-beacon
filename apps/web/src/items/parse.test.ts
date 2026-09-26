@@ -108,6 +108,46 @@ describe('parseSpecText', () => {
     if (!result.ok) expect(result.draft?.criteria[0]?.text).toBe('');
   });
 
+  it('refuses a region its source does not have, beside the field, as a save would (P1-29)', () => {
+    const plan = { id: 'p', source: 'ebay', query: 'links awakening' };
+    const result = parseSpecText(
+      JSON.stringify({
+        settings: {},
+        searchPlans: [
+          { ...plan, region: 'EBAY_GB' },
+          { ...plan, id: 'q', region: 'EBAY_GB, EBAY_US' },
+        ],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues).toEqual([
+        {
+          path: 'searchPlans.1.region',
+          message: expect.stringMatching(/^“EBAY_GB, EBAY_US” is not/),
+        },
+      ]);
+      expect(result.draft?.searchPlans[1]?.region).toBe('EBAY_GB, EBAY_US');
+    }
+  });
+
+  it('names an empty region once, in the schema’s words', () => {
+    const result = parseSpecText(
+      JSON.stringify({
+        settings: {},
+        searchPlans: [{ id: 'p', source: 'ebay', query: 'q', region: '' }],
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues).toEqual([
+        { path: 'searchPlans.0.region', message: 'a search plan needs a region' },
+      ]);
+    }
+  });
+
   it('gives no draft for a document of the wrong shape', () => {
     const result = parseSpecText(JSON.stringify({ settings: { pollEvery: 8 } }));
 

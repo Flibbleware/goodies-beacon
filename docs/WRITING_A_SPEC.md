@@ -213,7 +213,9 @@ one, because sellers title things inconsistently and the pre-filter and reviewer
   really use.
 - **`region`** — one eBay site per plan: `EBAY_GB`, `EBAY_US`, `EBAY_DE`, `EBAY_FR`, `EBAY_IT`,
   `EBAY_ES`, `EBAY_AU`, `EBAY_CA`, `EBAY_IE`. Each site returns listings from the whole world, so
-  `EBAY_GB` alone already reaches many foreign sellers; add `EBAY_US` for US-market items.
+  `EBAY_GB` alone already reaches many foreign sellers; add `EBAY_US` for US-market items. Exactly
+  one of those ids: a save with anything else, a list like `"EBAY_GB, EBAY_US"` included, is
+  refused. For two sites, write two plans.
 - **`options`** — usually `{}`. Two are honoured:
   - `"itemLocationCountry": "GB"` — only sellers located in one country. **One code only**: eBay
     accepts a set and silently ignores it, so two countries means two plans. Off by default, since

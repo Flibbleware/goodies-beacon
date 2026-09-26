@@ -16,6 +16,7 @@ import {
   saveItem,
   UnknownGradingScaleError,
   UnknownImageError,
+  UnknownRegionError,
   updateItem,
 } from './store.js';
 
@@ -348,6 +349,48 @@ describe.skipIf(!databaseUrl)('the wanted item store against a real Postgres', (
 
       const saved = await saveItem(db, itemId, input('Carmageddon', empty(), { status: 'active' }));
       expect(saved?.version).toBe(2);
+    });
+  });
+
+  describe('a search plan searches a region its source has (P1-29)', () => {
+    const withRegion = (region: string, source = 'ebay') => {
+      const spec = example('carmageddon') as { searchPlans: Record<string, unknown>[] };
+      return {
+        ...spec,
+        searchPlans: spec.searchPlans.map((plan, index) =>
+          index === 1 ? { ...plan, source, region } : plan,
+        ),
+      };
+    };
+
+    it('refuses to create an item with a plan on a region eBay does not have', async () => {
+      const refused = await createItem(db, input('Carmageddon', withRegion('EBAY_GB, EBAY_US')))
+        .then(() => undefined)
+        .catch((error) => error);
+
+      expect(refused).toBeInstanceOf(UnknownRegionError);
+      expect((refused as Error).message).toMatch(
+        /^searchPlans\.1\.region: “EBAY_GB, EBAY_US” is not a region ebay can search/,
+      );
+      expect(await listItems(db)).toEqual([]);
+    });
+
+    it('refuses a save that would write one, and writes no version', async () => {
+      const { itemId } = await createItem(db, input('Carmageddon', example('carmageddon')));
+
+      await expect(
+        saveItem(db, itemId, input('Carmageddon', withRegion('ebay_us'))),
+      ).rejects.toThrow(UnknownRegionError);
+      expect((await loadItem(db, itemId))?.versions).toHaveLength(1);
+    });
+
+    it('does not check a source whose regions are not known yet', async () => {
+      const { version } = await createItem(
+        db,
+        input('Carmageddon', withRegion('vinted.fr', 'vinted')),
+      );
+
+      expect(version).toBe(1);
     });
   });
 });

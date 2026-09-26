@@ -7,6 +7,7 @@ import {
   joinTags,
   lintCriterion,
   matchesSharedCriterion,
+  ON_UNKNOWN,
   sharedCriterionCreateSchema,
   splitTags,
 } from '@goodies-beacon/core/schemas';
@@ -23,8 +24,11 @@ import {
 } from '../api/criteria.js';
 import { CriterionFlags } from '../components/criterion-flags.js';
 import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
+import { IconButton } from '../components/icon-button.js';
+import { EditIcon, RemoveIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
 import { TagPills } from '../components/tag-pills.js';
+import { ON_UNKNOWN_LABELS } from '../items/labels.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface CriteriaSearch {
@@ -80,7 +84,7 @@ function Criteria() {
           Create
         </Button>
       </div>
-      <p className="mt-2 text-sm text-ink-dim dark:text-ink-dim-dark">
+      <p className="mt-4 text-sm text-ink-dim dark:text-ink-dim-dark">
         Written once and added to any wanted item by its identifier. Saving one updates every item
         that uses it, as a new version.
       </p>
@@ -181,7 +185,7 @@ function CriterionEntry({
             <p className="font-mono text-sm font-medium break-all">{criterion.key}</p>
             <TagPills tags={criterion.tags} onPick={onPickTag} />
           </div>
-          <p className="mt-1 text-sm">{criterion.text}</p>
+          <p className="mt-3 text-sm">{criterion.text}</p>
           <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
             <CriterionFlags
               kind={criterion.kind}
@@ -189,25 +193,19 @@ function CriterionEntry({
               quantifiable={criterion.quantifiable}
             />
           </p>
-          <p className="mt-1 text-xs text-ink-dim dark:text-ink-dim-dark">{usage(criterion)}</p>
+          <p className="mt-2.5 text-xs text-ink-dim dark:text-ink-dim-dark">{usage(criterion)}</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="quiet"
-            onClick={onEdit}
-            aria-label={`Edit ${criterion.key}`}
-          >
-            Edit
-          </Button>
-          <Button
-            type="button"
-            variant="quiet"
+          <IconButton label={`Edit ${criterion.key}`} onClick={onEdit}>
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            label={`Delete ${criterion.key}`}
+            tone="danger"
             onClick={() => setConfirming(true)}
-            aria-label={`Delete ${criterion.key}`}
           >
-            Delete
-          </Button>
+            <RemoveIcon />
+          </IconButton>
         </div>
       </div>
 
@@ -393,7 +391,24 @@ function CriterionForm({
               <option value="soft">Uncertain</option>
             </select>
           </Field>
-          <Field id={ids.quantifiable} label="Photos can settle it">
+          <Field id={ids.onUnknown} label="When unknown">
+            <select
+              id={ids.onUnknown}
+              value={values.onUnknown}
+              onChange={(event) =>
+                setValues({ ...values, onUnknown: event.target.value as Values['onUnknown'] })
+              }
+              className={CONTROL}
+            >
+              <option value="">Each item chooses</option>
+              {ON_UNKNOWN.map((value) => (
+                <option key={value} value={value}>
+                  {ON_UNKNOWN_LABELS[value]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field id={ids.quantifiable} label="Photos can settle">
             <select
               id={ids.quantifiable}
               value={values.quantifiable}
@@ -408,20 +423,6 @@ function CriterionForm({
               <option value="">Each item chooses</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
-            </select>
-          </Field>
-          <Field id={ids.onUnknown} label="When unknown">
-            <select
-              id={ids.onUnknown}
-              value={values.onUnknown}
-              onChange={(event) =>
-                setValues({ ...values, onUnknown: event.target.value as Values['onUnknown'] })
-              }
-              className={CONTROL}
-            >
-              <option value="">Each item chooses</option>
-              <option value="surface">Surface as uncertain</option>
-              <option value="reject">Reject</option>
             </select>
           </Field>
         </div>

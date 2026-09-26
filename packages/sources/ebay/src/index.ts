@@ -1,5 +1,6 @@
 import {
   type AdapterContext,
+  EBAY_MARKETPLACES,
   type EnrichedListing,
   type HealthResult,
   type RawListing,
@@ -19,19 +20,6 @@ import { createTokenCache, EbayAuthError } from './token.js';
  */
 
 export const EBAY_API_BASE = 'https://api.ebay.com';
-
-/** One plan per marketplace (§4). The "major sites" preset in §5 creates one of each. */
-export const EBAY_MARKETPLACES = [
-  { value: 'EBAY_GB', label: 'United Kingdom (ebay.co.uk)' },
-  { value: 'EBAY_US', label: 'United States (ebay.com)' },
-  { value: 'EBAY_DE', label: 'Germany (ebay.de)' },
-  { value: 'EBAY_FR', label: 'France (ebay.fr)' },
-  { value: 'EBAY_IT', label: 'Italy (ebay.it)' },
-  { value: 'EBAY_ES', label: 'Spain (ebay.es)' },
-  { value: 'EBAY_AU', label: 'Australia (ebay.com.au)' },
-  { value: 'EBAY_CA', label: 'Canada (ebay.ca)' },
-  { value: 'EBAY_IE', label: 'Ireland (ebay.ie)' },
-] as const;
 
 /** Browse caps a page at 200; 50 keeps a single poll's payload small and the cap easy to honour. */
 const PAGE_SIZE = 50;
