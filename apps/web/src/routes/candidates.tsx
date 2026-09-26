@@ -27,6 +27,7 @@ export const candidatesRoute = createRoute({
     origin: ORIGINS.includes(search.origin as string)
       ? (search.origin as CandidateSearch['origin'])
       : undefined,
+    from: search.from === 'all' ? 'all' : undefined,
     offset: typeof search.offset === 'number' && search.offset > 0 ? search.offset : undefined,
   }),
   component: Candidates,
@@ -36,12 +37,15 @@ export const candidatesRoute = createRoute({
 const DECISIONS = ['match', 'uncertain', 'reject', 'pending'];
 const DEFAULT_DECISION = 'match';
 const ORIGINS = ['all', 'poll', 'backfill', 'scan'];
+const FROM = ['today', 'all'];
+
+const FROM_LABELS: Record<string, string> = { today: 'Today', all: 'All' };
 
 const DECISION_LABELS: Record<string, string> = {
   match: 'Matches',
   uncertain: 'Uncertain',
   reject: 'Rejected',
-  pending: 'Not yet judged',
+  pending: 'Queued',
 };
 
 const ORIGIN_LABELS: Record<string, string> = {
@@ -87,11 +91,22 @@ function Candidates() {
 
       {data && rows.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-edge p-10 text-center dark:border-edge-dark">
-          <p className="font-medium">Nothing here yet.</p>
+          <p className="font-medium">
+            {search.from === 'all' ? 'Nothing here yet.' : 'Nothing today.'}
+          </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-dim dark:text-ink-dim-dark">
             Candidates appear as polls find listings and the reviewer judges them. Rejections stay
             here too, with the evidence they were rejected on.
           </p>
+          {search.from === 'all' ? null : (
+            <Link
+              to="/candidates"
+              search={{ ...search, from: 'all', offset: undefined }}
+              className="mt-4 inline-block text-sm text-beacon hover:underline"
+            >
+              See every day
+            </Link>
+          )}
         </div>
       ) : null}
 
@@ -120,15 +135,15 @@ function Candidates() {
 
 function Filters({ search }: { search: CandidateSearch }) {
   return (
-    <div className="mt-4 space-y-3">
+    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
       <Chips
-        label="Origin"
-        values={ORIGINS}
-        labels={ORIGIN_LABELS}
-        current={search.origin ?? 'all'}
+        label="From"
+        values={FROM}
+        labels={FROM_LABELS}
+        current={search.from ?? 'today'}
         to={(value) => ({
           ...search,
-          origin: value as CandidateSearch['origin'],
+          from: value === 'all' ? 'all' : undefined,
           offset: undefined,
         })}
       />
@@ -140,6 +155,17 @@ function Filters({ search }: { search: CandidateSearch }) {
         to={(value) => ({
           ...search,
           decision: value as CandidateSearch['decision'],
+          offset: undefined,
+        })}
+      />
+      <Chips
+        label="Origin"
+        values={ORIGINS}
+        labels={ORIGIN_LABELS}
+        current={search.origin ?? 'all'}
+        to={(value) => ({
+          ...search,
+          origin: value as CandidateSearch['origin'],
           offset: undefined,
         })}
       />
@@ -164,8 +190,8 @@ function Chips({
   return (
     // A named landmark per group, so "Rejected" the filter is addressable apart from "Rejected"
     // the chip on a row that happens to be one.
-    <nav aria-label={label} className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-      <span className="w-14 shrink-0 text-[0.625rem] font-medium uppercase tracking-wider text-ink-dim dark:text-ink-dim-dark">
+    <nav aria-label={label} className="flex items-center gap-2">
+      <span className="shrink-0 text-[0.625rem] font-medium uppercase tracking-wider text-ink-dim dark:text-ink-dim-dark">
         {label}
       </span>
       <span className="inline-flex flex-wrap gap-0.5 self-start rounded-lg border border-edge p-0.5 dark:border-edge-dark">
@@ -175,7 +201,7 @@ function Chips({
             to="/candidates"
             search={to(value)}
             aria-current={value === current ? 'true' : undefined}
-            className={`rounded-md px-2 py-1 text-xs sm:px-2.5 ${
+            className={`rounded-md px-2 py-1 text-xs ${
               value === current
                 ? 'bg-paper-raised font-medium shadow-sm dark:bg-paper-raised-dark'
                 : 'text-ink-dim hover:text-ink dark:text-ink-dim-dark dark:hover:text-ink-dark'

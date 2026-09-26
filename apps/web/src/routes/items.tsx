@@ -2,13 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { createRoute, Link } from '@tanstack/react-router';
 import { type CategoryRow, categoriesQuery } from '../api/categories.js';
 import { type ItemRow, itemsQuery } from '../api/items.js';
+import { DECISION_INK } from '../candidates/bits.js';
 import {
   CategoryFilter,
   choiceName,
   inChoice,
   knownChoice,
 } from '../components/category-filter.js';
-import { CategoryTile } from '../components/category-icon.js';
+import { CategoryCover, CategoryIcon } from '../components/category-icon.js';
+import { LastPoll } from '../components/last-poll.js';
+import { Pill } from '../components/pill.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface ItemsSearch {
@@ -31,8 +34,10 @@ export const itemsRoute = createRoute({
 });
 
 /**
- * §14's list: status, mode, last poll and counts, newest change first — filterable by category
- * with the wish list's chips, and each item shown with its category tile (P1-20, P1-22).
+ * §14's list: status, last poll and counts, newest change first — filterable by category with the
+ * wish list's chips (P1-20, P1-22). Each item is a card headed by its display image, or its
+ * category's tile grown to fill the space, so the page reads as a shelf rather than as the wish
+ * list's rows (P1-25).
  */
 function Items() {
   const search = itemsRoute.useSearch();
@@ -45,12 +50,14 @@ function Items() {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Wanted items</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Wanted Items</h1>
+        {/* The heading says what is created; the name says it too, for a reader without it. */}
         <Link
           to="/items/new"
+          aria-label="Create a wanted item"
           className="rounded-lg bg-beacon px-4 py-2 text-sm font-medium text-white"
         >
-          New Wanted Item
+          Create
         </Link>
       </div>
 
@@ -104,11 +111,14 @@ function Items() {
       {items.length > 0 ? (
         <ul
           aria-label="Wanted items"
-          className="mt-4 divide-y divide-edge rounded-xl border border-edge dark:divide-edge-dark dark:border-edge-dark"
+          className="mt-4 grid grid-cols-1 gap-4 min-[30rem]:grid-cols-2 sm:grid-cols-3"
         >
           {items.map((item) => (
-            <li key={item.id} className="p-4">
-              <Row item={item} categories={categories} />
+            <li key={item.id}>
+              <Card
+                item={item}
+                category={categories.find((category) => category.id === item.categoryId)}
+              />
             </li>
           ))}
         </ul>
@@ -117,59 +127,88 @@ function Items() {
   );
 }
 
-function Row({ item, categories }: { item: ItemRow; categories: readonly CategoryRow[] }) {
+/**
+ * The title is the link and its `after` box stretches over the card, so the whole card is a target
+ * while the link's accessible name stays the title rather than every word on the card.
+ */
+function Card({ item, category }: { item: ItemRow; category: CategoryRow | undefined }) {
   return (
-    <div className="flex items-center gap-4">
-      <CategoryTile category={categories.find((category) => category.id === item.categoryId)} />
-      <div className="min-w-0 flex-1">
-        <Details item={item} />
+    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-edge bg-paper-raised hover:border-ink-dim/40 dark:border-edge-dark dark:bg-paper-raised-dark dark:hover:border-ink-dim-dark/40">
+      {/* Overflow hidden is what holds the ratio: an aspect-ratio box grows to fit its content. */}
+      <div className="relative aspect-[4/3] overflow-hidden border-b border-edge dark:border-edge-dark">
+        {item.displayImageId ? (
+          <CardPicture src={`/api/media/${item.displayImageId}`} />
+        ) : (
+          <CategoryCover category={category} />
+        )}
+        {category ? (
+          // Frosted and sized to its words, so it names the category without hiding the picture.
+          <span className="absolute left-2 top-2 inline-flex max-w-[calc(100%-1rem)] items-center gap-1 rounded-full bg-paper-raised/80 px-2 py-0.5 text-xs font-medium shadow-sm backdrop-blur-sm dark:bg-paper-raised-dark/80">
+            <CategoryIcon category={category} size="size-3.5" />
+            <span className="truncate">{category.name}</span>
+          </span>
+        ) : null}
       </div>
-    </div>
-  );
-}
 
-function Details({ item }: { item: ItemRow }) {
-  return (
-    <>
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <div className="flex flex-1 flex-col gap-2 p-3">
         <Link
           to="/items/$itemId"
           params={{ itemId: item.id }}
-          className="text-sm font-medium hover:underline"
+          className="line-clamp-2 h-[2lh] text-sm font-medium after:absolute after:inset-0 hover:underline"
         >
           {item.title}
         </Link>
-        <span className="rounded bg-paper-raised px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide dark:bg-paper-raised-dark">
-          {item.status}
-        </span>
-        <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
-          {item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}
-          {item.currentVersion === null ? '' : ` · version ${item.currentVersion}`}
-        </span>
-      </div>
 
-      <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-dim dark:text-ink-dim-dark">
-        <span className={item.failingPlans > 0 ? 'text-red-600 dark:text-red-400' : undefined}>
-          {lastPoll(item)}
-        </span>
-        <span>
-          {item.counts.candidates} candidate{item.counts.candidates === 1 ? '' : 's'}
-        </span>
-        <span>{item.counts.matched} matched</span>
-        <span>{item.counts.uncertain} uncertain</span>
-        {item.counts.pending > 0 ? <span>{item.counts.pending} waiting</span> : null}
-      </p>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Pill>{item.status}</Pill>
+          <Pill>{item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}</Pill>
+        </div>
+
+        <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs">
+          <Count value={item.counts.matched} label="matched" ink={DECISION_INK.match} />
+          <Count value={item.counts.uncertain} label="uncertain" ink={DECISION_INK.uncertain} />
+          {item.counts.pending > 0 ? (
+            <Count value={item.counts.pending} label="waiting" ink={DECISION_INK.pending} />
+          ) : null}
+        </p>
+        <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
+          <LastPoll poll={item} />
+        </p>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * The whole picture, never cropped, over a blurred and enlarged copy of itself that fills the
+ * frame — so a portrait box and a landscape photo sit in cards of one height with nothing cut off
+ * and no bare bars beside them. The browser fetches the file once for both.
+ */
+function CardPicture({ src }: { src: string }) {
+  return (
+    <>
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        aria-hidden="true"
+        className="absolute inset-0 size-full scale-110 object-cover opacity-60 blur-xl"
+      />
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 size-full object-contain drop-shadow-md"
+      />
     </>
   );
 }
 
-/** "Failing since" rather than only "failed", which is the distinction §6 asks the UI to keep. */
-function lastPoll(item: ItemRow): string {
-  if (item.failingPlans > 0) {
-    return item.lastSuccessAt
-      ? `Failing since ${new Date(item.lastSuccessAt).toLocaleString()}`
-      : 'Failing, and has never succeeded';
-  }
-  if (!item.lastPollAt) return 'Never polled';
-  return `Last polled ${new Date(item.lastPollAt).toLocaleString()}`;
+/** Coloured only when there is something to see, so a column of zeros does not shout. */
+function Count({ value, label, ink }: { value: number; label: string; ink: string }) {
+  return (
+    <span className={value > 0 ? `font-medium ${ink}` : 'text-ink-dim dark:text-ink-dim-dark'}>
+      {value} {label}
+    </span>
+  );
 }

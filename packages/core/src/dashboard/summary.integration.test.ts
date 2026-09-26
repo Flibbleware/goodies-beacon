@@ -14,7 +14,7 @@ import {
 } from '../db/schema.js';
 import type { VerdictDecision } from '../domain/constants.js';
 import { itemSaveSchema } from '../items/schema.js';
-import { createItem, setItemStatus } from '../items/store.js';
+import { createItem, updateItem } from '../items/store.js';
 import { dashboardSummary } from './summary.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
@@ -165,7 +165,7 @@ describe.skipIf(!databaseUrl)('the dashboard summary against a real Postgres', (
       db,
       itemSaveSchema.parse({ title: 'Paused', status: 'active', spec: carmageddon() }),
     );
-    await setItemStatus(db, paused.itemId, 'paused');
+    await updateItem(db, paused.itemId, { status: 'paused' });
 
     expect((await summary()).items).toEqual({ active: 1, paused: 1, draft: 1, total: 3 });
   });
@@ -215,7 +215,7 @@ describe.skipIf(!databaseUrl)('the dashboard summary against a real Postgres', (
      */
     it('keeps a source that has polled even once its item is paused', async () => {
       await seedPlanState('ebay-gb-carmageddon', { lastRunAt: NOW, lastError: 'eBay said 503' });
-      await setItemStatus(db, itemId, 'paused');
+      await updateItem(db, itemId, { status: 'paused' });
 
       const [source] = (await summary()).sources;
 

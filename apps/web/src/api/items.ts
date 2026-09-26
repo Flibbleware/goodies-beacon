@@ -1,5 +1,6 @@
 import type {
   CandidateCounts,
+  ItemPatchInput,
   ItemSummary,
   NotificationMode,
   PlanStats,
@@ -34,6 +35,7 @@ export interface LoadedItem {
   title: string;
   status: WantedItemStatus;
   categoryId: string | null;
+  displayImageId: string | null;
   notificationMode: NotificationMode;
   pollEvery: string | null;
   createdAt: string;
@@ -80,9 +82,12 @@ export function saveItem(id: string, body: ItemSave): Promise<SavedVersion> {
   return api<SavedVersion>(`/api/items/${id}`, { method: 'PUT', body });
 }
 
-/** Pause and resume. Not a save: it writes no spec version (§14). */
-export function setItemStatus(id: string, status: WantedItemStatus): Promise<{ status: string }> {
-  return api(`/api/items/${id}`, { method: 'PATCH', body: { status } });
+/**
+ * Pause and resume, the title, the category and the display image. Not a save: it writes no spec
+ * version (§14, P1-25).
+ */
+export function updateItem(id: string, patch: ItemPatchInput): Promise<unknown> {
+  return api(`/api/items/${id}`, { method: 'PATCH', body: patch });
 }
 
 export interface UploadedMedia {
@@ -99,10 +104,10 @@ export interface UploadedMedia {
  * Multipart rather than JSON, so the bytes are not base64'd through the CSRF-protected client.
  * The token still travels: `POST /api/media` is state-changing like any other (§12).
  */
-export async function uploadReferenceImage(file: File, label: string): Promise<UploadedMedia> {
+export async function uploadImage(file: File, label?: string): Promise<UploadedMedia> {
   const form = new FormData();
   form.set('file', file);
-  form.set('label', label);
+  if (label !== undefined) form.set('label', label);
 
   const token = document.cookie
     .split('; ')

@@ -5,7 +5,7 @@ import { useBlocker } from '@tanstack/react-router';
 import { useEffect, useId, useState } from 'react';
 import { categoriesQuery } from '../api/categories.js';
 import { ApiError } from '../api/client.js';
-import { itemQuery, itemsQuery, type LoadedItem, saveItem } from '../api/items.js';
+import { itemQuery, itemsQuery, type LoadedItem, saveItem, updateItem } from '../api/items.js';
 import { CategoryOptions } from '../components/category-filter.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { Modal } from '../components/modal.js';
@@ -75,9 +75,10 @@ const SECTIONS: Record<
  * One section of the item page edited in a modal of its own (P1-24).
  *
  * It is the full editor's typed form cut down to one part, over its own copy of the document, and
- * saving is the same act: the whole spec goes to `saveItem` and becomes version N+1. The title,
- * category and status travel with every save, as they do from the full editor, and Details is the
- * one section that changes them. The JSON editor is the whole document, for a paste, a wholesale
+ * saving is the same act: the whole spec goes to `saveItem` and becomes version N+1. Details also
+ * holds the title, category and status, which are the item's own fields rather than the spec's
+ * (P1-25): changed on their own they are patched onto the item without a version, and changed
+ * alongside the summary they travel with the version that saves it. The JSON editor is the whole document, for a paste, a wholesale
  * rewrite, or a spec the schema no longer reads and the typed sections therefore cannot draw.
  *
  * The body is mounted only while the modal is open, so each opening starts from the stored
@@ -156,8 +157,11 @@ function Body({
 
   const parsed = parseSpecText(text);
   const shown = parsed.ok ? parsed.spec : parsed.draft;
+  const specChanged = text !== initial;
+  // Only Details has anything to save that is not the spec.
+  const versioned = section !== 'describe' || specChanged;
   const dirty =
-    text !== initial ||
+    specChanged ||
     title !== item.title ||
     categoryId !== (item.categoryId ?? '') ||
     status !== item.status;
@@ -177,11 +181,15 @@ function Body({
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!parsed.ok) throw new Error('The spec has to be valid before it can be saved.');
-      return saveItem(item.id, {
+      const fields = {
         title: title.trim(),
         status,
         categoryId: categoryId === '' ? null : categoryId,
+      };
+      if (!specChanged) return updateItem(item.id, fields);
+      if (!parsed.ok) throw new Error('The spec has to be valid before it can be saved.');
+      return saveItem(item.id, {
+        ...fields,
         spec: parsed.spec,
         changeNote: note.trim() === '' ? config.note : note.trim(),
       });
@@ -263,15 +271,18 @@ function Body({
         />
       )}
 
-      <Field id={noteId} label="Change note" hint={`Left empty: “${config.note}”`}>
-        <input
-          id={noteId}
-          name="changeNote"
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          className={CONTROL}
-        />
-      </Field>
+      {/* A note describes a version, so it is asked for only when there will be one. */}
+      {versioned ? (
+        <Field id={noteId} label="Change note" hint={`Left empty: “${config.note}”`}>
+          <input
+            id={noteId}
+            name="changeNote"
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            className={CONTROL}
+          />
+        </Field>
+      ) : null}
 
       {save.isError ? (
         <Alert tone="error">
@@ -289,7 +300,7 @@ function Body({
           >
             <p className="text-sm font-medium">Discard these changes?</p>
             <p className="mt-1 text-sm text-ink-dim dark:text-ink-dim-dark">
-              Nothing here is saved until it is a new version.
+              Nothing here is saved yet.
               {unsaved.size > 0
                 ? ` ${unsaved.size === 1 ? 'The uploaded image stays' : 'The uploaded images stay'} on the server with nothing pointing at ${unsaved.size === 1 ? 'it' : 'them'}.`
                 : ''}
@@ -309,7 +320,11 @@ function Body({
               type="submit"
               disabled={save.isPending || !parsed.ok || !dirty || title.trim() === ''}
             >
-              {save.isPending ? 'Saving…' : `Save as Version ${(item.current?.version ?? 0) + 1}`}
+              {save.isPending
+                ? 'Saving…'
+                : versioned
+                  ? `Save as Version ${(item.current?.version ?? 0) + 1}`
+                  : 'Save'}
             </Button>
             <Button
               type="button"

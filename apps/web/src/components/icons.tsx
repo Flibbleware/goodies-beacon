@@ -74,6 +74,16 @@ export function HistoryIcon({ className }: { className?: string | undefined }) {
   );
 }
 
+/** A plain clock face: when something happened. */
+export function ClockIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </Icon>
+  );
+}
+
 /** Up out of a circle: moving something up a level, here from wished-for to wanted. */
 export function PromoteIcon({ className }: { className?: string | undefined }) {
   return (

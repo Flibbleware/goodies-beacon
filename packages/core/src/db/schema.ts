@@ -177,6 +177,15 @@ export const wantedItems = pgTable(
      * the owner's collection and nothing searches or judges by it. Null is uncategorised.
      */
     categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    /**
+     * The picture on the item's card in the list (P1-25). On the item rather than in the spec's
+     * reference images, because the pipeline reads only the spec: a photo chosen to look good on a
+     * shelf has no route into a review prompt, however it is chosen. It may be one of the spec's
+     * reference images as well, or an upload used for nothing else.
+     */
+    displayImageId: uuid('display_image_id').references((): AnyPgColumn => media.id, {
+      onDelete: 'set null',
+    }),
     /** Nullable because version 1 is written after the item; the pair is circular by nature. */
     currentSpecVersionId: uuid('current_spec_version_id').references(
       (): AnyPgColumn => specVersions.id,

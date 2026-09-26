@@ -175,7 +175,7 @@ function Today({ dashboard }: { dashboard: Dashboard }) {
 
 function Items({ counts }: { counts: Dashboard['items'] }) {
   return (
-    <Panel title="Wanted items">
+    <Panel title="Wanted Items">
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Link to="/items" className={FIGURE}>
           <Figure label="Active" value={counts.active} />
@@ -259,7 +259,7 @@ function Sources({ sources }: { sources: SourceRow[] }) {
 function Spend({ budget }: { budget: Budget | null }) {
   if (!budget) {
     return (
-      <Panel title="AI spend">
+      <Panel title="API Spend">
         <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
           The month's spend could not be read.
         </p>
@@ -275,7 +275,7 @@ function Spend({ budget }: { budget: Budget | null }) {
       : null;
 
   return (
-    <Panel title="AI spend" note="this calendar month">
+    <Panel title="API Spend" note="this calendar month">
       <Link
         to="/settings/models"
         className="mt-3 block rounded-xl border border-edge p-4 hover:bg-paper-raised dark:border-edge-dark dark:hover:bg-paper-raised-dark"

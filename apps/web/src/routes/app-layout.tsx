@@ -31,9 +31,9 @@ export const appLayoutRoute = createRoute({
 /** The pages from §14. The ones without a route yet name the task that brings them. */
 const NAV = [
   { to: '/', label: 'Dashboard', Icon: DashboardIcon, soon: undefined },
-  { to: '/items', label: 'Wanted items', Icon: WantedIcon, soon: undefined },
-  { to: '/wishes', label: 'Wish list', Icon: WishIcon, soon: undefined },
+  { to: '/items', label: 'Wanted Items', Icon: WantedIcon, soon: undefined },
   { to: '/candidates', label: 'Candidates', Icon: CandidatesIcon, soon: undefined },
+  { to: '/wishes', label: 'Wish list', Icon: WishIcon, soon: undefined },
   { to: '/scales', label: 'Grading scales', Icon: GradingIcon, soon: 'Phase 5' },
   { to: '/costs', label: 'Costs', Icon: CostsIcon, soon: 'Phase 5' },
 ] as const;
@@ -51,8 +51,15 @@ const SETTINGS_NAV = [
 const ROW = 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm';
 const LINK = `${ROW} hover:bg-paper-raised dark:hover:bg-paper-raised-dark`;
 const ACTIVE = `${ROW} font-medium bg-paper-raised dark:bg-paper-raised-dark`;
-// Indented past the icon column, so a child's text lines up with its heading's.
-const CHILD = 'block rounded-lg py-1.5 pr-3 pl-10 text-sm';
+/**
+ * A settings child hangs off a guide line drawn down from under the heading's icon, in smaller,
+ * dimmer text, so it reads as part of Settings rather than as one more main item. The line sits at
+ * the icon's centre (0.75rem padding + half a 1rem icon), and the padding brings the text back to
+ * the heading's: 1.1875rem + 1px + 1.25rem = the 2.5rem of padding, icon and gap above it. The
+ * current page lights its stretch of the line rather than taking the main items' filled row.
+ */
+const CHILDREN = 'ml-[1.1875rem] border-l border-edge dark:border-edge-dark';
+const CHILD = '-ml-px block border-l py-1.5 pr-3 pl-5 text-[0.8125rem]';
 
 function AppLayout() {
   const queryClient = useQueryClient();
@@ -70,9 +77,10 @@ function AppLayout() {
 
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[15rem_1fr]">
+      {/* Pinned beside a scrolling page, and scrolling itself only on a window too short for it. */}
       <nav
         aria-label="Main"
-        className="flex flex-col border-edge md:h-dvh md:border-r dark:border-edge-dark"
+        className="flex flex-col border-edge md:sticky md:top-0 md:h-dvh md:self-start md:overflow-y-auto md:border-r dark:border-edge-dark"
       >
         <div className="border-b border-edge px-5 py-4 dark:border-edge-dark">
           <span className="text-sm font-semibold tracking-tight">Goodies Beacon</span>
@@ -109,14 +117,20 @@ function AppLayout() {
               <SettingsIcon className="size-4 shrink-0" />
               Settings
             </span>
-            <ul aria-labelledby={settingsId} className="space-y-0.5">
+            <ul aria-labelledby={settingsId} className={CHILDREN}>
               {SETTINGS_NAV.map(({ to, label }) => (
                 <li key={to}>
                   <Link
                     to={to}
-                    className={`${CHILD} font-light hover:bg-paper-raised dark:hover:bg-paper-raised-dark`}
+                    className={CHILD}
+                    // Split rather than layered: the router adds these to the base classes, and
+                    // two border colours on one element are settled by stylesheet order.
                     activeProps={{
-                      className: `${CHILD} bg-paper-raised dark:bg-paper-raised-dark`,
+                      className: 'border-beacon font-medium text-ink dark:text-ink-dark',
+                    }}
+                    inactiveProps={{
+                      className:
+                        'border-transparent text-ink-dim hover:text-ink dark:text-ink-dim-dark dark:hover:text-ink-dark',
                     }}
                   >
                     {label}

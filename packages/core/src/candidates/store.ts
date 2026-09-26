@@ -1,4 +1,4 @@
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, gte, isNull, or } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { candidates, listings, specVersions, verdicts, wantedItems } from '../db/schema.js';
 import { decideVerdict } from '../domain/decide.js';
@@ -33,16 +33,23 @@ function latestVerdicts(db: Database) {
       reason: verdicts.reason,
       englishSummary: verdicts.englishSummary,
       grade: verdicts.grade,
+      createdAt: verdicts.createdAt,
     })
     .from(verdicts)
     .orderBy(verdicts.candidateId, desc(verdicts.createdAt), desc(verdicts.id))
     .as('latest');
 }
 
+/**
+ * The candidate list. `since` is the start of the owner's day, required when the filter asks for
+ * `today` — the time zone is a setting, which this module does not read — and ignored otherwise.
+ */
 export async function listCandidates(
   db: Database,
   filter: CandidateFilter,
+  since?: Date,
 ): Promise<CandidateList> {
+  if (filter.from === 'today' && !since) throw new Error("listing today needs the day's start");
   const latest = latestVerdicts(db);
 
   const where = and(
@@ -55,6 +62,13 @@ export async function listCandidates(
         : filter.decision === 'pending'
           ? isNull(latest.decision)
           : eq(latest.decision, filter.decision),
+      // The same dating as the dashboard's Today tiles, so a tile and the list it opens agree.
+      since && filter.from === 'today'
+        ? or(
+            gte(latest.createdAt, since),
+            and(isNull(latest.createdAt), gte(candidates.createdAt, since)),
+          )
+        : undefined,
     ].filter((clause) => clause !== undefined),
   );
 

@@ -235,6 +235,21 @@ export function CategoryTile({
   );
 }
 
+/**
+ * The tile grown to fill whatever holds it: a wanted item's card when it has no display image
+ * (P1-25). Uncategorised is a plain grey panel, as the small tile is an empty one.
+ */
+export function CategoryCover({ category }: { category: CategoryLook }) {
+  if (!category) {
+    return <span className="block size-full bg-edge/60 dark:bg-edge-dark/60" />;
+  }
+  return (
+    <span className={`flex size-full items-center justify-center ${COLOURS[category.colour].tile}`}>
+      <Glyph icon={category.icon} className="size-16" />
+    </span>
+  );
+}
+
 /** A plain dot of the colour, for the colour picker. */
 export function ColourSwatch({ colour }: { colour: CategoryColour }) {
   return <span className={`inline-block size-5 rounded-full ${COLOURS[colour].swatch}`} />;

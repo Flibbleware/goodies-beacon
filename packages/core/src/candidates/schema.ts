@@ -26,6 +26,11 @@ export const candidateFilterSchema = z.object({
   wantedItemId: z.uuid().nullable().default(null),
   decision: z.enum([...VERDICT_DECISIONS, 'pending', 'all']).default('all'),
   origin: z.enum([...CANDIDATE_ORIGINS, 'all']).default('all'),
+  /**
+   * `today` is the owner's day, dated as the dashboard dates it: by the newest verdict, or by when
+   * the candidate was found if it has none yet. The caller resolves the day's start (P1-25).
+   */
+  from: z.enum(['today', 'all']).default('all'),
   retained: z.coerce.boolean().nullable().default(null),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),

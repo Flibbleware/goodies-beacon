@@ -1,7 +1,7 @@
 import type { ReferenceImage } from '@goodies-beacon/core/schemas';
 import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, useId, useRef, useState } from 'react';
-import { uploadReferenceImage } from '../api/items.js';
+import { uploadImage } from '../api/items.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 
 /**
@@ -42,7 +42,7 @@ export function ReferenceImages({
   const upload = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error('Choose an image first.');
-      const media = await uploadReferenceImage(file, label.trim());
+      const media = await uploadImage(file, label.trim());
       const image = {
         id: media.id,
         path: media.path,

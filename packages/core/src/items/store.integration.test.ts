@@ -1,13 +1,22 @@
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { eq } from 'drizzle-orm';
 import type { Pool } from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createDb, createPool, type Database } from '../db/client.js';
 import { runMigrations } from '../db/migrate.js';
-import { gradingScales, specVersions, wantedItems } from '../db/schema.js';
+import { gradingScales, media, specVersions, wantedItems } from '../db/schema.js';
 import { wantedSpecSchema } from '../domain/spec.js';
 import { itemSaveSchema } from './schema.js';
-import { createItem, listItems, loadItem, saveItem, UnknownGradingScaleError } from './store.js';
+import {
+  createItem,
+  listItems,
+  loadItem,
+  saveItem,
+  UnknownGradingScaleError,
+  UnknownImageError,
+  updateItem,
+} from './store.js';
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 
@@ -20,6 +29,23 @@ afterAll(async () => {
 
 const example = (name: string): unknown =>
   JSON.parse(readFileSync(new URL(`../domain/fixtures/${name}.json`, import.meta.url), 'utf8'));
+
+/** A media row without the file behind it, which nothing here reads. */
+async function storedImage(): Promise<string> {
+  const hash = randomUUID();
+  const [row] = await db
+    .insert(media)
+    .values({
+      kind: 'reference',
+      path: `test/${hash}.webp`,
+      contentHash: hash,
+      contentType: 'image/webp',
+      bytes: 1,
+    })
+    .returning({ id: media.id });
+  if (!row) throw new Error('the media row was not inserted');
+  return row.id;
+}
 
 /** What the editor posts: a title, a status and the spec document itself. */
 function input(title: string, spec: unknown, overrides: Record<string, unknown> = {}) {
@@ -198,5 +224,72 @@ describe.skipIf(!databaseUrl)('the wanted item store against a real Postgres', (
     expect(items.map((row) => row.title)).toEqual(['First', 'Second']);
     expect(items[0]?.currentVersion).toBe(2);
     expect(items[1]?.currentVersion).toBe(1);
+  });
+
+  describe("the item's own fields, which are not the spec (P1-25)", () => {
+    it('renames, recategorises and pauses an item without writing a version', async () => {
+      const { itemId } = await createItem(
+        db,
+        input('Carmageddon', example('carmageddon'), { status: 'active' }),
+      );
+
+      const updated = await updateItem(db, itemId, {
+        title: 'Carmageddon big box, Mac or PC',
+        status: 'paused',
+        categoryId: null,
+      });
+
+      expect(updated).toMatchObject({ title: 'Carmageddon big box, Mac or PC', status: 'paused' });
+      const loaded = await loadItem(db, itemId);
+      expect(loaded?.title).toBe('Carmageddon big box, Mac or PC');
+      expect(loaded?.versions).toHaveLength(1);
+    });
+
+    it('sets and clears a display image, leaving every field it was not given alone', async () => {
+      const { itemId } = await createItem(
+        db,
+        input('Carmageddon', example('carmageddon'), { status: 'active' }),
+      );
+      const image = await storedImage();
+
+      await updateItem(db, itemId, { displayImageId: image });
+      const loaded = await loadItem(db, itemId);
+      expect(loaded?.displayImageId).toBe(image);
+      expect(loaded?.title).toBe('Carmageddon');
+      expect(loaded?.status).toBe('active');
+      expect(loaded?.versions).toHaveLength(1);
+      // The spec — the only thing the pipeline reads — has not heard of it.
+      expect(JSON.stringify(loaded?.current?.document)).not.toContain(image);
+      expect((await listItems(db))[0]?.displayImageId).toBe(image);
+
+      await updateItem(db, itemId, { displayImageId: null });
+      expect((await loadItem(db, itemId))?.displayImageId).toBeNull();
+
+      await db.delete(media).where(eq(media.id, image));
+    });
+
+    it('names the image rather than failing on a foreign key nobody typed', async () => {
+      const { itemId } = await createItem(db, input('Carmageddon', example('carmageddon')));
+
+      await expect(
+        updateItem(db, itemId, { displayImageId: '00000000-0000-4000-8000-000000000000' }),
+      ).rejects.toThrow(UnknownImageError);
+    });
+
+    it('leaves an item without a display image when the stored image is deleted', async () => {
+      const { itemId } = await createItem(db, input('Carmageddon', example('carmageddon')));
+      const image = await storedImage();
+      await updateItem(db, itemId, { displayImageId: image });
+
+      await db.delete(media).where(eq(media.id, image));
+
+      expect((await loadItem(db, itemId))?.displayImageId).toBeNull();
+    });
+
+    it('answers with nothing for an item that does not exist', async () => {
+      expect(
+        await updateItem(db, '00000000-0000-4000-8000-000000000000', { title: 'Nothing' }),
+      ).toBeUndefined();
+    });
   });
 });

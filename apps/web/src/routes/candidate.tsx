@@ -38,7 +38,7 @@ function CandidatePage() {
     <div className="mx-auto max-w-2xl">
       <Link
         to="/candidates"
-        search={{ item: candidate.wantedItemId }}
+        search={{ item: candidate.wantedItemId, from: 'all' }}
         className="text-sm text-ink-dim hover:underline dark:text-ink-dim-dark"
       >
         ← {candidate.itemTitle}
