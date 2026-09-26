@@ -102,6 +102,19 @@ export {
 } from './domain/listing.js';
 export { type ReadinessGap, readinessGaps } from './domain/readiness.js';
 export {
+  linkedCriterion,
+  lockedFields,
+  matchesSharedCriterion,
+  SHARED_KEY_MAX_LENGTH,
+  type SharedCriterion,
+  type SharedCriterionCreateInput,
+  type SharedCriterionFields,
+  type SharedCriterionUpdateInput,
+  sharedCriterionCreateSchema,
+  sharedCriterionKeySchema,
+  sharedCriterionUpdateSchema,
+} from './domain/shared-criterion.js';
+export {
   backfillSchema,
   type Criterion,
   criterionSchema,

@@ -1,38 +1,48 @@
-import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
+import type { WantedItemStatus, WantedSpec } from '@goodies-beacon/core/schemas';
 import { readinessGaps, WANTED_ITEM_STATUSES } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBlocker } from '@tanstack/react-router';
-import { useEffect, useId, useState } from 'react';
+import { useId, useLayoutEffect, useState } from 'react';
 import { categoriesQuery } from '../api/categories.js';
 import { ApiError } from '../api/client.js';
+import { sharedCriteriaQuery } from '../api/criteria.js';
 import { itemQuery, itemsQuery, type LoadedItem, saveItem, updateItem } from '../api/items.js';
 import { CategoryOptions } from '../components/category-filter.js';
 import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
 import { Modal } from '../components/modal.js';
-import { parseSpecText, withoutReferenceImage, withReferenceImage } from './parse.js';
+import { criterionName, planName } from './labels.js';
+import { parseSpecText, withDocument, withoutReferenceImage, withReferenceImage } from './parse.js';
 import { ReferenceImages } from './reference-images.js';
 import { SpecEditor } from './spec-editor.js';
-import { SpecForm, type SpecFormPart } from './spec-form.js';
+import {
+  type EntryFocus,
+  newSearchPlan,
+  ownCriterion,
+  SpecForm,
+  type SpecFormPart,
+} from './spec-form.js';
 import { STATUS_LABELS } from './status.js';
 
 export type EditableSection =
   | 'describe'
   | 'settings'
-  | 'criteria'
+  | 'addCriterion'
   | 'images'
-  | 'searchPlans'
+  | 'addSearchPlan'
   | 'json';
 
+/** A section, or one criterion or search plan of the spec's, by its position. */
+export type EditTarget = EditableSection | { criterion: number } | { plan: number };
+
+interface SectionConfig {
+  title: string;
+  parts: readonly SpecFormPart[] | 'images' | 'json';
+  note: string;
+  wide: boolean;
+}
+
 /** A slice of the typed form, or one of the two editors that are not it. */
-const SECTIONS: Record<
-  EditableSection,
-  {
-    title: string;
-    parts: readonly SpecFormPart[] | 'images' | 'json';
-    note: string;
-    wide: boolean;
-  }
-> = {
+const SECTIONS: Record<EditableSection, SectionConfig> = {
   describe: {
     title: 'Edit Details',
     parts: ['describe'],
@@ -45,10 +55,10 @@ const SECTIONS: Record<
     note: 'Edited the settings.',
     wide: true,
   },
-  criteria: {
-    title: 'Edit Criteria',
-    parts: ['criteria'],
-    note: 'Edited the criteria.',
+  addCriterion: {
+    title: 'Add a Criterion',
+    parts: ['criterion'],
+    note: 'Added a criterion.',
     wide: true,
   },
   images: {
@@ -57,10 +67,10 @@ const SECTIONS: Record<
     note: 'Edited the reference images.',
     wide: false,
   },
-  searchPlans: {
-    title: 'Edit Search Plans',
-    parts: ['searchPlans'],
-    note: 'Edited the search plans.',
+  addSearchPlan: {
+    title: 'Add a Search Plan',
+    parts: ['searchPlan'],
+    note: 'Added a search plan.',
     wide: true,
   },
   json: {
@@ -70,6 +80,42 @@ const SECTIONS: Record<
     wide: true,
   },
 };
+
+const EDIT_CRITERION: SectionConfig = {
+  title: 'Edit Criterion',
+  parts: ['criterion'],
+  note: 'Edited a criterion.',
+  wide: true,
+};
+
+const EDIT_SEARCH_PLAN: SectionConfig = {
+  title: 'Edit Search Plan',
+  parts: ['searchPlan'],
+  note: 'Edited a search plan.',
+  wide: true,
+};
+
+const configOf = (target: EditTarget): SectionConfig =>
+  typeof target === 'string'
+    ? SECTIONS[target]
+    : 'criterion' in target
+      ? EDIT_CRITERION
+      : EDIT_SEARCH_PLAN;
+
+/** The one entry of a list a target edits, or `new` for the one it adds. */
+interface Entry {
+  list: 'criteria' | 'searchPlans';
+  index: number | 'new';
+}
+
+function entryOf(target: EditTarget): Entry | undefined {
+  if (target === 'addCriterion') return { list: 'criteria', index: 'new' };
+  if (target === 'addSearchPlan') return { list: 'searchPlans', index: 'new' };
+  if (typeof target === 'string') return undefined;
+  return 'criterion' in target
+    ? { list: 'criteria', index: target.criterion }
+    : { list: 'searchPlans', index: target.plan };
+}
 
 /**
  * One section of the item page edited in a modal of its own (P1-24).
@@ -90,7 +136,7 @@ export function SectionEditor({
   onClose,
 }: {
   item: LoadedItem;
-  section: EditableSection | null;
+  section: EditTarget | null;
   onClose: () => void;
 }) {
   const [dirty, setDirty] = useState(false);
@@ -106,8 +152,8 @@ export function SectionEditor({
     <Modal
       open={section !== null}
       onClose={close}
-      title={section ? SECTIONS[section].title : ''}
-      wide={section ? SECTIONS[section].wide : false}
+      title={section ? configOf(section).title : ''}
+      wide={section ? configOf(section).wide : false}
       hold={dirty}
       onHeld={() => setConfirming(true)}
     >
@@ -137,7 +183,7 @@ function Body({
 }: {
   item: LoadedItem;
   document: Record<string, unknown>;
-  section: EditableSection;
+  section: EditTarget;
   onDirty: (dirty: boolean) => void;
   confirming: boolean;
   setConfirming: (confirming: boolean) => void;
@@ -145,9 +191,33 @@ function Body({
 }) {
   const queryClient = useQueryClient();
   const noteId = useId();
-  const config = SECTIONS[section];
-
-  const [initial] = useState(() => `${JSON.stringify(document, null, 2)}\n`);
+  const config = configOf(section);
+  // Adding starts from the spec with a blank entry already on the end, so that entry is what the
+  // form edits and leaving it blank is no change at all.
+  const [entry] = useState(() => entryOf(section));
+  const [focus] = useState<EntryFocus | undefined>(() => {
+    if (!entry) return undefined;
+    if (entry.index !== 'new') return { index: entry.index, adding: false };
+    const list = document[entry.list];
+    return { index: Array.isArray(list) ? list.length : 0, adding: true };
+  });
+  const [initial] = useState(() => {
+    const text = `${JSON.stringify(document, null, 2)}\n`;
+    if (entry?.index !== 'new') return text;
+    const current = parseSpecText(text);
+    const spec = current.ok ? current.spec : current.draft;
+    return (
+      (spec &&
+        withDocument(text, (raw) => {
+          const list = raw[entry.list];
+          raw[entry.list] = [
+            ...(Array.isArray(list) ? list : []),
+            entry.list === 'criteria' ? ownCriterion(spec) : newSearchPlan(spec),
+          ];
+        })) ??
+      text
+    );
+  });
   const [text, setText] = useState(initial);
   const [title, setTitle] = useState(item.title);
   const [categoryId, setCategoryId] = useState(item.categoryId ?? '');
@@ -158,6 +228,7 @@ function Body({
   const parsed = parseSpecText(text);
   const shown = parsed.ok ? parsed.spec : parsed.draft;
   const specChanged = text !== initial;
+  const defaultNote = entryNote(entry, focus, shown) ?? config.note;
   // Only Details has anything to save that is not the spec.
   const versioned = section !== 'describe' || specChanged;
   const dirty =
@@ -169,7 +240,9 @@ function Body({
     (shown?.referenceImages ?? []).map((image) => image.id).filter((id) => uploaded.has(id)),
   );
 
-  useEffect(() => onDirty(dirty), [dirty, onDirty]);
+  // A layout effect, so the modal holds Esc from the same frame the first keystroke lands in; a
+  // plain effect runs after paint, and an Esc straight after typing got in first and lost the edit.
+  useLayoutEffect(() => onDirty(dirty), [dirty, onDirty]);
 
   // The modal holds Esc and the backdrop; this holds Back and a reload.
   const blocker = useBlocker({
@@ -191,13 +264,15 @@ function Body({
       return saveItem(item.id, {
         ...fields,
         spec: parsed.spec,
-        changeNote: note.trim() === '' ? config.note : note.trim(),
+        changeNote: note.trim() === '' ? defaultNote : note.trim(),
       });
     },
     onSuccess: async () => {
       onDirty(false);
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
       await queryClient.invalidateQueries({ queryKey: itemQuery(item.id).queryKey });
+      // The Criteria page counts the items using each shared criterion, which a save can change.
+      await queryClient.invalidateQueries({ queryKey: sharedCriteriaQuery.queryKey });
       onDone();
     },
   });
@@ -234,7 +309,8 @@ function Body({
         />
       ) : null}
 
-      {!parsed.ok && shown && config.parts !== 'json' ? (
+      {/* Not before anything is typed: a new criterion starts blank, which is not a fault. */}
+      {specChanged && !parsed.ok && shown && config.parts !== 'json' ? (
         <Alert tone="error">
           Not saveable yet —{' '}
           {parsed.issues.map((issue) => `${issue.path}: ${issue.message}`).join('; ')}.
@@ -251,6 +327,7 @@ function Body({
           warnings={parsed.ok ? parsed.warnings : (parsed.warnings ?? [])}
           issues={parsed.ok ? [] : parsed.issues}
           parts={config.parts}
+          focus={focus}
         />
       ) : (
         <ReferenceImages
@@ -272,7 +349,7 @@ function Body({
 
       {/* A note describes a version, so it is asked for only when there will be one. */}
       {versioned ? (
-        <Field id={noteId} label="Change note" hint={`Left empty: “${config.note}”`}>
+        <Field id={noteId} label="Change note" hint={`Left empty: “${defaultNote}”`}>
           <input
             id={noteId}
             name="changeNote"
@@ -337,6 +414,22 @@ function Body({
       </div>
     </form>
   );
+}
+
+/** A change note naming the criterion or search plan added or edited, once it has a name. */
+function entryNote(
+  entry: Entry | undefined,
+  focus: EntryFocus | undefined,
+  spec: WantedSpec | undefined,
+): string | undefined {
+  if (!entry || !focus || !spec) return undefined;
+  const verb = focus.adding ? 'Added' : 'Edited';
+  if (entry.list === 'criteria') {
+    const criterion = spec.criteria[focus.index];
+    return criterion ? `${verb} the criterion ${criterionName(criterion)}.` : undefined;
+  }
+  const plan = spec.searchPlans[focus.index];
+  return plan ? `${verb} the search plan ${planName(plan)}.` : undefined;
 }
 
 /**

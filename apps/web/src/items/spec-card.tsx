@@ -1,6 +1,8 @@
 import type { Criterion, ReferenceImage, WantedSpec } from '@goodies-beacon/core/schemas';
 import { durationToHours, lintSpec, scheduledHours } from '@goodies-beacon/core/schemas';
-import type { ReactNode } from 'react';
+import { Link } from '@tanstack/react-router';
+import { type ReactNode, useLayoutEffect, useState } from 'react';
+import { CriterionFlags } from '../components/criterion-flags.js';
 import {
   BACKFILL_DEPTH_LABELS,
   CONDITION_LABELS,
@@ -104,9 +106,15 @@ function pollEvery(duration: string | null): string {
 
 /**
  * The warnings come from the whole spec, because `lintSpec` judges a criterion against the item's
- * settings as well as its own flags.
+ * settings as well as its own flags. `actions` draws each criterion's own controls beside it.
  */
-export function CriteriaList({ spec }: { spec: WantedSpec }) {
+export function CriteriaList({
+  spec,
+  actions,
+}: {
+  spec: WantedSpec;
+  actions?: ((criterion: Criterion, index: number) => ReactNode) | undefined;
+}) {
   const criteria: Criterion[] = spec.criteria;
   const warnings = new Map(lintSpec(spec).map((warning) => [warning.criterionId, warning.message]));
 
@@ -117,29 +125,90 @@ export function CriteriaList({ spec }: { spec: WantedSpec }) {
           <Absent>Nothing is judged by reading or looking; the settings decide everything.</Absent>
         </p>
       ) : (
-        <ul className="space-y-3">
-          {criteria.map((criterion) => (
-            <li key={criterion.id}>
-              <p className="text-sm">{criterion.text}</p>
-              <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-ink-dim dark:text-ink-dim-dark">
-                <span>{criterion.kind === 'hard' ? 'hard — rejects' : 'soft — uncertain'}</span>
-                <span>
-                  {criterion.quantifiable
-                    ? 'the photos can settle it'
-                    : 'the photos may not settle it'}
-                </span>
-                <span>unknown → {criterion.onUnknown === 'surface' ? 'uncertain' : 'reject'}</span>
-              </p>
-              {warnings.has(criterion.id) ? (
-                <p className="mt-1 text-xs text-amber-700 dark:text-amber-500">
-                  {warnings.get(criterion.id)}
+        <ul className="-my-3 divide-y divide-edge dark:divide-edge-dark">
+          {criteria.map((criterion, index) => (
+            <li key={criterion.id} className="flex items-start gap-4 py-2.5">
+              <div className="min-w-0 flex-1">
+                <CriterionText text={criterion.text} />
+                <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <CriterionFlags
+                    kind={criterion.kind}
+                    onUnknown={criterion.onUnknown}
+                    quantifiable={criterion.quantifiable}
+                  />
+                  {criterion.shared ? (
+                    <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
+                      Shared:{' '}
+                      <Link
+                        to="/criteria"
+                        search={{ q: criterion.shared }}
+                        title="A shared criterion: edited on the Criteria page"
+                        className="font-mono text-beacon hover:underline"
+                      >
+                        {criterion.shared}
+                      </Link>
+                    </span>
+                  ) : null}
                 </p>
+                {warnings.has(criterion.id) ? (
+                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-500">
+                    {warnings.get(criterion.id)}
+                  </p>
+                ) : null}
+              </div>
+              {actions ? (
+                <div className="flex shrink-0 gap-1">{actions(criterion, index)}</div>
               ) : null}
             </li>
           ))}
         </ul>
       )}
     </Card>
+  );
+}
+
+/**
+ * A criterion's text on one line, a step smaller and softer than the page's body text, so a list of
+ * them does not glare. Text that does not fit ends in an ellipsis and opens in place on a click; the
+ * tooltip carrying the whole of it appears only then, not on text that is already all showing.
+ */
+function CriterionText({ text }: { text: string }) {
+  // State rather than a ref: the text moves into a button once it is clipped, and the observer has
+  // to follow it to the new element.
+  const [element, setElement] = useState<HTMLSpanElement | null>(null);
+  const [open, setOpen] = useState(false);
+  const [clipped, setClipped] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!element || open) return;
+    // Measured rather than guessed from the length, because what fits depends on the width.
+    const measure = () => setClipped(element.scrollWidth > element.clientWidth + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [element, open]);
+
+  const body = `block text-[0.8125rem] text-ink/80 dark:text-ink-dark/80 ${open ? '' : 'truncate'}`;
+  if (!clipped && !open) {
+    return (
+      <span ref={setElement} className={body}>
+        {text}
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      title={open ? undefined : text}
+      onClick={() => setOpen(!open)}
+      className="block w-full min-w-0 text-left hover:text-ink dark:hover:text-ink-dark"
+    >
+      <span ref={setElement} className={body}>
+        {text}
+      </span>
+    </button>
   );
 }
 

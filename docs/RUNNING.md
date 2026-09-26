@@ -1040,8 +1040,8 @@ phone: one column, no tables, and a gallery that scrolls sideways rather than wi
 
 ## The web app
 
-The pages are Dashboard, Wanted items (list, with a Create dialog, and item), Wish list, Candidates (list,
-which opens on the matches, and one candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
+The pages are Dashboard, Wanted items (list, with a Create dialog, and item), Candidates (list,
+which opens on the matches, and one candidate), Criteria (the shared criteria), Wish List, Settings and the login/first-run page; the rest of the left-hand navigation is there
 but disabled, labelled with the task that brings it. Settings is a heading in the navigation
 rather than a page, with a page beneath it for each of categories, sources (the eBay keyset and a
 proxy), models (the AI roles, provider keys and the budget cap), email (SMTP), instance (time zone, digest
@@ -1051,7 +1051,10 @@ Categories are yours to make — a name, an icon and a colour — and both the w
 items choose from them; deleting one leaves whatever used it uncategorised. The upgrade to P1-22
 converts the seven categories that used to be built in: each one in use becomes a category of the
 same name, icon and colour with its wishes and items still in it, and anything that was Other
-becomes uncategorised. Nothing needs doing by hand. Dark and light
+becomes uncategorised. Nothing needs doing by hand.
+Shared criteria (P1-27) are criteria written once on the Criteria page and added to wanted items;
+saving one writes a new spec version on every item using it, so an item's history shows each
+rewording, and the upgrade adds their table empty. Dark and light
 follow the operating system — there is no toggle, and so no stored preference to get out of step
 with it.
 

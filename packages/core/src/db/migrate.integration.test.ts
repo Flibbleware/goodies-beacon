@@ -44,6 +44,7 @@ describe.skipIf(!databaseUrl)('runMigrations against a real Postgres', () => {
       'search_plan_state',
       'seen',
       'settings',
+      'shared_criteria',
       'source_cookies',
       'spec_versions',
       'verdicts',

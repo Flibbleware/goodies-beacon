@@ -2,11 +2,13 @@ import type {
   BackfillDepth,
   BuyingType,
   ConditionCategory,
+  Criterion,
   CriterionKind,
   MarketplaceSourceId,
   NotificationMode,
   OnUnknown,
   RelistPolicy,
+  SearchPlan,
   ShipsToUkPolicy,
   SourceId,
   SpecWarning,
@@ -20,14 +22,19 @@ import {
   durationToHours,
   hoursToDuration,
   isMarketplaceSourceId,
+  linkedCriterion,
   NOTIFICATION_MODES,
   ON_UNKNOWN,
   RELIST_POLICIES,
   SHIPS_TO_UK_POLICIES,
   scheduledHours,
 } from '@goodies-beacon/core/schemas';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { type ReactNode, useEffect, useId, useState } from 'react';
+import { sharedCriteriaQuery } from '../api/criteria.js';
 import { Button, CONTROL, Field } from '../components/form.js';
+import { SharedCriterionPicker } from '../criteria/picker.js';
 import {
   BACKFILL_DEPTH_LABELS,
   CONDITION_LABELS,
@@ -43,9 +50,19 @@ import {
 } from './labels.js';
 import { type SpecDocument, type SpecIssue, withDocument, withSetting } from './parse.js';
 
-export type SpecFormPart = 'describe' | 'settings' | 'criteria' | 'searchPlans';
+export type SpecFormPart = 'describe' | 'settings' | 'criterion' | 'searchPlan';
 
-const ALL_PARTS: readonly SpecFormPart[] = ['describe', 'settings', 'criteria', 'searchPlans'];
+/**
+ * Which criterion or search plan the `criterion` and `searchPlan` parts edit, and whether it is the
+ * one being added. Both are edited one at a time (P1-27): a form holding every one of them was
+ * overwhelming past a handful.
+ */
+export interface EntryFocus {
+  index: number;
+  adding: boolean;
+}
+
+const ALL_PARTS: readonly SpecFormPart[] = ['describe', 'settings'];
 
 /**
  * The typed editing surface for a spec (P1-18), beside the JSON editor rather than instead of it.
@@ -65,6 +82,7 @@ export function SpecForm({
   warnings,
   issues,
   parts = ALL_PARTS,
+  focus,
 }: {
   spec: WantedSpec;
   text: string;
@@ -73,6 +91,8 @@ export function SpecForm({
   /** The strict schema's objections, shown beside the field each one names. */
   issues: readonly SpecIssue[];
   parts?: readonly SpecFormPart[];
+  /** Required by the `criterion` and `searchPlan` parts. */
+  focus?: EntryFocus | undefined;
 }) {
   const edit = (mutate: (document: SpecDocument) => void) => {
     const updated = withDocument(text, mutate);
@@ -94,11 +114,17 @@ export function SpecForm({
       {parts.includes('settings') ? (
         <Settings spec={spec} setting={setting} errors={errors} titled={titled} />
       ) : null}
-      {parts.includes('criteria') ? (
-        <Criteria spec={spec} edit={edit} warnings={warnings} errors={errors} titled={titled} />
+      {parts.includes('criterion') && focus ? (
+        <CriterionFields
+          spec={spec}
+          edit={edit}
+          warnings={warnings}
+          errors={errors}
+          focus={focus}
+        />
       ) : null}
-      {parts.includes('searchPlans') ? (
-        <SearchPlans spec={spec} edit={edit} errors={errors} titled={titled} />
+      {parts.includes('searchPlan') && focus ? (
+        <SearchPlanFields spec={spec} edit={edit} errors={errors} index={focus.index} />
       ) : null}
     </div>
   );
@@ -169,13 +195,15 @@ function Choice<T extends string>({
   options,
   onPick,
   labels,
+  disabled = false,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   value: T;
   options: readonly T[];
   onPick: (value: T) => void;
   labels?: Record<string, string>;
+  disabled?: boolean;
 }) {
   const id = useId();
 
@@ -184,8 +212,9 @@ function Choice<T extends string>({
       <select
         id={id}
         value={value}
+        disabled={disabled}
         onChange={(event) => onPick(event.target.value as T)}
-        className={CONTROL}
+        className={`${CONTROL} disabled:opacity-60`}
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -201,16 +230,19 @@ function Check({
   label,
   checked,
   onToggle,
+  disabled = false,
 }: {
   label: string;
   checked: boolean;
   onToggle: (checked: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label className={`flex items-center gap-2 text-sm ${disabled ? 'opacity-60' : ''}`}>
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={(event) => onToggle(event.target.checked)}
         className="size-4 rounded border-edge dark:border-edge-dark"
       />
@@ -516,7 +548,7 @@ function Keywords({
       .split(',')
       .map((word) => word.trim())
       .filter((word) => word !== '');
-    if (parsed.join(' ') !== value.join(' ')) setTyped(value.join(', '));
+    if (parsed.join('\0') !== value.join('\0')) setTyped(value.join(', '));
   }, [value, typed]);
 
   return (
@@ -574,201 +606,186 @@ const DEFAULT_REGION: Record<MarketplaceSourceId, string> = {
   mercari_jp: 'jp',
 };
 
-function Row({ children, onRemove }: { children: ReactNode; onRemove: () => void }) {
-  return (
-    <li className="rounded-lg border border-edge p-4 dark:border-edge-dark">
-      {children}
-      <div className="mt-3 flex justify-end">
-        <button
-          type="button"
-          onClick={onRemove}
-          className="text-xs text-red-600 hover:underline dark:text-red-400"
-        >
-          Remove
-        </button>
-      </div>
-    </li>
-  );
-}
-
-function Criteria({
+/**
+ * One criterion, edited or being added, in a modal of its own. The list lives on the item page,
+ * where each criterion has its own pencil; editing them all in one form was overwhelming past a
+ * handful.
+ */
+function CriterionFields({
   spec,
   edit,
   warnings,
   errors,
-  titled,
+  focus,
 }: {
   spec: WantedSpec;
   edit: Edit;
   warnings: SpecWarning[];
   errors: Errors;
-  titled: boolean;
+  focus: EntryFocus;
 }) {
-  const warningFor = new Map(warnings.map((warning) => [warning.criterionId, warning.message]));
+  const { index, adding } = focus;
+  const criterion = spec.criteria[index];
+  const shared = new Map(
+    (useQuery(sharedCriteriaQuery).data?.criteria ?? []).map((row) => [row.key, row]),
+  );
+  const [picking, setPicking] = useState(false);
+  if (!criterion) return null;
 
-  const update = (index: number, key: string, value: unknown) =>
+  const warning = warnings.find((each) => each.criterionId === criterion.id)?.message;
+  const source = criterion.shared ? shared.get(criterion.shared) : undefined;
+  // Until the shared criterion has loaded, nothing about a linked one is offered for editing:
+  // the save would put back whatever it fixes anyway.
+  const locked = (field: 'kind' | 'quantifiable' | 'onUnknown') =>
+    criterion.shared !== undefined && (source === undefined || source[field] !== null);
+  const lockedHint = (field: 'kind' | 'quantifiable' | 'onUnknown') =>
+    locked(field) ? 'Set by the shared criterion.' : undefined;
+
+  const update = (key: string, value: unknown) =>
     patchRow(edit, 'criteria', index, { [key]: value });
+  const replace = (next: Criterion) =>
+    edit((document) => {
+      if (Array.isArray(document.criteria)) document.criteria[index] = next;
+    });
 
   return (
-    <Group
-      title="Criteria"
-      titled={titled}
-      hint="Only judgement calls that need reading the description or looking at the photos. A price or a country belongs above, not here."
-    >
-      <ul className="space-y-3">
-        {spec.criteria.map((criterion, index) => {
-          const warning = warningFor.get(criterion.id);
-
-          return (
-            <Row
-              key={criterion.id}
-              onRemove={() =>
-                edit((document) => {
-                  if (Array.isArray(document.criteria)) document.criteria.splice(index, 1);
-                })
-              }
+    <div className="space-y-3">
+      {criterion.shared ? (
+        <>
+          <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
+            Shared criterion <code className="font-mono">{criterion.shared}</code> — its text, and
+            anything it sets, are edited on the{' '}
+            <Link
+              to="/criteria"
+              search={{ q: criterion.shared }}
+              className="text-beacon hover:underline"
             >
-              <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
-                <code className="font-mono">{criterion.id}</code> — kept across edits so feedback
-                stays attached
-              </p>
+              Criteria
+            </Link>{' '}
+            page
+          </p>
+          <p className="text-sm">{source?.text ?? criterion.text}</p>
+        </>
+      ) : (
+        <div>
+          <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
+            Only a judgement call that needs reading the description or looking at the photos. A
+            price or a country is a setting, not a criterion.
+          </p>
+          <textarea
+            aria-label="Criterion"
+            rows={3}
+            value={criterion.text}
+            onChange={(event) => update('text', event.target.value)}
+            className={CONTROL}
+          />
+          {/* An empty criterion is what every new one starts as, so it is not called an error. */}
+          {criterion.text === '' ? null : <FieldError message={errors(`criteria.${index}.text`)} />}
+        </div>
+      )}
 
-              <textarea
-                aria-label={`Criterion ${index + 1}`}
-                rows={2}
-                value={criterion.text}
-                onChange={(event) => update(index, 'text', event.target.value)}
-                className={CONTROL}
-              />
-              <FieldError message={errors(`criteria.${index}.text`)} />
-
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                <Choice
-                  label="Kind"
-                  value={criterion.kind}
-                  options={CRITERION_KINDS}
-                  onPick={(value: CriterionKind) => update(index, 'kind', value)}
-                  labels={{ hard: 'Hard — a fail rejects', soft: 'Soft — a fail is uncertain' }}
-                />
-                <Choice
-                  label="When unknown"
-                  value={criterion.onUnknown}
-                  options={ON_UNKNOWN}
-                  onPick={(value: OnUnknown) => update(index, 'onUnknown', value)}
-                  labels={{ surface: 'Surface as uncertain', reject: 'Reject' }}
-                />
-                <div className="flex items-end pb-2">
-                  <Check
-                    label="Photos can settle it"
-                    checked={criterion.quantifiable}
-                    onToggle={(on) => update(index, 'quantifiable', on)}
-                  />
-                </div>
-              </div>
-
-              {warning ? (
-                <p role="status" className="mt-3 text-xs text-amber-700 dark:text-amber-500">
-                  {warning}
-                </p>
-              ) : null}
-            </Row>
-          );
-        })}
-      </ul>
-
-      <div className="mt-3">
-        <Button
-          type="button"
-          variant="quiet"
-          onClick={() =>
-            edit((document) => {
-              const list = Array.isArray(document.criteria) ? document.criteria : [];
-              document.criteria = [
-                ...list,
-                {
-                  id: newCriterionId(spec.criteria),
-                  text: '',
-                  kind: 'soft',
-                  quantifiable: false,
-                  onUnknown: spec.settings.defaultOnUnknown,
-                },
-              ];
-            })
-          }
-        >
-          Add a Criterion
-        </Button>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Choice
+          label="Failure action"
+          hint={lockedHint('kind')}
+          value={criterion.kind}
+          options={CRITERION_KINDS}
+          disabled={locked('kind')}
+          onPick={(value: CriterionKind) => update('kind', value)}
+          labels={{ hard: 'Reject', soft: 'Uncertain' }}
+        />
+        <Choice
+          label="When unknown"
+          hint={lockedHint('onUnknown')}
+          value={criterion.onUnknown}
+          options={ON_UNKNOWN}
+          disabled={locked('onUnknown')}
+          onPick={(value: OnUnknown) => update('onUnknown', value)}
+          labels={{ surface: 'Surface as uncertain', reject: 'Reject' }}
+        />
+        <div className="flex items-end pb-2">
+          <Check
+            label="Photos can settle it"
+            checked={criterion.quantifiable}
+            disabled={locked('quantifiable')}
+            onToggle={(on) => update('quantifiable', on)}
+          />
+        </div>
       </div>
-    </Group>
+
+      {warning ? (
+        <p role="status" className="text-xs text-amber-700 dark:text-amber-500">
+          {warning}
+        </p>
+      ) : null}
+
+      {/* Adding, the new criterion can be one of the item's own or a shared one, either way. */}
+      {adding && criterion.shared ? (
+        <Button type="button" variant="quiet" onClick={() => replace(ownCriterion(spec, index))}>
+          Write One of Its Own Instead
+        </Button>
+      ) : null}
+      {adding && !criterion.shared ? (
+        picking ? (
+          <SharedCriterionPicker
+            taken={new Set(spec.criteria.filter((_, at) => at !== index).map(({ id }) => id))}
+            onPick={(row) => {
+              replace(linkedCriterion(row, spec.settings.defaultOnUnknown));
+              setPicking(false);
+            }}
+            onClose={() => setPicking(false)}
+          />
+        ) : (
+          <Button type="button" variant="quiet" onClick={() => setPicking(true)}>
+            Use a Shared Criterion
+          </Button>
+        )
+      ) : null}
+    </div>
   );
 }
 
-function SearchPlans({
+/** A blank criterion of the item's own, where a new one starts. */
+export function ownCriterion(spec: WantedSpec, index = spec.criteria.length): Criterion {
+  return {
+    id: newCriterionId(spec.criteria.filter((_, at) => at !== index)),
+    text: '',
+    kind: 'soft',
+    quantifiable: false,
+    onUnknown: spec.settings.defaultOnUnknown,
+  };
+}
+
+/** A blank search plan on the item's first marketplace, where a new one starts. */
+export function newSearchPlan(spec: WantedSpec): SearchPlan {
+  const source = spec.settings.sources.find(isMarketplaceSourceId) ?? 'ebay';
+  return {
+    id: newPlanId(),
+    source,
+    query: '',
+    region: DEFAULT_REGION[source],
+    options: {},
+    enabled: true,
+    watermark: null,
+  };
+}
+
+/** One search plan, edited or being added, in a modal of its own. */
+function SearchPlanFields({
   spec,
   edit,
   errors,
-  titled,
+  index,
 }: {
   spec: WantedSpec;
   edit: Edit;
   errors: Errors;
-  titled: boolean;
-}) {
-  const source = spec.settings.sources.find(isMarketplaceSourceId) ?? 'ebay';
-
-  return (
-    <Group
-      title="Search plans"
-      titled={titled}
-      hint="Search broad, judge narrow (§1). Several plain queries beat one clever one, and overlapping plans cost nothing — a listing found twice becomes one candidate and is reviewed once."
-    >
-      <ul className="space-y-3">
-        {spec.searchPlans.map((plan, index) => (
-          <PlanRow key={plan.id} plan={plan} index={index} edit={edit} errors={errors} />
-        ))}
-      </ul>
-
-      <div className="mt-3">
-        <Button
-          type="button"
-          variant="quiet"
-          onClick={() =>
-            edit((document) => {
-              const list = Array.isArray(document.searchPlans) ? document.searchPlans : [];
-              document.searchPlans = [
-                ...list,
-                {
-                  id: newPlanId(),
-                  source,
-                  query: '',
-                  region: DEFAULT_REGION[source],
-                  options: {},
-                  enabled: true,
-                  watermark: null,
-                },
-              ];
-            })
-          }
-        >
-          Add a Search Plan
-        </Button>
-      </div>
-    </Group>
-  );
-}
-
-function PlanRow({
-  plan,
-  index,
-  edit,
-  errors,
-}: {
-  plan: WantedSpec['searchPlans'][number];
   index: number;
-  edit: Edit;
-  errors: Errors;
 }) {
   const ids = { query: useId(), region: useId() };
+  const plan = spec.searchPlans[index];
+  if (!plan) return null;
+
   const update = (patch: Record<string, unknown>) => patchRow(edit, 'searchPlans', index, patch);
 
   // A plan on a source no marketplace owns (the template adapter's) keeps its own value in the
@@ -778,23 +795,19 @@ function PlanRow({
     : [plan.source, ...OFFERED_SOURCES];
 
   return (
-    <Row
-      onRemove={() =>
-        edit((document) => {
-          if (Array.isArray(document.searchPlans)) document.searchPlans.splice(index, 1);
-        })
-      }
-    >
+    <div className="space-y-3">
       <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
-        <code className="font-mono">{plan.id}</code> — its stats on the item page are keyed on this
+        Search broad, judge narrow (§1). Several plain queries beat one clever one, and overlapping
+        plans cost nothing — a listing found twice becomes one candidate and is reviewed once.
       </p>
 
-      <div className="mt-2 grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Field
           id={ids.query}
           label="Query"
           hint="Exactly as sent to the source."
-          error={errors(`searchPlans.${index}.query`)}
+          // A new plan starts without a query, which is not yet a fault.
+          error={plan.query === '' ? undefined : errors(`searchPlans.${index}.query`)}
         >
           <input
             id={ids.query}
@@ -840,6 +853,6 @@ function PlanRow({
           <Check label="Polled" checked={plan.enabled} onToggle={(on) => update({ enabled: on })} />
         </div>
       </div>
-    </Row>
+    </div>
   );
 }

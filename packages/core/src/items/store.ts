@@ -1,5 +1,6 @@
 import { desc, eq, max } from 'drizzle-orm';
 import { assertCategory } from '../categories/store.js';
+import { resolveSharedCriteria } from '../criteria/store.js';
 import type { Database } from '../db/client.js';
 import { gradingScales, media, specVersions, wantedItems } from '../db/schema.js';
 import { readinessGaps } from '../domain/readiness.js';
@@ -225,7 +226,8 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
 }
 
 /** A new item and its version 1, in one transaction so neither can exist without the other. */
-export async function createItem(db: Database, input: ItemSaveInput): Promise<SavedVersion> {
+export async function createItem(db: Database, given: ItemSaveInput): Promise<SavedVersion> {
+  const input = { ...given, spec: await resolveSharedCriteria(db, given.spec) };
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
   await assertCategory(db, input.categoryId);
   if (input.status === 'active') assertReady(input.spec);
@@ -252,8 +254,9 @@ export async function insertItem(tx: Transaction, input: ItemSaveInput): Promise
 export async function saveItem(
   db: Database,
   id: string,
-  input: ItemSaveInput,
+  given: ItemSaveInput,
 ): Promise<SavedVersion | undefined> {
+  const input = { ...given, spec: await resolveSharedCriteria(db, given.spec) };
   await assertGradingScale(db, input.spec.settings.gradingScaleId);
   await assertCategory(db, input.categoryId);
 

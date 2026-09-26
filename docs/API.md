@@ -37,6 +37,10 @@ Errors always take the shape `{ error: { code, message } }`. Every response carr
 | `POST` | `/api/settings/ai/:provider/test` | session | required |
 | `POST` | `/api/settings/email/test` | session | required |
 | `POST` | `/api/settings/sources/ebay/test` | session | required |
+| `GET` | `/api/shared-criteria` | session | — |
+| `POST` | `/api/shared-criteria` | session | required |
+| `DELETE` | `/api/shared-criteria/:id` | session | required |
+| `PUT` | `/api/shared-criteria/:id` | session | required |
 | `GET` | `/api/wishes` | session | — |
 | `POST` | `/api/wishes` | session | required |
 | `DELETE` | `/api/wishes/:id` | session | required |

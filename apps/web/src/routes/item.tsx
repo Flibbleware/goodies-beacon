@@ -13,9 +13,16 @@ import { LastPoll } from '../components/last-poll.js';
 import { Modal } from '../components/modal.js';
 import { Pill } from '../components/pill.js';
 import { DisplayImage } from '../items/display-image.js';
+import {
+  CriterionActions,
+  EntryActions,
+  type Removal,
+  RemoveFromSpec,
+} from '../items/entry-actions.js';
 import { ItemSection } from '../items/item-section.js';
+import { criterionName, planName } from '../items/labels.js';
 import { PlanTable } from '../items/plan-table.js';
-import { type EditableSection, SectionEditor } from '../items/section-editor.js';
+import { type EditTarget, SectionEditor } from '../items/section-editor.js';
 import { CriteriaList, ReferenceList, SpecDescription, SpecSettings } from '../items/spec-card.js';
 import { VersionList } from '../items/version-history.js';
 import { appLayoutRoute } from './app-layout.js';
@@ -32,7 +39,8 @@ export const itemRoute = createRoute({
  * the version history, and the one control that is not a spec change — pause and resume.
  *
  * Each section folds away and, where it is part of the spec, has a pencil opening an editor for
- * that section alone (P1-24): Details also holds the title, category and status, and the JSON
+ * that section alone (P1-24) — except Criteria and Search Plans, whose plus adds one and whose
+ * entries each have their own pencil and bin (P1-27): Details also holds the title, category and status, and the JSON
  * button edits the whole document; the clock beside it opens the version history. Only Details
  * starts open; the rest is a click away. An item is created from a dialog on the list and lands
  * here as a draft (P1-26): a red mark beside a section says what it still needs before it can
@@ -41,7 +49,8 @@ export const itemRoute = createRoute({
 function ItemPage() {
   const { itemId } = itemRoute.useParams();
   const { data } = useQuery(itemQuery(itemId));
-  const [editing, setEditing] = useState<EditableSection | null>(null);
+  const [editing, setEditing] = useState<EditTarget | null>(null);
+  const [removing, setRemoving] = useState<Removal | null>(null);
   const [history, setHistory] = useState(false);
 
   if (!data) return null;
@@ -87,22 +96,77 @@ function ItemPage() {
           <SpecDescription spec={spec} />
         </ItemSection>
       ) : null}
-      {/* Drawn from the plans' own records, so it stands even when the spec cannot be read. */}
+      {/* Drawn from the plans' own records, so it stands even when the spec cannot be read. Each
+          plan is edited on its own, as each criterion is (P1-27). */}
       <ItemSection
         title="Search Plans"
-        onEdit={spec ? () => setEditing('searchPlans') : undefined}
+        onAdd={
+          spec
+            ? { label: 'Add a search plan', onClick: () => setEditing('addSearchPlan') }
+            : undefined
+        }
         flag={flag('searchPlans')}
       >
-        <PlanTable plans={item.plans} />
+        <PlanTable
+          plans={item.plans}
+          actions={
+            spec
+              ? (row) => {
+                  const index = spec.searchPlans.findIndex((plan) => plan.id === row.planId);
+                  const plan = spec.searchPlans[index];
+                  if (!plan) return null;
+                  return (
+                    <EntryActions
+                      name={`the search plan ${plan.query} on ${plan.region}`}
+                      onEdit={() => setEditing({ plan: index })}
+                      onRemove={() =>
+                        setRemoving({
+                          title: 'Remove a Search Plan',
+                          what: `“${plan.query}” on ${plan.region}`,
+                          aside: 'What it has found stays, and so do its stats.',
+                          spec: {
+                            ...spec,
+                            searchPlans: spec.searchPlans.filter((each) => each !== plan),
+                          },
+                          changeNote: `Removed the search plan ${planName(plan)}.`,
+                        })
+                      }
+                    />
+                  );
+                }
+              : undefined
+          }
+        />
       </ItemSection>
       {spec ? (
         <>
+          {/* Each criterion is edited on its own; the list is too much in one form (P1-27). */}
           <ItemSection
             title="Criteria"
-            onEdit={() => setEditing('criteria')}
+            onAdd={{ label: 'Add a criterion', onClick: () => setEditing('addCriterion') }}
             flag={flag('criteria')}
           >
-            <CriteriaList spec={spec} />
+            <CriteriaList
+              spec={spec}
+              actions={(criterion, index) => (
+                <CriterionActions
+                  criterion={criterion}
+                  onEdit={() => setEditing({ criterion: index })}
+                  onRemove={() =>
+                    setRemoving({
+                      title: 'Remove a Criterion',
+                      what: criterion.text,
+                      aside: criterion.shared ? 'The shared criterion itself is kept.' : undefined,
+                      spec: {
+                        ...spec,
+                        criteria: spec.criteria.filter((each) => each !== criterion),
+                      },
+                      changeNote: `Removed the criterion ${criterionName(criterion)}.`,
+                    })
+                  }
+                />
+              )}
+            />
           </ItemSection>
           <ItemSection title="Settings" onEdit={() => setEditing('settings')}>
             <SpecSettings spec={spec} />
@@ -115,6 +179,7 @@ function ItemPage() {
       ) : null}
 
       <SectionEditor item={item} section={editing} onClose={() => setEditing(null)} />
+      <RemoveFromSpec item={item} removal={removing} onClose={() => setRemoving(null)} />
       <Modal open={history} onClose={() => setHistory(false)} title="Version History">
         <VersionList versions={item.versions} currentId={item.current?.versionId} />
         <div className="mt-4 flex justify-end">

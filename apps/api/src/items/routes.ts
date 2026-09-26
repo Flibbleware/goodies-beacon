@@ -6,9 +6,11 @@ import {
   itemSaveSchema,
   listItems,
   loadItem,
+  RepeatedCriterionError,
   saveItem,
   UnknownGradingScaleError,
   UnknownImageError,
+  UnknownSharedCriterionError,
   updateItem,
 } from '@goodies-beacon/core';
 import { Hono } from 'hono';
@@ -87,8 +89,8 @@ export function createItemRoutes({ db }: ItemRouteDeps) {
 }
 
 /**
- * A grading scale, category or image that does not exist is the editor's mistake, not the
- * server's; so is asking an item to poll before its spec can (P1-26).
+ * A grading scale, category, image or shared criterion that does not exist is the editor's
+ * mistake, not the server's; so is asking an item to poll before its spec can (P1-26).
  */
 function saveError(c: Parameters<typeof errorResponse>[0], error: unknown): Response {
   if (error instanceof ItemNotReadyError) {
@@ -101,6 +103,12 @@ function saveError(c: Parameters<typeof errorResponse>[0], error: unknown): Resp
       'unknown_image',
       `displayImageId names no stored image: ${error.mediaId}`,
     );
+  }
+  if (error instanceof UnknownSharedCriterionError) {
+    return errorResponse(c, 400, 'unknown_shared_criterion', error.message);
+  }
+  if (error instanceof RepeatedCriterionError) {
+    return errorResponse(c, 400, 'repeated_criterion', error.message);
   }
   if (error instanceof UnknownGradingScaleError) {
     return errorResponse(

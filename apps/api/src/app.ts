@@ -6,6 +6,7 @@ import { createLoginRateLimiter, type LoginRateLimiter } from './auth/rate-limit
 import { createAuthRoutes } from './auth/routes.js';
 import { createCandidateRoutes } from './candidates/routes.js';
 import { createCategoryRoutes } from './categories/routes.js';
+import { createSharedCriterionRoutes } from './criteria/routes.js';
 import { createDashboardRoutes } from './dashboard/routes.js';
 import { errorHandler, notFoundHandler } from './errors.js';
 import { createHealthRoute } from './health.js';
@@ -56,6 +57,7 @@ export function createApp(deps: AppDeps) {
   app.route('/api/dashboard', createDashboardRoutes({ db, logger }));
   app.route('/api/items', createItemRoutes({ db }));
   app.route('/api/categories', createCategoryRoutes({ db }));
+  app.route('/api/shared-criteria', createSharedCriterionRoutes({ db }));
   app.route('/api/wishes', createWishRoutes({ db }));
   app.route('/api/settings', createSettingsRoutes({ db, config, logger }));
   app.route('/api/media', createMediaRoutes({ db, mediaDir: config.mediaDir, logger }));

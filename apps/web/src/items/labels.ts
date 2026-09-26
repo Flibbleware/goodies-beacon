@@ -74,3 +74,22 @@ export const BACKFILL_DEPTH_LABELS: Record<BackfillDepth, string> = {
   top_200: 'Newest 200',
   last_30_days: 'Last 30 days',
 };
+
+/**
+ * A criterion as a change note names it: a shared one by its identifier, which the owner chose,
+ * and one of the item's own by its text, since its id is usually a random one nobody reads.
+ */
+export function criterionName(criterion: {
+  id: string;
+  text: string;
+  shared?: string | undefined;
+}) {
+  if (criterion.shared || criterion.text.trim() === '') return criterion.id;
+  const text = criterion.text.trim();
+  return `“${text.length > 60 ? `${text.slice(0, 59).trimEnd()}…` : text}”`;
+}
+
+/** A search plan as a change note names it: its query and where it searches. */
+export function planName(plan: { id: string; query: string; region: string }) {
+  return plan.query.trim() === '' ? plan.id : `“${plan.query.trim()}” on ${plan.region}`;
+}

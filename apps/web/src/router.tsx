@@ -3,6 +3,7 @@ import { createRouter } from '@tanstack/react-router';
 import { appLayoutRoute } from './routes/app-layout.js';
 import { candidateRoute } from './routes/candidate.js';
 import { candidatesRoute } from './routes/candidates.js';
+import { criteriaRoute } from './routes/criteria.js';
 import { dashboardRoute } from './routes/dashboard.js';
 import { itemRoute } from './routes/item.js';
 import { itemsRoute } from './routes/items.js';
@@ -23,6 +24,7 @@ const routeTree = rootRoute.addChildren([
     candidateRoute,
     itemsRoute,
     itemRoute,
+    criteriaRoute,
     wishesRoute,
     settingsRouteTree,
   ]),

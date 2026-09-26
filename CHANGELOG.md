@@ -4,6 +4,21 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-27 Shared criteria. A new **Criteria** page holds criteria written once — "the original
+  release, not the Nintendo Classics re-release" — each under an identifier and with tags to find
+  it by. Add one to any wanted item from its criteria editor, searching by identifier or tag. Its
+  text, and any of kind, photos and unknown-handling it sets, are the same on every item using it;
+  anything it leaves open is chosen per item. Rewording one updates every item that uses it, as a
+  new version, and deleting one leaves each item its own copy.
+- A criterion's *Kind* is now *Failure action*, choosing *Reject* or *Uncertain*.
+- An item's criteria are edited one at a time: the plus beside Criteria adds one, and each criterion
+  has its own pencil to edit it and bin to remove it.
+- Search plans are edited one at a time as well: the plus beside Search Plans adds one, and each
+  row of the table has its own edit and remove buttons.
+- An item's criteria are easier to read: each shows its *Failure*, *Unknown* and *Photos* settings,
+  with Reject always in red and Uncertain always in amber. Criterion text is smaller, and a long
+  one is cut to a single line; click it to read the rest.
+  Shared criteria are described the same way on the Criteria page.
 - P1-26 Creating an item. *Create* on the wanted items list now opens a dialog asking for the
   title, category and a summary, and takes you straight to the new item's page as a draft, where
   the rest is filled in section by section. Red marks beside Criteria and Search Plans show what a

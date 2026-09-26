@@ -1,9 +1,10 @@
 import { type ReactNode, useId, useState } from 'react';
-import { ChevronIcon, EditIcon } from '../components/icons.js';
+import { ChevronIcon, EditIcon, PlusIcon } from '../components/icons.js';
 
 /**
  * One section of the item page (P1-24): a heading that folds it away, and beside it a pencil that
- * opens the section's own editor when it has one.
+ * opens the section's own editor when it has one — or, for a section edited an entry at a time, a
+ * plus that adds one.
  *
  * Sections start folded unless `defaultOpen`. Folded or open, once chosen, is remembered per
  * section name rather than per item, in the browser only: it is how the owner likes the page laid
@@ -14,6 +15,7 @@ export function ItemSection({
   title,
   defaultOpen = false,
   onEdit,
+  onAdd,
   flag,
   children,
 }: {
@@ -21,6 +23,8 @@ export function ItemSection({
   defaultOpen?: boolean;
   /** Opens the section's editor; a section without one has no pencil. */
   onEdit?: (() => void) | undefined;
+  /** Adds an entry to a section whose entries are each edited on their own. */
+  onAdd?: { label: string; onClick: () => void } | undefined;
   /** What the section still needs before the item can poll (P1-26): a red mark beside it. */
   flag?: string | undefined;
   children: ReactNode;
@@ -70,9 +74,20 @@ export function ItemSection({
             onClick={onEdit}
             aria-label={`Edit ${title.toLowerCase()}`}
             title={`Edit ${title.toLowerCase()}`}
-            className="rounded p-1 text-ink-dim hover:bg-paper-raised hover:text-ink dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark dark:hover:text-ink-dark"
+            className={HEADING_BUTTON}
           >
             <EditIcon />
+          </button>
+        ) : null}
+        {onAdd ? (
+          <button
+            type="button"
+            onClick={onAdd.onClick}
+            aria-label={onAdd.label}
+            title={onAdd.label}
+            className={HEADING_BUTTON}
+          >
+            <PlusIcon />
           </button>
         ) : null}
       </div>
@@ -82,6 +97,9 @@ export function ItemSection({
     </section>
   );
 }
+
+const HEADING_BUTTON =
+  'rounded p-1 text-ink-dim hover:bg-paper-raised hover:text-ink dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark dark:hover:text-ink-dark';
 
 function readOpen(key: string, fallback: boolean): boolean {
   try {
