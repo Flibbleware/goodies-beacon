@@ -10,6 +10,8 @@ It is single-user, runs from one `docker compose up`, and every marketplace and 
 
 - [Architecture](docs/ARCHITECTURE.md) — what is being built and why.
 - [Development plan](docs/DEVELOPMENT_PLAN.md) — the task list, with acceptance criteria.
+- [Writing a spec](docs/WRITING_A_SPEC.md) — how to write a wanted item's spec, compact enough to
+  hand to an AI session on its own.
 
 ## Layout
 

@@ -10,6 +10,8 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   new item still needs before it can poll, and Start Polling stays disabled, listing what is
   missing, until it has them. The old full-page editor is gone, and promoting a wish now opens the
   new item's page.
+- A guide to writing a wanted item's spec, `docs/WRITING_A_SPEC.md`, short enough to give to an
+  AI assistant on its own.
 - An item's settings are simpler to fill in: the poll interval is a number of hours, only eBay is
   offered as a marketplace until the others are ready, the grading fields are hidden until grading
   arrives, and every option reads in plain words.

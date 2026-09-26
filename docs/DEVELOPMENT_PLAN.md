@@ -1297,6 +1297,13 @@ words — *Newest 200*, *Fixed price*, *For parts or not working* — from one `
 and the item page's settings card both use. And Condition and Poll every, and Negative keywords and
 Shipping to the UK, swap places.
 
+`docs/WRITING_A_SPEC.md` is added alongside, at the owner's request: until the interviewer
+exists, specs are written by hand or with an AI session's help, and a fresh session should not need
+all of ARCHITECTURE.md to do it. It is the spec format, the settings/criteria rule, what each stage
+of the pipeline reads, the criterion rules the prompt evaluation taught, a checklist and a worked
+example — which a script parsed with `wantedSpecSchema` and ran through `readinessGaps` and
+`lintSpec` before it was committed.
+
 #### What P1-26 found
 
 **A promoted wish is the one way to reach an item without a summary.** Promotion writes a draft from
@@ -1315,6 +1322,15 @@ then holds is still covered by `parse.test.ts`, which tests the functions both g
 **The removed page took three things with it**: `VersionHistory` (the editor's plain heading over
 the list the item page shows in a modal), and the image panel's `canInsert` and `framed`, which
 only ever differed on that page.
+
+**Five settings are stored and edited but read by nothing.** Writing the spec guide meant checking
+what each setting actually does, and `listingTypes`, `conditionCategory`, the `shipsToUk` policy,
+`relists` and `backfill` are not read by the poll, the pipeline or the scheduler — only the price
+ceiling, the negative keywords, the notification mode and the poll interval are. The settings
+editor offers all five as though they filter. Each has a phase that brings it (relists and backfill
+are Phase 5's; listing type, condition and ships-to-UK are a source filter or a hard filter nobody
+has built), and until then the guide says so plainly; whether the editor should hide or mark them
+meanwhile is the owner's call.
 
 **`spec-form.tsx` holds a literal NUL byte**, as the separator in a string join (line 486), so
 `grep` and `file` treat the file as binary and quietly skip it. It works; `'\0'` would say the
