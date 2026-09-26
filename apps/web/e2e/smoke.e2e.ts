@@ -28,6 +28,9 @@ const powerMac = example('power-mac-5500');
 /** A 1×1 PNG: enough for sharp to re-encode, small enough to read in a diff. */
 const PNG_1PX =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+/** A different picture, because an upload of the same bytes is the same stored image. */
+const PNG_2PX =
+  'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAIAAAB7QOjdAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAD0lEQVQImWM4oaFxQkMDAAjvAjEWcPVqAAAAAElFTkSuQmCC';
 
 /** Mailpit's HTTP API, so a "Send test email" click can be checked against a real inbox. */
 const MAILPIT = process.env.E2E_MAILPIT_URL;
@@ -60,10 +63,11 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(dialog).toBeHidden();
   };
   // The editor has its own back link with the same name, so the sidebar one is named exactly.
-  const nav = page.getByRole('link', { name: 'Wanted items', exact: true });
+  const nav = page.getByRole('link', { name: 'Wanted Items', exact: true });
   // Captured when the item is created, so the seeded candidates hang off the real one.
   let carmageddonId = '';
   const verdictFilter = page.getByRole('navigation', { name: 'Verdict' });
+  const fromFilter = page.getByRole('navigation', { name: 'From' });
   const sidebar = page.getByRole('navigation', { name: 'Main' });
   const settingsLink = (name: string) => sidebar.getByRole('link', { name, exact: true });
 
@@ -279,7 +283,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL('/items');
     await expect(page.getByText('No wanted items yet.')).toBeVisible();
 
-    await page.getByRole('link', { name: 'New wanted item' }).click();
+    await page.getByRole('link', { name: 'Create a wanted item' }).click();
     await page.getByLabel('Title').fill('Carmageddon big box');
     await page.getByLabel('Status').selectOption('active');
     await page.getByLabel('Category').selectOption({ label: 'Game' });
@@ -417,7 +421,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
   await test.step('the Power Mac 5500 example goes in as a second item', async () => {
     await nav.click();
-    await page.getByRole('link', { name: 'New wanted item' }).click();
+    await page.getByRole('link', { name: 'Create a wanted item' }).click();
 
     await page.getByLabel('Title').fill('Power Macintosh 5500');
     await page.getByRole('tab', { name: 'JSON' }).click();
@@ -436,9 +440,11 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await expect(row).toContainText('active');
     await expect(row).toContainText('Real-time email');
-    await expect(row).toContainText('version 2');
     await expect(row).toContainText('Never polled');
-    await expect(row).toContainText('0 candidates');
+    await expect(row).toContainText('0 matched');
+    await expect(row).toContainText('0 uncertain');
+    // No display image yet, so the card is headed by its category rather than a photograph.
+    await expect(row.locator('img')).toHaveCount(0);
   });
 
   await test.step('the list filters by category, and an item saved without one is uncategorised', async () => {
@@ -598,22 +604,56 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await closeHistory();
   });
 
-  await test.step('Details renames the item alongside its summary', async () => {
+  await test.step('Details renames the item without writing a version', async () => {
     await page.getByRole('button', { name: 'Edit details' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Edit Details' });
     await expect(dialog.getByLabel('Status')).toHaveValue('active');
     await dialog.getByLabel('Title').fill('Carmageddon big box, Mac or PC');
-    await dialog.getByRole('button', { name: 'Save as version 4' }).click();
+    // The title is the item's, not the spec's (P1-25): no version, so no note to ask for.
+    await expect(dialog.getByLabel('Change note')).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect(dialog).toBeHidden();
     await expect(
       page.getByRole('heading', { name: 'Carmageddon big box, Mac or PC', level: 1 }),
     ).toBeVisible();
-    await expect((await itemHistory()).getByRole('listitem').first()).toContainText(
-      'Edited the details.',
-    );
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
     await closeHistory();
+  });
+
+  await test.step('a display image heads the card in the list, and is no version either', async () => {
+    const display = section('Display image');
+    await expect(display).toContainText('None');
+
+    await display.getByRole('button', { name: 'Choose' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Choose a Display Image' });
+    await dialog.getByRole('button', { name: 'Use UK big box, front' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(display.getByRole('img')).toBeVisible();
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
+    await closeHistory();
+
+    // One used for nothing else: uploaded here, it never enters the spec.
+    await display.getByRole('button', { name: 'Change' }).click();
+    await dialog.getByLabel('Image').setInputFiles({
+      name: 'shelf.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(PNG_2PX, 'base64'),
+    });
+    await dialog.getByRole('button', { name: 'Upload and use' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(section('Reference Images')).toContainText(
+      '1 image sent with every review of this item.',
+    );
+
+    await nav.click();
+    const card = page.getByRole('listitem').filter({ hasText: 'Carmageddon big box, Mac or PC' });
+    // The picture and its blurred backdrop, both the one stored image.
+    await expect(card.locator('img')).toHaveCount(2);
+    await expect(card.locator('img').last()).toHaveAttribute('src', /^\/api\/media\/[0-9a-f-]+$/);
+    await card.getByRole('link', { name: 'Carmageddon big box, Mac or PC' }).click();
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
   });
 
   await test.step('judged candidates appear in the audit view, matches first', async () => {
@@ -673,8 +713,15 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       'Matches',
       'Uncertain',
       'Rejected',
-      'Not yet judged',
+      'Queued',
     ]);
+    // And on today's: the plain URL is today, as the dashboard's tiles count it (P1-25).
+    await expect(fromFilter.getByRole('link')).toHaveText(['Today', 'All']);
+    // "page" when the chip's link is this very URL, which the router marks itself.
+    await expect(fromFilter.getByRole('link', { name: 'Today' })).toHaveAttribute(
+      'aria-current',
+      /^(true|page)$/,
+    );
     await expect(page.getByText('1 candidate', { exact: true })).toBeVisible();
     await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeVisible();
     await expect(page.getByText('Carmageddon t-shirt, size L')).toBeHidden();
@@ -695,6 +742,11 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await verdictFilter.getByRole('link', { name: 'Uncertain' }).click();
     await expect(page.getByText('Carmageddon, box only, no disc')).toBeVisible();
+
+    // Everything seeded is today's, so All shows the same, and says so in the URL.
+    await fromFilter.getByRole('link', { name: 'All' }).click();
+    await expect(page).toHaveURL('/candidates?decision=uncertain&from=all');
+    await expect(page.getByText('Carmageddon, box only, no disc')).toBeVisible();
   });
 
   await test.step('the item page counts link straight into the filtered view', async () => {
@@ -705,7 +757,13 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByText('Total', { exact: true })).toBeVisible();
     await page.getByRole('link', { name: /Matched/ }).click();
 
-    await expect(page).toHaveURL(/\/candidates\?item=[0-9a-f-]+&decision=match$/);
+    // The item's counts are for all time, so they open the all-time list rather than today's.
+    await expect(page).toHaveURL(/\/candidates\?item=[0-9a-f-]+&decision=match&from=all$/);
+    // "page" when the chip's link is this very URL, which the router marks itself.
+    await expect(fromFilter.getByRole('link', { name: 'All' })).toHaveAttribute(
+      'aria-current',
+      /^(true|page)$/,
+    );
     await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeVisible();
     await expect(page.getByText('Carmageddon t-shirt, size L')).toBeHidden();
   });
@@ -798,7 +856,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(sources).toContainText('eBay said 503 Service Unavailable');
     await expect(sources.getByRole('link', { name: 'Carmageddon big box' })).toBeVisible();
 
-    await expect(section('AI spend')).toContainText('no cap set');
+    await expect(section('API Spend')).toContainText('no cap set');
     // A process that has stopped answering says so, in the words §6 asks for.
     const processes = section('Processes');
     await expect(processes).toContainText('api last seen');
@@ -818,7 +876,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
 
     await page.getByRole('link', { name: 'Dashboard' }).click();
-    await section('AI spend').getByRole('link').click();
+    await section('API Spend').getByRole('link').click();
     await expect(page).toHaveURL('/settings/models');
     await expect(page.getByRole('heading', { name: 'Models' })).toBeVisible();
   });
@@ -833,7 +891,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByText('Nothing on the wish list yet.')).toBeVisible();
 
     const dialog = page.getByRole('dialog', { name: 'Add a wish' });
-    const open = page.getByRole('button', { name: 'Add a wish' });
+    const open = page.getByRole('button', { name: 'Create a wish' });
 
     // Cancel closes it with nothing added.
     await open.click();

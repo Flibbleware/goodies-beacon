@@ -1000,15 +1000,18 @@ item, so a handful is plenty.
 Every listing a wanted item has been given is a **candidate**, and all of them are on
 **Candidates** — matches, uncertains and rejections alike. That is the point rather than an
 oversight: the thing worth checking is not what Goodies Beacon emailed you, it is what it threw
-away. Filter by verdict and by origin; the filters live in the URL, so a view can be bookmarked,
-and the counts on an item page link straight into the one they count.
+away. Filter by day, by verdict and by origin; the filters live in the URL, so a view can be
+bookmarked, and the counts on an item page link straight into the one they count. The list opens
+on today — in the instance's time zone, dated by a candidate's latest verdict or, while it is still
+queued, by when it was found, which is how the dashboard's *Today* counts it — and *All* is one
+click away; an item page's counts are for all time, so they open *All*.
 
 | Verdict | What it means |
 |---|---|
 | Match | Every criterion the reviewer could settle, it settled in the listing's favour |
 | Uncertain | Something could not be established, or a soft criterion failed — the email says which |
 | Rejected | A hard criterion failed, or a filter stopped it before a model was ever called |
-| Not yet judged | Found, and still in the queue or part-way through the pipeline |
+| Queued | Found, and still in the queue or part-way through the pipeline |
 
 A rejection made before the reviewer says which filter did it — over the price ceiling, a negative
 keyword in the title, or discarded by the pre-filter — and those cost nothing, so the verdict's

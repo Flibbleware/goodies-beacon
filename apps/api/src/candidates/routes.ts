@@ -3,8 +3,10 @@ import {
   type Database,
   listCandidates,
   loadCandidate,
+  readSettings,
   retainSchema,
   setRetain,
+  startOfDayIn,
 } from '@goodies-beacon/core';
 import { Hono } from 'hono';
 import { errorResponse } from '../errors.js';
@@ -36,7 +38,11 @@ export function createCandidateRoutes({ db }: CandidateRouteDeps) {
       );
     }
 
-    const { rows, total } = await listCandidates(db, filter.data);
+    const since =
+      filter.data.from === 'today'
+        ? startOfDayIn((await readSettings(db)).instance.timezone, new Date())
+        : undefined;
+    const { rows, total } = await listCandidates(db, filter.data, since);
     return c.json({ candidates: rows, total, filter: filter.data });
   });
 

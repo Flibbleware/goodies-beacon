@@ -52,6 +52,13 @@ pnpm db:generate   # write a migration from a schema change
 pnpm db:migrate    # apply outstanding migrations
 ```
 
+`MEDIA_DIR` in `.env.example` is the container's volume, `/data/media`, which cannot be created
+on a Mac (the disk's root is read-only) and would need root on Linux; every image upload then
+fails with a generic 500. For `pnpm dev`, point it at an absolute path in the repository —
+`/media/` at the root is ignored by git — such as `MEDIA_DIR=/path/to/goodies-beacon/media`.
+Not a relative one: `pnpm dev` runs each app from its own directory, so `./media` would land in
+`apps/api/media`.
+
 The API applies outstanding migrations itself on start when `ROLE` is `api` or `all`. Set
 `TEST_DATABASE_URL` to a throwaway database to include the database integration tests, which
 are skipped without it.

@@ -4,6 +4,23 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-25 Wanted item cards and display images. The wanted items list is now a grid of cards
+  rather than rows, so it no longer looks like the wish list. Each card is headed by a picture of
+  the item, or by its category's icon when it has none, with the category in a small badge in
+  its corner; the status and notification mode sit beneath as pills, with the counts and when it
+  last polled. The date of the last poll is behind a clock icon — hover or tap it — here and on
+  the item's own page. Choose the picture in the Reference Images section of the item's page: pick
+  one of its reference images, or upload one just for the card. A picture uploaded for the card is
+  never shown to the AI reviewer.
+- The candidate list gains a *From* filter — Today or All — and opens on today, counted the way
+  the dashboard's *Today* figures are. The counts on a wanted item's page still open everything.
+  Candidates waiting to be judged are now labelled *Queued*.
+- The sidebar stays in place while the page scrolls, and Candidates now sits above Wish list. The
+  Settings pages beneath it hang off a thin line in smaller text, so they no longer look like more
+  main menu items.
+  The buttons that add a wanted item and a wish both read *Create*.
+- Renaming a wanted item, changing its category or changing its status no longer adds a version
+  to its history. The history now only records changes to what the item is looking for.
 - P1-24 Item page sections. A wanted item's page is now a column of sections — Details,
   Settings, Criteria, Reference Images and Search Plans — each of which folds away, and the version
   history opens from a clock button at the top. Only Details starts open, and whatever you open or

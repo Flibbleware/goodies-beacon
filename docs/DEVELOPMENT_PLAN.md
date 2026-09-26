@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.41; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.42; section numbers below refer to it.*
 
-Version 1.19 — 25 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.20 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -302,6 +302,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-22 | Custom categories | M | P1-20 |
 | P1-23 | Settings pages and navigation icons | S | P1-22 |
 | P1-24 | Item page sections and their editors | M | P1-18, P1-23 |
+| P1-25 | Wanted item cards and display images | M | P1-24 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1156,6 +1157,92 @@ Done when:
 - [x] Esc, the backdrop, Cancel or Back with an unsaved edit in a modal asks before discarding it, and says when an uploaded image would be left on the server with nothing pointing at it; a reload warns through the browser.
 - [x] The Playwright run finds only Details open on arrival, folds a section and finds it folded after a reload, edits the criteria through their pencil — checking the modal holds only the criteria, that Esc asks first, and that the save is version 3 with the note *Edited the criteria.* — and finds the description, settings, criteria and reference image each in its own section. It opens the JSON, breaks it, finds Save refused and discards it without a version being written, and renames the item from Details. Every version count it checks on the item page is read from the history modal.
 
+#### P1-25 Wanted item cards and display images — M
+
+The wanted items list is a divided column of rows with a category tile at the left, which is the
+wish list's shape — and the two pages sat side by side in the sidebar looking like one page twice.
+A wanted item is the bigger commitment and the thing a collector is actually hunting, so its list
+becomes a grid of cards, each headed by a picture of the thing: its **display image**, or, without
+one, its category's icon grown to fill the space on its tint. Below the picture are the title, the
+status, the category and mode, the matched and uncertain counts in the verdict colours P1-24 gave
+the item page, and the last poll.
+
+A display image is chosen in the item page's Reference Images section: one of the reference images,
+or an upload used for nothing else. **No model ever sees it**, and that is structural rather than a
+filter: it is a column on the wanted item, not an entry in the spec, and the pipeline reads only the
+spec. A reference image that is also the display image is still sent with every review, because it
+is a reference image — the picker says so.
+
+Decided with the owner before it was built: the display image lives on the item rather than as a
+flagged entry in `referenceImages`, which would have needed the prompt builder, the pipeline and the
+"images per review" count each to remember to skip it; the list is a grid with the picture on top
+(three columns on a desk, one on a phone) rather than rows with a larger thumbnail; and changing it
+writes no version. That last one raised a question — **why does renaming an item write a version?**
+— and the answer was that nothing meant it to. `saveItem` always inserts a version, and the title,
+category and status rode along on it because the Details editor saved through it; a spec version
+does not even store the title, so a rename wrote a copy of the previous version with a new note.
+They are now changed through the same `PATCH` as pause and resume, and a version is written only
+when the spec changes. ARCHITECTURE.md §4 says so (v1.42).
+
+Depends on P1-24.
+
+Done when:
+
+- [x] `wanted_items.display_image_id` references `media` with `on delete set null`, and the list and item routes return it. `PATCH /api/items/:id` sets or clears it, and answers an id naming no stored image with a 400 `unknown_image` rather than a foreign-key 500, and a malformed one with a 400 before it reaches Postgres.
+- [x] The wanted items list is a grid of cards — one column on a phone, two from 30rem, three from `sm` — each headed by its display image or, without one, its category's icon on its tint (a plain grey panel when uncategorised). Every picture sits in the same 4:3 frame, whole and uncropped, over a blurred and enlarged copy of itself that fills the frame, so a portrait box and a landscape photo give cards of one height with nothing cut off. The title is the link and stretches over the card, so the whole card is a target while the link's name stays the title; it is clamped to two lines and always takes two, so the status row lines up across a row of cards whatever the titles' lengths. The category is a frosted badge over the top-left corner of the picture, sized to its name so it covers little of it; the status and the notification mode are pills, as on the item page, and one `Pill` component draws both. The last poll reads *Last polled*, *Failing since* or *Never polled* with the date behind a clock beside it, shown on hover or focus and toggled by a tap — iOS Safari does not focus a button it is tapped on — and the item page's header uses the same `LastPoll`. The category filter and the empty states are as they were.
+- [x] The Reference Images section on the item page shows the display image with Choose or Change and Remove; Change opens a picker offering the item's reference images and an upload for the card only, and a choice saves at once without a version.
+- [x] The display image never reaches the reviewer: `review.integration.test.ts` gives an item a reference image and a different display image, both real files, and asserts the reviewer port is sent exactly the reference.
+- [x] Renaming, recategorising or changing the status of an item writes no version. `PATCH /api/items/:id` takes any of title, status, category and display image, leaves the fields it is not given alone, and refuses an empty patch or one carrying a spec. The Details editor sends a change that leaves the spec alone as a `PATCH` — its button reads *Save* and it asks for no change note — and one that touches the summary as a save, which is version N+1 with the rename in it.
+- [x] The Playwright run finds the card headed by its category before an image is chosen, renames the item from Details and finds three versions still, chooses the reference image as the display image and then uploads another for the card only, checking the history each time, and finds the card in the list headed by it and still one reference image sent with every review.
+
+Three changes to the rest of the app ride along on this branch at the owner's request. The
+sidebar is sticky on a desktop, so it stays put while a long page scrolls, and scrolls itself only
+in a window too short for it; before, it had the height of the window but moved with the page, and
+its border ended a screen down. Candidates moves above Wish list. And the buttons that add a wanted
+item and a wish both read *Create*, with the heading beside each saying what is created and the
+accessible name saying it too (*Create a wanted item*, *Create a wish*); the dashboard's empty-state
+button keeps *New Wanted Item*, where there is no heading to say it.
+
+A fourth, also asked for while the task was open: the candidate list gains a **From** filter,
+*Today* or *All*, and opens on today, and the verdict for a candidate still in the pipeline is
+called *Queued* rather than *Not yet judged*. Today is dated exactly as P1-16's dashboard dates it —
+by the newest verdict, or by when a still-queued candidate was found, in the instance's time zone —
+because the dashboard's *Today* tiles link here, and a tile saying three that opened a list of five
+would be worse than no filter. The API's default stays `all`, so a link written before the filter
+means what it meant; the page asks for `today` unless the URL says `from=all`. An item page's counts
+are all-time, so its links, and the candidate page's link back to its item's list, carry
+`from=all`. `listCandidates` refuses `today` without the day's start rather than quietly listing
+everything, because the time zone is a setting and core does not read settings. Tested in the store
+(a candidate found yesterday and judged today is today's; one queued since yesterday is not), in the
+route, and in the Playwright run. The three filters then sit on one line in the order From,
+Verdict, Origin — each label beside its choices rather than in a column of its own, which P1-23 set
+up for groups stacked one above another — and wrap onto further lines on a phone. On the wish list, the *Filter by tag* box moves below the
+sort and the category chips rather than above them. And the Settings pages in the sidebar hang
+off a thin guide line drawn down from under the Settings icon, in smaller and dimmer text, with the
+current page lighting its stretch of the line rather than taking the filled row the main items use
+— they had read as more main items. Their text still lines up with *Settings*, as P1-23 asked.
+
+#### What P1-25 found
+
+**The item routes' own comment said there was no `PATCH`**, while P1-14 had added one for pause and
+resume beside it. It now says what `PATCH` is for.
+
+**The full editor page still writes a version on a rename.** It is kept for creating an item and is
+no longer linked from the item page (P1-24), but `/items/:id/edit` still loads and saves an existing
+item through `saveItem`. It is left alone here; reworking item creation is where it goes.
+
+**An `aspect-ratio` box is a minimum, not a size.** The first cards had the frame at 4:3 and the
+picture filling it, and a tall photograph still made its card taller than its neighbours: a box
+whose height comes from `aspect-ratio` grows to fit its content unless its overflow is hidden. The
+frame hides its overflow and the pictures are positioned inside it, which is what holds the ratio.
+
+**Media rows are deduplicated by their bytes, so a media kind is only a record of the first upload.**
+An image uploaded for the card only is stored as `reference`, like any upload through
+`POST /api/media`: a `display` kind would need a migration of its check constraint to say something
+the dedupe cannot keep true, since the same bytes uploaded later as a reference would come back as
+the display row. What an image is *for* is where it is referenced from, which is also what §13's
+sweep asks — and the sweep now counts a display image as a reference, carried below.
+
 #### P1-XX Phase 1 exit — S
 
 Run the Phase 1 exit test on the droplet. Record the outcome, the month's real AI spend so far, and the spike recommendations in `CHANGELOG.md` under `v0.2.0`. Update ARCHITECTURE.md §2 with anything the spikes changed. When `development/0.2.0` is merged to `main`, make `main` the default branch again — it was switched to the integration branch during Phase 0 so manually triggered workflows and Renovate could see their files — and remove the "replace `main` with `development/0.2.0`" note from RUNNING.md.
@@ -1168,7 +1255,7 @@ Phase 2 and Phase 3 will be planned once Phase 1's spikes are in, because the Vi
 
 Their order was swapped at the Phase 0 exit (ARCHITECTURE.md §17 v1.22): **Phase 2 is notifications** — the 08:00 digest, `Notification` idempotency for every channel, the backfill and scan summary email, English summaries in email, the proper templates, and the retention job from §13, which otherwise waits until Phase 5 while candidates and media accumulate from the first poll; **Phase 3 is the interviewer** — the chat, `propose_spec`, backfill-before-agree, the Agree and amendment flows, and the side-by-side version diff. Notifications come first because the SMTP transport has existed since P0-10 and an email for a real match is the product's output, which should not wait behind a chat UI.
 
-**Phase 2's retention job also owns §13's orphaned-media sweep**, carried from P1-18: a reference image uploaded in the spec editor and never saved into a version, more than a day old and referenced by no spec version, grading scale or candidate, is deleted. Done when an abandoned upload is gone after the next nightly run and one saved into a version is not.
+**Phase 2's retention job also owns §13's orphaned-media sweep**, carried from P1-18: a reference image uploaded in the spec editor and never saved into a version, more than a day old and referenced by no spec version, grading scale, candidate or wanted item's display image, is deleted. Done when an abandoned upload is gone after the next nightly run and one saved into a version is not, and an image that is only an item's display image (P1-25) is not.
 
 **The typed spec form is Phase 1 work** (ARCHITECTURE.md §17 v1.35), which is a correction to that swap rather than part of it. The swap's second reason was that "the manual editor gives a way to create specs", and P1-13's editor — a raw JSON textarea, which is what §17 asked for — is that only for someone who knows the schema. Deferring the form with the chat therefore left hand-written JSON as the sole way to create or amend an item across two phases instead of one. The form needs nothing from the interviewer: it is a typed editor over P1-02 schemas, and the spec card in P1-14 already renders every one of those fields read-only. It was first scheduled at the head of Phase 2 and then brought forward, so that the Phase 1 exit does not leave JSON as the only way in; P1-18, in Track B above, is that task.
 

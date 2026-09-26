@@ -33,11 +33,18 @@ export const DECISION_TILES = {
   total: 'border-edge dark:border-edge-dark',
 } as const;
 
+/** The same colours as text alone, for a count too small to earn a tile (the item cards, P1-25). */
+export const DECISION_INK = {
+  match: 'text-emerald-700 dark:text-emerald-400',
+  uncertain: 'text-amber-700 dark:text-amber-400',
+  pending: 'text-sky-700 dark:text-sky-400',
+} as const;
+
 const LABELS: Record<VerdictDecision | 'pending', string> = {
   match: 'Match',
   uncertain: 'Uncertain',
   reject: 'Rejected',
-  pending: 'Not yet judged',
+  pending: 'Queued',
 };
 
 export function DecisionChip({ decision }: { decision: VerdictDecision | null }) {

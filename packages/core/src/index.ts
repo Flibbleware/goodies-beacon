@@ -315,11 +315,11 @@ export {
 } from './domain/verdict.js';
 export {
   type CandidateCounts,
+  type ItemPatchInput,
   type ItemSaveInput,
-  type ItemStatusInput,
   type ItemSummary,
+  itemPatchSchema,
   itemSaveSchema,
-  itemStatusSchema,
   NEVER_POLLED,
   NO_CANDIDATES,
   type PlanStats,
@@ -335,8 +335,10 @@ export {
   type SavedVersion,
   type StoredSpec,
   saveItem,
-  setItemStatus,
   UnknownGradingScaleError,
+  UnknownImageError,
+  type UpdatedItem,
+  updateItem,
 } from './items/store.js';
 export { createLogger, createSilentLogger, type Logger } from './logger.js';
 export {

@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -10,8 +10,10 @@ import {
   createSilentLogger,
   type Database,
   listings,
+  media,
   type NotificationMessage,
   notifications,
+  type ReviewPortRequest,
   type ReviewPortResult,
   type ReviewPorts,
   runMigrations,
@@ -131,6 +133,7 @@ interface SeedOptions {
   title?: string;
   /** Set to attribute the candidate to a plan, so P1-14's per-query stats can be asserted. */
   searchPlanId?: string;
+  referenceImages?: { id: string; path: string; label: string; addedAt: string }[];
 }
 
 /** One wanted item, one spec version, one listing, one candidate ready to review. */
@@ -168,6 +171,7 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
           onUnknown: 'surface',
         },
       ],
+      referenceImages: options.referenceImages ?? [],
     })
     .returning({ id: specVersions.id });
   if (!version) throw new Error('could not seed the spec version');
@@ -212,6 +216,27 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
   }
 
   return { candidateId: candidate.id, itemId: item.id };
+}
+
+/** A media row and a file behind it; the pipeline reads the bytes and nothing checks them. */
+async function storedFile(label: string | null): Promise<{ id: string; path: string }> {
+  const hash = crypto.randomUUID();
+  const path = `test/${hash}.webp`;
+  await mkdir(join(mediaDir, 'test'), { recursive: true });
+  await writeFile(join(mediaDir, path), hash);
+  const [row] = await db
+    .insert(media)
+    .values({
+      kind: 'reference',
+      path,
+      contentHash: hash,
+      contentType: 'image/webp',
+      bytes: 36,
+      label,
+    })
+    .returning({ id: media.id });
+  if (!row) throw new Error('could not seed the image');
+  return { id: row.id, path };
 }
 
 function depsWith(ports: ReviewPorts) {
@@ -328,6 +353,38 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
 
       expect(outcome).toMatchObject({ status: 'reviewed' });
     });
+  });
+
+  /** P1-25: the display image is the item's, the pipeline reads the spec, and never the twain. */
+  it('sends the reference images to the reviewer and never the display image', async () => {
+    const reference = await storedFile('UK big box, front');
+    const display = await storedFile(null);
+    const { candidateId, itemId } = await seed({
+      referenceImages: [
+        { ...reference, label: 'UK big box, front', addedAt: new Date().toISOString() },
+      ],
+    });
+    await db
+      .update(wantedItems)
+      .set({ displayImageId: display.id })
+      .where(eq(wantedItems.id, itemId));
+
+    const ports = fakePorts();
+    const review = ports.review;
+    let sent: ReviewPortRequest | undefined;
+    ports.review = async (request) => {
+      sent = request;
+      return review(request);
+    };
+
+    await runReview(depsWith(ports), candidateId);
+
+    expect(sent?.referenceImages.map((image) => image.mediaId)).toEqual([reference.id]);
+    expect(sent?.listing.images).toEqual([]);
+
+    await db.delete(wantedItems).where(eq(wantedItems.id, itemId));
+    await db.delete(media).where(eq(media.id, reference.id));
+    await db.delete(media).where(eq(media.id, display.id));
   });
 
   it('stops at the pre-filter when the listing is clearly something else', async () => {

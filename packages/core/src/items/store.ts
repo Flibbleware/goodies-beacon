@@ -1,10 +1,10 @@
 import { desc, eq, max } from 'drizzle-orm';
 import { assertCategory } from '../categories/store.js';
 import type { Database } from '../db/client.js';
-import { gradingScales, specVersions, wantedItems } from '../db/schema.js';
-import type { WantedItemStatus } from '../domain/constants.js';
+import { gradingScales, media, specVersions, wantedItems } from '../db/schema.js';
 import type {
   CandidateCounts,
+  ItemPatchInput,
   ItemSaveInput,
   ItemSummary,
   PlanStats,
@@ -34,6 +34,7 @@ export interface LoadedItem extends PollState {
   title: string;
   status: ItemSummary['status'];
   categoryId: ItemSummary['categoryId'];
+  displayImageId: ItemSummary['displayImageId'];
   notificationMode: ItemSummary['notificationMode'];
   pollEvery: string | null;
   createdAt: Date;
@@ -59,6 +60,22 @@ export class UnknownGradingScaleError extends Error {
   }
 }
 
+export class UnknownImageError extends Error {
+  override readonly name = 'UnknownImageError';
+  constructor(readonly mediaId: string) {
+    super(`No stored image with id ${mediaId}.`);
+  }
+}
+
+/** What `updateItem` changed, as it now stands. */
+export interface UpdatedItem {
+  id: string;
+  title: string;
+  status: ItemSummary['status'];
+  categoryId: string | null;
+  displayImageId: string | null;
+}
+
 export async function listItems(db: Database): Promise<ItemSummary[]> {
   const [rows, counts, polls] = await Promise.all([
     db
@@ -67,6 +84,7 @@ export async function listItems(db: Database): Promise<ItemSummary[]> {
         title: wantedItems.title,
         status: wantedItems.status,
         categoryId: wantedItems.categoryId,
+        displayImageId: wantedItems.displayImageId,
         notificationMode: wantedItems.notificationMode,
         currentVersion: specVersions.version,
         updatedAt: wantedItems.updatedAt,
@@ -87,24 +105,40 @@ export async function listItems(db: Database): Promise<ItemSummary[]> {
 }
 
 /**
- * Pause and resume, and nothing else (§14). Undefined when there is no such item.
+ * The item's own fields — title, status, category, display image — without a spec version
+ * (P1-14, P1-25). Undefined when there is no such item.
  *
- * Deliberately not `saveItem` with a different status: that writes a spec version, and pausing an
- * item for a fortnight is not a change to what it is looking for. The scheduler notices within the
- * minute either way — `schedules.reconcile` reads the status rather than being told (§6).
+ * Deliberately not `saveItem`: that writes a version, and pausing an item for a fortnight or
+ * renaming it is not a change to what it is looking for. The scheduler notices a status change
+ * within the minute either way — `schedules.reconcile` reads the status rather than being told (§6).
  */
-export async function setItemStatus(
+export async function updateItem(
   db: Database,
   id: string,
-  status: WantedItemStatus,
-): Promise<WantedItemStatus | undefined> {
+  patch: ItemPatchInput,
+): Promise<UpdatedItem | undefined> {
+  if (patch.categoryId !== undefined) await assertCategory(db, patch.categoryId);
+  if (patch.displayImageId !== undefined) await assertImage(db, patch.displayImageId);
+
   const [row] = await db
     .update(wantedItems)
-    .set({ status, updatedAt: new Date() })
+    .set({
+      title: patch.title,
+      status: patch.status,
+      categoryId: patch.categoryId,
+      displayImageId: patch.displayImageId,
+      updatedAt: new Date(),
+    })
     .where(eq(wantedItems.id, id))
-    .returning({ status: wantedItems.status });
+    .returning({
+      id: wantedItems.id,
+      title: wantedItems.title,
+      status: wantedItems.status,
+      categoryId: wantedItems.categoryId,
+      displayImageId: wantedItems.displayImageId,
+    });
 
-  return row?.status;
+  return row;
 }
 
 export async function loadItem(db: Database, id: string): Promise<LoadedItem | undefined> {
@@ -141,6 +175,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
     title: item.title,
     status: item.status,
     categoryId: item.categoryId,
+    displayImageId: item.displayImageId,
     notificationMode: item.notificationMode,
     pollEvery: item.pollEvery,
     createdAt: item.createdAt,
@@ -295,4 +330,12 @@ async function assertGradingScale(db: Database, id: string | null): Promise<void
     .where(eq(gradingScales.id, id))
     .limit(1);
   if (!scale) throw new UnknownGradingScaleError(id);
+}
+
+/** As `assertGradingScale`: a foreign key 500 would not say which field named nothing. */
+async function assertImage(db: Database, id: string | null): Promise<void> {
+  if (id === null) return;
+
+  const [row] = await db.select({ id: media.id }).from(media).where(eq(media.id, id)).limit(1);
+  if (!row) throw new UnknownImageError(id);
 }

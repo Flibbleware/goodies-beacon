@@ -191,6 +191,18 @@ describe.skipIf(!databaseUrl)('the candidate routes', () => {
     expect((await res.json()) as { total: number }).toMatchObject({ total: 1 });
   });
 
+  it('lists today in the instance time zone, and everything by default', async () => {
+    await seed('match');
+
+    const today = await get('/api/candidates?from=today');
+    expect(today.status).toBe(200);
+    expect(await today.json()).toMatchObject({ total: 1, filter: { from: 'today' } });
+
+    // A link written before the filter existed still means everything.
+    expect(await (await get('/api/candidates')).json()).toMatchObject({ filter: { from: 'all' } });
+    expect((await get('/api/candidates?from=yesterday')).status).toBe(400);
+  });
+
   it('refuses a filter it cannot understand, and names it', async () => {
     const res = await get('/api/candidates?decision=maybe');
 

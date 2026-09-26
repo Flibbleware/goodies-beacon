@@ -287,7 +287,7 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
 
       const paused = await send('PATCH', `/api/items/${itemId}`, { status: 'paused' });
       expect(paused.status).toBe(200);
-      expect(await paused.json()).toEqual({ status: 'paused' });
+      expect(await paused.json()).toMatchObject({ item: { id: itemId, status: 'paused' } });
 
       const read = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
       const { item } = (await read.json()) as {
@@ -316,6 +316,114 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
       const missing = '00000000-0000-4000-8000-000000000000';
 
       expect((await send('PATCH', `/api/items/${missing}`, { status: 'paused' })).status).toBe(404);
+    });
+  });
+
+  describe("the item's own fields, which write no version (P1-25)", () => {
+    const PNG_1PX =
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+    async function created(): Promise<string> {
+      const res = await send('POST', '/api/items', {
+        title: 'Carmageddon',
+        status: 'active',
+        spec: example('carmageddon'),
+      });
+      return ((await res.json()) as { itemId: string }).itemId;
+    }
+
+    async function read(itemId: string) {
+      const res = await app.request(`/api/items/${itemId}`, { headers: { cookie } });
+      return (
+        (await res.json()) as {
+          item: {
+            title: string;
+            status: string;
+            categoryId: string | null;
+            displayImageId: string | null;
+            versions: unknown[];
+            current: { document: Record<string, unknown> };
+          };
+        }
+      ).item;
+    }
+
+    it('renames and recategorises an item without writing a version', async () => {
+      const itemId = await created();
+      const category = await send('POST', '/api/categories', {
+        name: 'Game',
+        icon: 'gamepad',
+        colour: 'blue',
+      });
+      const game = ((await category.json()) as { category: { id: string } }).category.id;
+
+      const res = await send('PATCH', `/api/items/${itemId}`, {
+        title: 'Carmageddon big box',
+        categoryId: game,
+      });
+      expect(res.status).toBe(200);
+
+      const item = await read(itemId);
+      expect(item.title).toBe('Carmageddon big box');
+      expect(item.categoryId).toBe(game);
+      // Left out of the patch, so left alone.
+      expect(item.status).toBe('active');
+      expect(item.versions).toHaveLength(1);
+    });
+
+    it('sets an uploaded image as the display image, outside the spec the reviewer reads', async () => {
+      const itemId = await created();
+      const form = new FormData();
+      form.set(
+        'file',
+        new File([Buffer.from(PNG_1PX, 'base64')], 'box.png', { type: 'image/png' }),
+      );
+      const upload = await app.request('/api/media', {
+        method: 'POST',
+        headers: { cookie, [CSRF_HEADER]: csrf },
+        body: form,
+      });
+      expect(upload.status).toBe(201);
+      const image = ((await upload.json()) as { media: { id: string } }).media.id;
+
+      expect((await send('PATCH', `/api/items/${itemId}`, { displayImageId: image })).status).toBe(
+        200,
+      );
+
+      const item = await read(itemId);
+      expect(item.displayImageId).toBe(image);
+      expect(item.versions).toHaveLength(1);
+      expect(JSON.stringify(item.current.document)).not.toContain(image);
+
+      const list = await app.request('/api/items', { headers: { cookie } });
+      const { items } = (await list.json()) as { items: { displayImageId: string | null }[] };
+      expect(items[0]?.displayImageId).toBe(image);
+
+      await send('PATCH', `/api/items/${itemId}`, { displayImageId: null });
+      expect((await read(itemId)).displayImageId).toBeNull();
+    });
+
+    it('refuses an image that does not exist with a 400 naming the field', async () => {
+      const itemId = await created();
+
+      const res = await send('PATCH', `/api/items/${itemId}`, {
+        displayImageId: '00000000-0000-4000-8000-000000000000',
+      });
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: { code: string } }).error.code).toBe('unknown_image');
+      expect(
+        (await send('PATCH', `/api/items/${itemId}`, { displayImageId: 'box.png' })).status,
+      ).toBe(400);
+    });
+
+    it('refuses an empty patch, and a spec, which only a save may change', async () => {
+      const itemId = await created();
+
+      expect((await send('PATCH', `/api/items/${itemId}`, {})).status).toBe(400);
+      expect(
+        (await send('PATCH', `/api/items/${itemId}`, { spec: example('carmageddon') })).status,
+      ).toBe(400);
+      expect((await read(itemId)).versions).toHaveLength(1);
     });
   });
 

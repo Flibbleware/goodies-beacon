@@ -11,8 +11,10 @@ import type { SourceId } from '../sources.js';
  * stored are the same document.
  */
 
+const titleSchema = z.string().trim().min(1, 'a wanted item needs a title').max(200, 'is too long');
+
 export const itemSaveSchema = z.object({
-  title: z.string().trim().min(1, 'a wanted item needs a title').max(200, 'is too long'),
+  title: titleSchema,
   status: z.enum(WANTED_ITEM_STATUSES).default('draft'),
   /** For the list only (P1-20, P1-22); none when left out. */
   categoryId: categoryIdSchema,
@@ -28,15 +30,27 @@ export const itemSaveSchema = z.object({
 export type ItemSaveInput = z.infer<typeof itemSaveSchema>;
 
 /**
- * Pause and resume (P1-14), which is not a spec change and must not write a version.
+ * A change to the item that is not a change to its spec, and so writes no version (P1-14, P1-25).
  *
- * Status says whether the instance is looking, and nothing about what it is looking for. Folding
- * it into a save would put a version in the history every time a query was paused for an evening,
- * and the history is meant to answer "what changed about the spec", not "what was I doing".
+ * Status says whether the instance is looking; the title, category and display image say how the
+ * owner files and recognises the thing. None of them is read by a search or a review, and the
+ * history is meant to answer "what changed about what it looks for", which a version per rename
+ * or per paused evening would bury. Each field is optional and a missing one is left alone — which
+ * is why `categoryId` is declared here rather than borrowed, since the save's defaults to null.
+ * Strict, so a spec sent here is refused rather than silently not saved.
  */
-export const itemStatusSchema = z.object({ status: z.enum(WANTED_ITEM_STATUSES) });
+export const itemPatchSchema = z
+  .strictObject({
+    title: titleSchema.optional(),
+    status: z.enum(WANTED_ITEM_STATUSES).optional(),
+    categoryId: z.uuid('names no category').nullable().optional(),
+    displayImageId: z.uuid('names no image').nullable().optional(),
+  })
+  .refine((patch) => Object.values(patch).some((value) => value !== undefined), {
+    message: 'names nothing to change',
+  });
 
-export type ItemStatusInput = z.infer<typeof itemStatusSchema>;
+export type ItemPatchInput = z.infer<typeof itemPatchSchema>;
 
 /** One row of the version history: enough to say what changed and when, and nothing more. */
 export interface SpecVersionSummary {
@@ -131,6 +145,7 @@ export interface ItemSummary extends PollState {
   title: string;
   status: WantedItemStatus;
   categoryId: string | null;
+  displayImageId: string | null;
   notificationMode: NotificationMode;
   currentVersion: number | null;
   updatedAt: Date;

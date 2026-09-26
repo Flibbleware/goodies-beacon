@@ -91,9 +91,9 @@ function Wishes() {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Wish list</h1>
-        <Button type="button" onClick={() => setEditing({})}>
-          Add a Wish
+        <h1 className="text-xl font-semibold tracking-tight">Wish List</h1>
+        <Button type="button" aria-label="Create a wish" onClick={() => setEditing({})}>
+          Create
         </Button>
       </div>
 
@@ -104,17 +104,6 @@ function Wishes() {
         category={category}
         onClose={() => setEditing(null)}
       />
-
-      <div className="mt-4">
-        <input
-          type="search"
-          aria-label="Filter by tag"
-          placeholder="Filter by tag…"
-          value={query}
-          onChange={(event) => filterBy(event.target.value)}
-          className={CONTROL}
-        />
-      </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <Sort current={sort} category={category} tag={tagParam(query)} />
@@ -133,6 +122,17 @@ function Wishes() {
               {children}
             </Link>
           )}
+        />
+      </div>
+
+      <div className="mt-4">
+        <input
+          type="search"
+          aria-label="Filter by tag"
+          placeholder="Filter by tag…"
+          value={query}
+          onChange={(event) => filterBy(event.target.value)}
+          className={CONTROL}
         />
       </div>
 

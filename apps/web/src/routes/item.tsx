@@ -5,11 +5,14 @@ import { createRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { CandidateSearch } from '../api/candidates.js';
 import { ApiError } from '../api/client.js';
-import { itemQuery, itemsQuery, type LoadedItem, setItemStatus } from '../api/items.js';
+import { itemQuery, itemsQuery, type LoadedItem, updateItem } from '../api/items.js';
 import { DECISION_TILES } from '../candidates/bits.js';
 import { Alert, Button } from '../components/form.js';
 import { HistoryIcon } from '../components/icons.js';
+import { LastPoll } from '../components/last-poll.js';
 import { Modal } from '../components/modal.js';
+import { Pill } from '../components/pill.js';
+import { DisplayImage } from '../items/display-image.js';
 import { ItemSection } from '../items/item-section.js';
 import { PlanTable } from '../items/plan-table.js';
 import { type EditableSection, SectionEditor } from '../items/section-editor.js';
@@ -76,6 +79,7 @@ function ItemPage() {
           </ItemSection>
           <ItemSection title="Reference Images" onEdit={() => setEditing('images')}>
             <ReferenceList images={spec.referenceImages} />
+            <DisplayImage item={item} references={spec.referenceImages} />
           </ItemSection>
         </>
       ) : null}
@@ -112,7 +116,7 @@ function Header({
   const queryClient = useQueryClient();
 
   const change = useMutation({
-    mutationFn: (status: WantedItemStatus) => setItemStatus(item.id, status),
+    mutationFn: (status: WantedItemStatus) => updateItem(item.id, { status }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: itemQuery(item.id).queryKey });
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
@@ -151,8 +155,10 @@ function Header({
         <Pill>{item.status}</Pill>
         <Pill>{item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}</Pill>
         {item.current ? <Pill>{`Version ${item.current.version}`}</Pill> : null}
-        {/* Not a pill: it can be a sentence, and when a plan is failing it is the warning. */}
-        <span className="ml-1">{lastPoll(item)}</span>
+        {/* Not a pill: when a plan is failing it is the warning. */}
+        <span className="ml-1">
+          <LastPoll poll={item} countPlans />
+        </span>
       </p>
 
       {change.isError ? (
@@ -180,29 +186,6 @@ function Header({
       </div>
     </>
   );
-}
-
-function Pill({ children }: { children: string }) {
-  return (
-    <span className="rounded bg-paper-raised px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide dark:bg-paper-raised-dark">
-      {children}
-    </span>
-  );
-}
-
-/**
- * The item's own last poll, said in the terms §6 uses: a plan that is failing now but worked
- * before is "failing since", not simply "failed", because the difference is what you act on.
- */
-function lastPoll(item: LoadedItem): string {
-  if (item.failingPlans > 0) {
-    const plural = item.failingPlans === 1 ? 'plan is' : 'plans are';
-    return item.lastSuccessAt
-      ? `${item.failingPlans} ${plural} failing since ${new Date(item.lastSuccessAt).toLocaleString()}`
-      : `${item.failingPlans} ${plural} failing and none has ever succeeded`;
-  }
-  if (!item.lastPollAt) return 'Never polled';
-  return `Last polled ${new Date(item.lastPollAt).toLocaleString()}`;
 }
 
 /**
@@ -235,7 +218,7 @@ function Counts({ item }: { item: LoadedItem }) {
           <Link
             key={label}
             to="/candidates"
-            search={{ item: item.id, decision }}
+            search={{ item: item.id, decision, from: 'all' }}
             title={hint}
             className={`rounded-xl border p-3 ${DECISION_TILES[decision]}`}
           >

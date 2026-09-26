@@ -131,11 +131,11 @@ export {
 } from './domain/verdict.js';
 export {
   type CandidateCounts,
+  type ItemPatchInput,
   type ItemSaveInput,
-  type ItemStatusInput,
   type ItemSummary,
+  itemPatchSchema,
   itemSaveSchema,
-  itemStatusSchema,
   NEVER_POLLED,
   NO_CANDIDATES,
   type PlanStats,

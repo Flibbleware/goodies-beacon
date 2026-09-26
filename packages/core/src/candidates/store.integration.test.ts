@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { eq } from 'drizzle-orm';
 import type { Pool } from 'pg';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createDb, createPool, type Database } from '../db/client.js';
@@ -330,6 +331,50 @@ describe.skipIf(!databaseUrl)('the candidate store against a real Postgres', () 
 
     it('answers with nothing for a candidate that does not exist', async () => {
       expect(await setRetain(db, '00000000-0000-4000-8000-000000000000', true)).toBeUndefined();
+    });
+  });
+
+  describe('today (P1-25)', () => {
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    async function dated(id: string, found: Date, judged?: Date): Promise<void> {
+      await db.update(candidates).set({ createdAt: found }).where(eq(candidates.id, id));
+      if (judged) {
+        await db.update(verdicts).set({ createdAt: judged }).where(eq(verdicts.candidateId, id));
+      }
+    }
+
+    it('dates a judged candidate by its verdict, as the dashboard does', async () => {
+      const old = await seed({ decision: 'match', title: 'Judged yesterday' });
+      const fresh = await seed({ decision: 'match', title: 'Found yesterday, judged today' });
+      await dated(old, yesterday, yesterday);
+      await dated(fresh, yesterday, new Date());
+
+      const today = await listCandidates(db, filter({ decision: 'match', from: 'today' }), since);
+      expect(today.rows.map((row) => row.listing.title)).toEqual(['Found yesterday, judged today']);
+      expect(today.total).toBe(1);
+
+      const all = await listCandidates(db, filter({ decision: 'match', from: 'all' }), since);
+      expect(all.total).toBe(2);
+    });
+
+    it('dates a queued candidate by when it was found', async () => {
+      const old = await seed({ title: 'Queued since yesterday' });
+      const fresh = await seed({ title: 'Queued today' });
+      await dated(old, yesterday);
+      await dated(fresh, new Date());
+
+      const { rows } = await listCandidates(
+        db,
+        filter({ decision: 'pending', from: 'today' }),
+        since,
+      );
+      expect(rows.map((row) => row.listing.title)).toEqual(['Queued today']);
+    });
+
+    it('refuses today without the start of the day rather than listing everything', async () => {
+      await expect(listCandidates(db, filter({ from: 'today' }))).rejects.toThrow();
     });
   });
 });
