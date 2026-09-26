@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createRoute, Link } from '@tanstack/react-router';
+import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { type CategoryRow, categoriesQuery } from '../api/categories.js';
 import { type ItemRow, itemsQuery } from '../api/items.js';
 import { DECISION_INK } from '../candidates/bits.js';
@@ -12,11 +12,14 @@ import {
 import { CategoryCover, CategoryIcon } from '../components/category-icon.js';
 import { LastPoll } from '../components/last-poll.js';
 import { Pill } from '../components/pill.js';
+import { CreateItemModal } from '../items/create-item.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface ItemsSearch {
   /** A category's id, or `none` for the uncategorised. */
   category?: string | undefined;
+  /** The Create dialog is open (P1-26): in the URL, so the dashboard can link straight to it. */
+  create?: true | undefined;
 }
 
 export const itemsRoute = createRoute({
@@ -24,6 +27,7 @@ export const itemsRoute = createRoute({
   path: '/items',
   validateSearch: (search: Record<string, unknown>): ItemsSearch => ({
     category: typeof search.category === 'string' ? search.category : undefined,
+    create: search.create === true ? true : undefined,
   }),
   loader: ({ context }) =>
     Promise.all([
@@ -41,6 +45,7 @@ export const itemsRoute = createRoute({
  */
 function Items() {
   const search = itemsRoute.useSearch();
+  const navigate = useNavigate({ from: '/items' });
   const { data, isPending, isError } = useQuery(itemsQuery);
   const categories = useQuery(categoriesQuery).data?.categories ?? [];
   const category = knownChoice(categories, search.category);
@@ -53,13 +58,21 @@ function Items() {
         <h1 className="text-xl font-semibold tracking-tight">Wanted Items</h1>
         {/* The heading says what is created; the name says it too, for a reader without it. */}
         <Link
-          to="/items/new"
+          to="/items"
+          search={(prev) => ({ ...prev, create: true })}
           aria-label="Create a wanted item"
           className="rounded-lg bg-beacon px-4 py-2 text-sm font-medium text-white"
         >
           Create
         </Link>
       </div>
+
+      <CreateItemModal
+        open={search.create === true}
+        onClose={() =>
+          void navigate({ search: (prev) => ({ ...prev, create: undefined }), replace: true })
+        }
+      />
 
       {all.length > 0 ? (
         <div className="mt-6">

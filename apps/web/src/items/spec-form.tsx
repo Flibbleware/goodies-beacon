@@ -17,15 +17,30 @@ import {
   BUYING_TYPES,
   CONDITION_CATEGORIES,
   CRITERION_KINDS,
+  durationToHours,
+  hoursToDuration,
   isMarketplaceSourceId,
-  MARKETPLACE_SOURCE_IDS,
   NOTIFICATION_MODES,
   ON_UNKNOWN,
   RELIST_POLICIES,
   SHIPS_TO_UK_POLICIES,
+  scheduledHours,
 } from '@goodies-beacon/core/schemas';
 import { type ReactNode, useEffect, useId, useState } from 'react';
 import { Button, CONTROL, Field } from '../components/form.js';
+import {
+  BACKFILL_DEPTH_LABELS,
+  CONDITION_LABELS,
+  isOffered,
+  LISTING_TYPE_LABELS,
+  NOTIFICATION_LABELS,
+  OFFERED_SOURCES,
+  ON_UNKNOWN_LABELS,
+  RELIST_LABELS,
+  SHIPS_TO_UK_LABELS,
+  SOURCE_LABELS,
+  sourceLabel,
+} from './labels.js';
 import { type SpecDocument, type SpecIssue, withDocument, withSetting } from './parse.js';
 
 export type SpecFormPart = 'describe' | 'settings' | 'criteria' | 'searchPlans';
@@ -262,7 +277,10 @@ function Settings({
   titled: boolean;
 }) {
   const s = spec.settings;
-  const ids = { price: useId(), poll: useId(), grade: useId(), scale: useId() };
+  const ids = { price: useId() };
+  // Only the marketplaces there is an adapter for, plus any the spec already names so nothing is
+  // switched on out of sight. Grading waits for Phase 5 and is not shown at all (P1-26).
+  const sources = [...OFFERED_SOURCES, ...s.sources.filter((source) => !isOffered(source))];
 
   const toggleIn = <T extends string>(list: readonly T[], value: T, on: boolean): T[] =>
     on ? [...list, value] : list.filter((entry) => entry !== value);
@@ -274,17 +292,17 @@ function Settings({
           <div>
             <span className="block text-sm font-medium">Marketplaces</span>
             <div className="mt-2 space-y-1.5">
-              {MARKETPLACE_SOURCE_IDS.map((source) => (
+              {sources.map((source) => (
                 <Check
                   key={source}
-                  label={source}
+                  label={sourceLabel(source)}
                   checked={s.sources.includes(source)}
                   onToggle={(on) => setting('sources', toggleIn<SourceId>(s.sources, source, on))}
                 />
               ))}
             </div>
             <p className="mt-1.5 text-xs text-ink-dim dark:text-ink-dim-dark">
-              A plan whose source has no adapter installed is never polled.
+              The others arrive with their adapters in Phase 4.
             </p>
           </div>
 
@@ -294,7 +312,7 @@ function Settings({
               {BUYING_TYPES.map((type) => (
                 <Check
                   key={type}
-                  label={type}
+                  label={LISTING_TYPE_LABELS[type]}
                   checked={s.listingTypes.includes(type)}
                   onToggle={(on) =>
                     setting('listingTypes', toggleIn<BuyingType>(s.listingTypes, type, on))
@@ -334,24 +352,16 @@ function Settings({
             />
           </Field>
 
-          <Choice
-            label="Shipping to the UK"
-            hint="§1 shows the flag rather than filtering on it."
-            value={s.shipsToUk}
-            options={SHIPS_TO_UK_POLICIES}
-            onPick={(value: ShipsToUkPolicy) => setting('shipsToUk', value)}
-            labels={{
-              show_all: 'Show everything',
-              flag: 'Show everything, flagged',
-              only: 'Only what ships to the UK',
-            }}
+          <Keywords
+            value={s.negativeKeywords}
+            onChange={(keywords) => setting('negativeKeywords', keywords)}
+            error={errors('settings.negativeKeywords')}
           />
 
-          <Choice
-            label="Condition"
-            value={s.conditionCategory}
-            options={CONDITION_CATEGORIES}
-            onPick={(value: ConditionCategory) => setting('conditionCategory', value)}
+          <PollHours
+            value={s.pollEvery}
+            onChange={(pollEvery) => setting('pollEvery', pollEvery)}
+            error={errors('settings.pollEvery')}
           />
 
           <Choice
@@ -360,6 +370,7 @@ function Settings({
             value={s.notificationMode}
             options={NOTIFICATION_MODES}
             onPick={(value: NotificationMode) => setting('notificationMode', value)}
+            labels={NOTIFICATION_LABELS}
           />
 
           <Choice
@@ -367,6 +378,7 @@ function Settings({
             value={s.relists}
             options={RELIST_POLICIES}
             onPick={(value: RelistPolicy) => setting('relists', value)}
+            labels={RELIST_LABELS}
           />
 
           <Choice
@@ -375,62 +387,25 @@ function Settings({
             value={s.defaultOnUnknown}
             options={ON_UNKNOWN}
             onPick={(value: OnUnknown) => setting('defaultOnUnknown', value)}
-            labels={{ surface: 'Surface as uncertain', reject: 'Reject' }}
+            labels={ON_UNKNOWN_LABELS}
           />
 
-          <Field
-            id={ids.poll}
-            label="Poll every"
-            hint="ISO 8601 (PT8H, P1D). Empty uses the instance default. Snapped to something cron can express, never faster than asked."
-            error={errors('settings.pollEvery')}
-          >
-            <input
-              id={ids.poll}
-              value={s.pollEvery ?? ''}
-              placeholder="instance default"
-              onChange={(event) =>
-                setting('pollEvery', event.target.value === '' ? null : event.target.value)
-              }
-              className={CONTROL}
-            />
-          </Field>
-
-          <Keywords
-            value={s.negativeKeywords}
-            onChange={(keywords) => setting('negativeKeywords', keywords)}
-            error={errors('settings.negativeKeywords')}
+          <Choice
+            label="Condition"
+            value={s.conditionCategory}
+            options={CONDITION_CATEGORIES}
+            onPick={(value: ConditionCategory) => setting('conditionCategory', value)}
+            labels={CONDITION_LABELS}
           />
-        </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field
-            id={ids.scale}
-            label="Grading scale"
-            hint="A scale's id. Scales themselves arrive in Phase 5; leave it empty until then."
-            error={errors('settings.gradingScaleId')}
-          >
-            <input
-              id={ids.scale}
-              value={s.gradingScaleId ?? ''}
-              placeholder="none"
-              onChange={(event) =>
-                setting('gradingScaleId', event.target.value === '' ? null : event.target.value)
-              }
-              className={CONTROL}
-            />
-          </Field>
-
-          <Field id={ids.grade} label="Minimum grade" hint="A label from that scale.">
-            <input
-              id={ids.grade}
-              value={s.minimumGrade ?? ''}
-              placeholder="none"
-              onChange={(event) =>
-                setting('minimumGrade', event.target.value === '' ? null : event.target.value)
-              }
-              className={CONTROL}
-            />
-          </Field>
+          <Choice
+            label="Shipping to the UK"
+            hint="§1 shows the flag rather than filtering on it."
+            value={s.shipsToUk}
+            options={SHIPS_TO_UK_POLICIES}
+            onPick={(value: ShipsToUkPolicy) => setting('shipsToUk', value)}
+            labels={SHIPS_TO_UK_LABELS}
+          />
         </div>
 
         <div className="rounded-lg border border-edge p-4 dark:border-edge-dark">
@@ -447,6 +422,7 @@ function Settings({
               onPick={(value: BackfillDepth) =>
                 setting('backfill', { ...s.backfill, depth: value })
               }
+              labels={BACKFILL_DEPTH_LABELS}
             />
           </div>
           <p className="mt-2 text-xs text-ink-dim dark:text-ink-dim-dark">
@@ -456,6 +432,63 @@ function Settings({
         </div>
       </div>
     </Group>
+  );
+}
+
+/**
+ * The poll interval in whole hours (P1-26). The spec stores an ISO 8601 duration, which is what the
+ * scheduler reads, so hours are converted on the way in and out; the scheduler then rounds up to a
+ * period cron can express, and the hint says what that will be rather than leaving it to surprise.
+ * A stored value that is not whole hours — a hand-written PT90M — is left alone and named, not
+ * rounded away. Holds its own text while typed, as Keywords does, so an empty box stays empty.
+ */
+function PollHours({
+  value,
+  onChange,
+  error,
+}: {
+  value: string | null;
+  onChange: (pollEvery: string | null) => void;
+  error: string | undefined;
+}) {
+  const id = useId();
+  const stored = value === null ? undefined : durationToHours(value);
+  const [typed, setTyped] = useState(stored === undefined ? '' : String(stored));
+  const hours = Number(typed);
+  const whole = typed !== '' && Number.isInteger(hours) && hours >= 1;
+  const runs = whole ? scheduledHours(hours) : undefined;
+
+  const hint =
+    value !== null && stored === undefined
+      ? `Currently ${value}, which is not whole hours; typing a number replaces it.`
+      : typed === ''
+        ? 'Empty uses the instance default: every 8 hours.'
+        : !whole
+          ? 'Whole hours, 1 or more.'
+          : runs !== hours
+            ? `A schedule cannot divide the day into ${hours}s, so this polls every ${runs} hours.`
+            : `Polls every ${hours} hour${hours === 1 ? '' : 's'}.`;
+
+  return (
+    <Field id={id} label="Poll every (hours)" hint={hint} error={error}>
+      <input
+        id={id}
+        type="number"
+        min={1}
+        step={1}
+        inputMode="numeric"
+        value={typed}
+        placeholder="8 (the default)"
+        onChange={(event) => {
+          const text = event.target.value;
+          setTyped(text);
+          const next = Number(text);
+          if (text === '') onChange(null);
+          else if (Number.isInteger(next) && next >= 1) onChange(hoursToDuration(next));
+        }}
+        className={CONTROL}
+      />
+    </Field>
   );
 }
 
@@ -740,9 +773,9 @@ function PlanRow({
 
   // A plan on a source no marketplace owns (the template adapter's) keeps its own value in the
   // list, rather than the select quietly showing the first marketplace instead.
-  const sources: readonly SourceId[] = isMarketplaceSourceId(plan.source)
-    ? MARKETPLACE_SOURCE_IDS
-    : [plan.source, ...MARKETPLACE_SOURCE_IDS];
+  const sources: readonly SourceId[] = isOffered(plan.source)
+    ? OFFERED_SOURCES
+    : [plan.source, ...OFFERED_SOURCES];
 
   return (
     <Row
@@ -774,7 +807,7 @@ function PlanRow({
         <Field
           id={ids.region}
           label="Region"
-          hint="In the source's own vocabulary: EBAY_GB, vinted.co.uk, jp."
+          hint="The eBay marketplace to search: EBAY_GB, EBAY_US, EBAY_DE."
           error={errors(`searchPlans.${index}.region`)}
         >
           <input
@@ -790,6 +823,7 @@ function PlanRow({
           hint="Changing it starts a new plan: a new id, so no watermark or stats carry over from the old marketplace."
           value={plan.source}
           options={sources}
+          labels={SOURCE_LABELS}
           onPick={(value: SourceId) => {
             if (!isMarketplaceSourceId(value)) return;
             update({

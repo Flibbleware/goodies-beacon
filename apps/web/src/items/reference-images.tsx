@@ -2,7 +2,7 @@ import type { ReferenceImage } from '@goodies-beacon/core/schemas';
 import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, useId, useRef, useState } from 'react';
 import { uploadImage } from '../api/items.js';
-import { Alert, Button, CONTROL, Field } from '../components/form.js';
+import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
 
 /**
  * Reference image upload with labels (§8, P1-05 does the storing).
@@ -20,19 +20,13 @@ export function ReferenceImages({
   onUploaded,
   onRemove,
   unsaved,
-  canInsert,
-  framed = true,
 }: {
-  /** Undefined while the document cannot be read, which is not the same as having none. */
-  images: readonly ReferenceImage[] | undefined;
+  images: readonly ReferenceImage[];
   /** Appends the entry to the document; false means it could not be, and says why below. */
   onUploaded: (image: { id: string; path: string; label: string; addedAt: string }) => boolean;
   onRemove: (id: string) => void;
   /** Ids uploaded in this session and not yet saved into a version. */
   unsaved: ReadonlySet<string>;
-  canInsert: boolean;
-  /** False inside the item page's modal (P1-24), whose own title already names the panel. */
-  framed?: boolean;
 }) {
   const ids = { label: useId(), file: useId() };
   const fileInput = useRef<HTMLInputElement>(null);
@@ -66,19 +60,13 @@ export function ReferenceImages({
   const onFile = (event: ChangeEvent<HTMLInputElement>) => setFile(event.target.files?.[0] ?? null);
 
   return (
-    <div className={framed ? 'rounded-xl border border-edge p-4 dark:border-edge-dark' : undefined}>
-      {framed ? <h3 className="mb-1.5 text-sm font-medium">Reference images</h3> : null}
+    <div>
       <p className="text-xs text-ink-dim dark:text-ink-dim-dark">
         Shown to the reviewer with every review of this item, so the label should say which variant
         each one is: “UK big box, front”.
       </p>
 
-      {images === undefined ? (
-        <p className="mt-4 text-sm text-ink-dim dark:text-ink-dim-dark">
-          The spec cannot be read as it stands, so its images cannot be shown. Fix it above and they
-          come back.
-        </p>
-      ) : images.length > 0 ? (
+      {images.length > 0 ? (
         <>
           <ul className="mt-4 flex flex-wrap gap-4">
             {images.map((image) => (
@@ -97,8 +85,7 @@ export function ReferenceImages({
                 <button
                   type="button"
                   onClick={() => onRemove(image.id)}
-                  disabled={!canInsert}
-                  className="mt-0.5 text-xs text-red-600 hover:underline disabled:opacity-50 disabled:hover:no-underline dark:text-red-400"
+                  className="mt-0.5 text-xs text-red-600 hover:underline dark:text-red-400"
                 >
                   Remove
                 </button>
@@ -123,6 +110,7 @@ export function ReferenceImages({
           <input
             id={ids.label}
             name="label"
+            {...NO_AUTOFILL}
             value={label}
             onChange={(event) => setLabel(event.target.value)}
             placeholder="UK big box, front"
@@ -144,11 +132,6 @@ export function ReferenceImages({
       </div>
 
       {upload.isError ? <Alert tone="error">{(upload.error as Error).message}</Alert> : null}
-      {!canInsert ? (
-        <Alert tone="error">
-          The spec is not valid JSON, so there is nowhere to put an image yet.
-        </Alert>
-      ) : null}
       {unsaved.size > 0 ? (
         <Alert tone="warn">
           {unsaved.size === 1 ? 'One image is' : `${unsaved.size} images are`} stored but not yet in
@@ -161,7 +144,7 @@ export function ReferenceImages({
           type="button"
           variant="quiet"
           onClick={() => upload.mutate()}
-          disabled={upload.isPending || !file || label.trim() === '' || !canInsert}
+          disabled={upload.isPending || !file || label.trim() === ''}
         >
           {upload.isPending ? 'Uploading…' : 'Upload and Add'}
         </Button>

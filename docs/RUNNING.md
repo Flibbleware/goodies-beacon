@@ -1040,7 +1040,7 @@ phone: one column, no tables, and a gallery that scrolls sideways rather than wi
 
 ## The web app
 
-The pages are Dashboard, Wanted items (list, item and spec editor), Wish list, Candidates (list,
+The pages are Dashboard, Wanted items (list, with a Create dialog, and item), Wish list, Candidates (list,
 which opens on the matches, and one candidate), Settings and the login/first-run page; the rest of the left-hand navigation is there
 but disabled, labelled with the task that brings it. Settings is a heading in the navigation
 rather than a page, with a page beneath it for each of categories, sources (the eBay keyset and a

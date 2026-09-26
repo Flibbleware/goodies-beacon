@@ -4,6 +4,17 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-26 Creating an item. *Create* on the wanted items list now opens a dialog asking for the
+  title, category and a summary, and takes you straight to the new item's page as a draft, where
+  the rest is filled in section by section. Red marks beside Criteria and Search Plans show what a
+  new item still needs before it can poll, and Start Polling stays disabled, listing what is
+  missing, until it has them. The old full-page editor is gone, and promoting a wish now opens the
+  new item's page.
+- A guide to writing a wanted item's spec, `docs/WRITING_A_SPEC.md`, short enough to give to an
+  AI assistant on its own.
+- An item's settings are simpler to fill in: the poll interval is a number of hours, only eBay is
+  offered as a marketplace until the others are ready, the grading fields are hidden until grading
+  arrives, and every option reads in plain words.
 - P1-25 Wanted item cards and display images. The wanted items list is now a grid of cards
   rather than rows, so it no longer looks like the wish list. Each card is headed by a picture of
   the item, or by its category's icon when it has none, with the category in a small badge in

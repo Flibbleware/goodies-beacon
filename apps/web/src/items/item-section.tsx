@@ -14,12 +14,15 @@ export function ItemSection({
   title,
   defaultOpen = false,
   onEdit,
+  flag,
   children,
 }: {
   title: string;
   defaultOpen?: boolean;
   /** Opens the section's editor; a section without one has no pencil. */
   onEdit?: (() => void) | undefined;
+  /** What the section still needs before the item can poll (P1-26): a red mark beside it. */
+  flag?: string | undefined;
   children: ReactNode;
 }) {
   const headingId = useId();
@@ -51,6 +54,16 @@ export function ItemSection({
             {title}
           </button>
         </h2>
+        {flag ? (
+          <span
+            role="img"
+            aria-label={`Needed before polling. ${flag}`}
+            title={flag}
+            className="inline-flex size-4.5 items-center justify-center rounded-full bg-red-600 text-[0.6875rem] font-bold text-white dark:bg-red-500"
+          >
+            !
+          </span>
+        ) : null}
         {onEdit ? (
           <button
             type="button"

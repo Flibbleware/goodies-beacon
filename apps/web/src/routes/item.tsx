@@ -1,8 +1,8 @@
 import type { WantedItemStatus } from '@goodies-beacon/core/schemas';
-import { wantedSpecSchema } from '@goodies-beacon/core/schemas';
+import { type ReadinessGap, readinessGaps, wantedSpecSchema } from '@goodies-beacon/core/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRoute, Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { CandidateSearch } from '../api/candidates.js';
 import { ApiError } from '../api/client.js';
 import { itemQuery, itemsQuery, type LoadedItem, updateItem } from '../api/items.js';
@@ -34,8 +34,9 @@ export const itemRoute = createRoute({
  * Each section folds away and, where it is part of the spec, has a pencil opening an editor for
  * that section alone (P1-24): Details also holds the title, category and status, and the JSON
  * button edits the whole document; the clock beside it opens the version history. Only Details
- * starts open; the rest is a click away. The full editor page is kept for creating an item until
- * that flow is reworked.
+ * starts open; the rest is a click away. An item is created from a dialog on the list and lands
+ * here as a draft (P1-26): a red mark beside a section says what it still needs before it can
+ * poll, and Start Polling says the same until it can.
  */
 function ItemPage() {
   const { itemId } = itemRoute.useParams();
@@ -50,6 +51,16 @@ function ItemPage() {
   // editors over a document they cannot draw.
   const parsed = item.current ? wantedSpecSchema.safeParse(item.current.document) : undefined;
   const spec = parsed?.success ? parsed.data : undefined;
+  const gaps = spec ? readinessGaps(spec) : [];
+  const flag = (section: ReadinessGap['section']) =>
+    gaps
+      .filter((gap) => gap.section === section)
+      .map((gap) => gap.message)
+      .join(' ') || undefined;
+  // What stops Start Polling: the gaps, or a stored spec the schema can no longer read at all.
+  const blockers = spec
+    ? gaps.map((gap) => gap.message)
+    : ['Its spec no longer matches the schema; correct it in the JSON editor first.'];
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -57,7 +68,12 @@ function ItemPage() {
         ← Wanted items
       </Link>
 
-      <Header item={item} onJson={() => setEditing('json')} onHistory={() => setHistory(true)} />
+      <Header
+        item={item}
+        blockers={blockers}
+        onJson={() => setEditing('json')}
+        onHistory={() => setHistory(true)}
+      />
       <Counts item={item} />
 
       {parsed && !parsed.success ? (
@@ -67,15 +83,29 @@ function ItemPage() {
         </Alert>
       ) : null}
       {spec ? (
+        <ItemSection title="Details" defaultOpen onEdit={() => setEditing('describe')}>
+          <SpecDescription spec={spec} />
+        </ItemSection>
+      ) : null}
+      {/* Drawn from the plans' own records, so it stands even when the spec cannot be read. */}
+      <ItemSection
+        title="Search Plans"
+        onEdit={spec ? () => setEditing('searchPlans') : undefined}
+        flag={flag('searchPlans')}
+      >
+        <PlanTable plans={item.plans} />
+      </ItemSection>
+      {spec ? (
         <>
-          <ItemSection title="Details" defaultOpen onEdit={() => setEditing('describe')}>
-            <SpecDescription spec={spec} />
+          <ItemSection
+            title="Criteria"
+            onEdit={() => setEditing('criteria')}
+            flag={flag('criteria')}
+          >
+            <CriteriaList spec={spec} />
           </ItemSection>
           <ItemSection title="Settings" onEdit={() => setEditing('settings')}>
             <SpecSettings spec={spec} />
-          </ItemSection>
-          <ItemSection title="Criteria" onEdit={() => setEditing('criteria')}>
-            <CriteriaList spec={spec} />
           </ItemSection>
           <ItemSection title="Reference Images" onEdit={() => setEditing('images')}>
             <ReferenceList images={spec.referenceImages} />
@@ -83,9 +113,6 @@ function ItemPage() {
           </ItemSection>
         </>
       ) : null}
-      <ItemSection title="Search Plans" onEdit={spec ? () => setEditing('searchPlans') : undefined}>
-        <PlanTable plans={item.plans} />
-      </ItemSection>
 
       <SectionEditor item={item} section={editing} onClose={() => setEditing(null)} />
       <Modal open={history} onClose={() => setHistory(false)} title="Version History">
@@ -106,10 +133,13 @@ const HEADER_BUTTON =
 
 function Header({
   item,
+  blockers,
   onJson,
   onHistory,
 }: {
   item: LoadedItem;
+  /** Why the item cannot start polling; empty when it can. */
+  blockers: readonly string[];
   onJson: () => void;
   onHistory: () => void;
 }) {
@@ -125,6 +155,8 @@ function Header({
 
   // Draft and active are the two a new item moves between; the rest are set in Details.
   const next: WantedItemStatus = item.status === 'active' ? 'paused' : 'active';
+  const blocked = next === 'active' && blockers.length > 0;
+  const blockersId = useId();
 
   return (
     <>
@@ -172,7 +204,8 @@ function Header({
           type="button"
           variant={next === 'active' ? 'primary' : 'quiet'}
           onClick={() => change.mutate(next)}
-          disabled={change.isPending}
+          disabled={change.isPending || blocked}
+          aria-describedby={blocked ? blockersId : undefined}
         >
           {next === 'active' ? 'Start Polling' : 'Pause Polling'}
         </Button>
@@ -184,6 +217,17 @@ function Header({
           </Button>
         </span>
       </div>
+
+      {blocked ? (
+        <div id={blockersId} className="mt-3 text-sm text-red-700 dark:text-red-400">
+          <p className="font-medium">Before it can start polling:</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5">
+            {blockers.map((blocker) => (
+              <li key={blocker}>{blocker}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </>
   );
 }

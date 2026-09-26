@@ -54,7 +54,10 @@ export function Modal({
         if (hold) onHeld?.();
         else onClose();
       }}
-      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] ${wide ? 'max-w-3xl' : 'max-w-lg'} overflow-y-auto rounded-xl border border-edge bg-paper-raised p-0 text-ink shadow-xl backdrop:bg-black/40 dark:border-edge-dark dark:bg-paper-raised-dark dark:text-ink-dark`}
+      // Beside the sidebar (the layout's 15rem column, from md), the dialog is laid out from its
+      // edge rather than the window's, so it centres over the page it belongs to; the backdrop
+      // still covers everything.
+      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] md:left-60 md:w-[calc(100%-17rem)] ${wide ? 'max-w-3xl' : 'max-w-lg'} overflow-y-auto rounded-xl border border-edge bg-paper-raised p-0 text-ink shadow-xl backdrop:bg-black/40 dark:border-edge-dark dark:bg-paper-raised-dark dark:text-ink-dark`}
     >
       <div className="p-5">
         <h2 id={headingId} className="font-medium">

@@ -1,33 +1,9 @@
-import { useId } from 'react';
 import type { LoadedItem } from '../api/items.js';
 
 /**
- * A plain list: the side-by-side diff between two versions is Phase 3's, and what is needed now
- * is to see that a save made a version and what its note was.
- *
- * Shown on the item page, where §14 puts it, and again under the editor, where it is the proof
- * that a save wrote version N+1 rather than overwriting version N. The item page shows
- * `VersionList` in a modal behind a button (P1-24); this is the editor's plain heading.
+ * A plain list, shown in a modal behind the item page's clock (P1-24): enough to see that a save
+ * made a version and what its note was. The side-by-side diff between two is Phase 3's.
  */
-export function VersionHistory({
-  versions,
-  currentId,
-}: {
-  versions: LoadedItem['versions'];
-  currentId: string | undefined;
-}) {
-  const headingId = useId();
-
-  return (
-    <section aria-labelledby={headingId} className="mt-10">
-      <h2 id={headingId} className="font-medium">
-        Version history
-      </h2>
-      <VersionList versions={versions} currentId={currentId} />
-    </section>
-  );
-}
-
 export function VersionList({
   versions,
   currentId,
