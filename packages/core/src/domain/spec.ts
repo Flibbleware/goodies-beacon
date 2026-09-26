@@ -69,6 +69,12 @@ export const criterionSchema = z.object({
   /** Can photos or text settle it definitively? Drives the unknown handling in §7 step 6. */
   quantifiable: z.boolean(),
   onUnknown: z.enum(ON_UNKNOWN).default('surface'),
+  /**
+   * The identifier of the shared criterion this is a copy of (P1-27), absent for one of the item's
+   * own. The store writes the text and whatever the shared criterion fixes over the copy on every
+   * save, so an edit to those fields here does not survive one. Nothing in the pipeline reads it.
+   */
+  shared: z.string().min(1).optional(),
 });
 
 export const searchPlanSchema = z.object({

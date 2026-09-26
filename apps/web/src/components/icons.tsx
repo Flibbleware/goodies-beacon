@@ -54,6 +54,14 @@ export function RemoveIcon({ className }: { className?: string | undefined }) {
   );
 }
 
+export function PlusIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <path d="M12 5v14M5 12h14" />
+    </Icon>
+  );
+}
+
 /** Points down; turned a quarter to point right when what it opens is closed. */
 export function ChevronIcon({ className }: { className?: string | undefined }) {
   return (
@@ -113,6 +121,16 @@ export function WantedIcon({ className }: { className?: string | undefined }) {
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="5" />
       <circle cx="12" cy="12" r="1" fill="currentColor" />
+    </Icon>
+  );
+}
+
+/** A checklist: rules written once and ticked off by any item. */
+export function CriteriaIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <path d="M4 6.5l1.5 1.5 3-3M4 12.5l1.5 1.5 3-3M4 18.5l1.5 1.5 3-3" />
+      <path d="M12 7h8M12 13h8M12 19h8" />
     </Icon>
   );
 }

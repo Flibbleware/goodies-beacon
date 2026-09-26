@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.43; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.44; section numbers below refer to it.*
 
-Version 1.21 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.22 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -304,6 +304,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-24 | Item page sections and their editors | M | P1-18, P1-23 |
 | P1-25 | Wanted item cards and display images | M | P1-24 |
 | P1-26 | Creating an item from a dialog | M | P1-25 |
+| P1-27 | Shared criteria | M | P1-26 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1335,6 +1336,123 @@ meanwhile is the owner's call.
 **`spec-form.tsx` holds a literal NUL byte**, as the separator in a string join (line 486), so
 `grep` and `file` treat the file as binary and quietly skip it. It works; `'\0'` would say the
 same thing in a form tools can read. Left for the next task that touches the form.
+
+#### P1-27 Shared criteria — M
+
+Some criteria are not about one item but about a whole kind of thing. *The original Game Boy
+release in the standard box, not the Nintendo Classics re-release whose box has a red border* is
+true of every Game Boy game worth hunting, and today it has to be typed into each one's spec, and
+retyped into each when it is reworded. A **shared criterion** is written once on a new **Criteria**
+page under an identifier (`original-release-not-classics`), tagged so it can be found (*game boy*),
+and added to any wanted item from its criteria editor by that identifier or tag.
+
+It is always the shared criterion's text. Its kind, whether the photos can settle it, and what an
+unknown does are each either set on it — and then fixed on every item that uses it — or left open,
+and then chosen per item as a criterion of the item's own would be.
+
+Decided with the owner before it was built: an item holds a **copy**, marked with the identifier,
+and saving a shared criterion writes a new version on **every item using it**, rather than items
+being marked out of date or the text being copied once and forgotten; a field the shared criterion
+sets is **locked** on the item rather than a default it may override; and the sidebar item is
+*Criteria*, below Candidates, with the page headed *Shared Criteria* so it is not confused with an
+item's own Criteria section. The copy is what keeps §4's promise: the pipeline reads only the spec,
+so what judged a listing is always in the version that judged it, and nothing in the pipeline
+changed. Deleting a shared criterion leaves each item using it its copy as a criterion of its own,
+in a new version, as deleting a category leaves its items uncategorised. The identifier is fixed
+once created, because it becomes the criterion's id in every spec, and feedback is kept against that
+id.
+
+Depends on P1-26.
+
+Done when:
+
+- [x] `shared_criteria` holds the identifier (unique, lowercase and hyphenated), the text, a nullable kind, quantifiable and on-unknown with the check constraints every bounded column has, and tags as a `text[]` tidied by the wish list's `tagsSchema`. `/api/shared-criteria` lists, creates, updates and deletes them; a second with one identifier is a 409 `duplicate_shared_criterion`, a malformed one a 400, and an update naming an identifier is refused rather than ignored (`sharedCriterionUpdateSchema` is strict). Each listed criterion says how many items' current specs use it.
+- [x] A criterion in a spec may carry `shared`, naming a shared criterion. Every create and save writes its text and fixed fields over the copy (`lockedFields`, the one statement of which fields those are) and makes its id the identifier; a `shared` naming nothing is a 400 `unknown_shared_criterion`, and two criteria with one id — the same shared criterion twice included — a 400 `repeated_criterion`. The reviewer's prompt picks a criterion's fields out by name, so `shared` never reaches a model.
+- [x] Saving a shared criterion writes version N+1, noted *Updated the shared criterion …*, on each item whose current version holds a copy it changes, and on no other: not an item that has since dropped it, and not one whose copy it leaves as it was — a change to the tags alone writes nothing. The update answers with how many items it gave a version. The copy is patched in the stored JSON rather than through the schema, so an item whose spec no longer parses is still kept in step. Deleting one writes a version on each item using it with `shared` removed and the copy kept. Tested in the store and through the routes.
+- [x] The sidebar has *Criteria*, with a checklist icon, below Candidates (and *Wish list* is *Wish List*, as the other items are title case). The page lists the shared criteria by identifier, each with its tags as pills, its text, what it fixes and what it leaves to each item, and how many items use it; one box filters by part of an identifier or a tag (`matchesSharedCriterion`, where "game boy" also finds `game-boy-…`), kept in the URL as `?q=`, and a pill fills it. One modal creates and edits, with the identifier disabled when editing and the hard-but-not-quantifiable warning shown as the item page shows it; saving an edit that reached items says how many. Deleting asks first and names how many items would keep a copy.
+- [x] An item's *Add a Criterion* dialog has *Use a Shared Criterion*, opening a picker filtered the same way, where one the spec already holds reads *Added*. A copy shows its identifier, linked to the Criteria page, and its text read-only; a field its shared criterion fixes is disabled and says so, and one it leaves open is edited as usual. On the item page each copy says *Shared:* and its identifier, linking to it.
+- [x] The Playwright run creates two shared criteria (the first after its identifier is refused), filters by typing a tag and by clicking a pill, adds one to the Carmageddon item through the picker — checking the fixed kind is disabled and choosing what an unknown does — rewords it and fixes every field on the Criteria page and finds the item a version on with the new text and note and no pencil left on the copy, edits one of the item's own criteria through its pencil, deletes the shared criterion and finds the item a version on again, keeping the text without the link, and removes the copy through its bin.
+
+`docs/WRITING_A_SPEC.md` describes `shared` for anyone writing JSON by hand, and gains a checklist
+line for it.
+
+A criterion's *Kind* is called **Failure action** in both editors, at the owner's request while
+the task was open, with the choices *Reject* and *Uncertain* — what a fail does, rather than a
+word that has to be explained. The item page's flags read *fail → reject* and *fail → uncertain*
+to match *unknown → uncertain* beside them. The stored values are still `hard` and `soft`.
+
+**Criteria are edited one at a time**, also at the owner's request: the Criteria section's editor
+held every criterion in one form, which was overwhelming past three or four. The pencil beside the
+Criteria heading becomes a plus opening *Add a Criterion* — one blank criterion, or *Use a Shared
+Criterion* — and each criterion on the item page has its own pencil, opening *Edit Criterion* with
+that criterion alone, and a bin that asks before saving the spec without it. Each is a version of its
+own, and the note left empty names the criterion — by its text, since an item's own ids are random,
+or a shared one by its identifier: *Added the criterion “The manual is the original print”.*,
+*Removed the criterion original-release-not-classics.* A copy of a shared criterion that fixes all
+three fields has no pencil, since there is nothing left to edit; its bin stays. A new criterion left
+blank is no change, so Esc closes the dialog without asking.
+
+The list itself is quieter, also asked for: it was hard on the eyes with eight criteria, every row
+the same shape and its flags a run of dim text. Rows are divided, and the three flags read as label and
+value — *Failure:* and *Unknown:* each *Reject* in red or *Uncertain* in amber, the same two colours
+wherever either appears, and *Photos:* *Can settle* or *Can't settle* — so the column can be
+scanned. The Criteria page and the picker describe a shared criterion the same way, through one
+`CriterionFlags`, with *Item chooses* for a flag it leaves open. (Two variants were tried and
+dropped on the way: showing only the flags that differ from the usual, since the owner wanted every
+flag visible, and the values as pills, which were busier than coloured text.) A shared copy's link
+is a *Shared:* label and identifier rather than bright monospace on its own; and a criterion's text
+is a step smaller and softer than the body text, in tighter rows, and cut to one line with an
+ellipsis — a click on it opens the whole text in place, and only then, when some of it is hidden,
+does it carry a tooltip. (Two lines with the tooltip on every criterion came first; short ones
+repeated themselves on hover.) The pencil and bin were dimmed
+until the row was pointed at for a while, and are not now: beside the search plans' full-strength
+buttons they read as disabled. `SpecForm`'s `criteria` part, which drew
+the whole list, is replaced by a `criterion` part drawing one, since nothing else used the list; the
+P1-24 Playwright step adds its criterion through the plus instead.
+
+**Search plans are edited one at a time too**, at the owner's request, keeping their table: the
+pencil beside the Search Plans heading is a plus opening *Add a Search Plan* (one blank plan, on
+the item's first marketplace), and each row of the table has its own pencil (*Edit Search Plan*)
+and bin, asking first. A plan the spec has dropped keeps its row and stats but has neither. Each is a
+version, noted by query and region: *Added the search plan “carmageddon mac” on EBAY_GB.* The
+section editor's add and edit handling, the row's buttons and the removal dialog are shared with
+the criteria (`entry-actions.tsx`, which `criterion-actions.tsx` became), and `SpecForm`'s
+`searchPlans` part, which drew every plan, is a `searchPlan` part drawing one. The Playwright run
+adds a plan, edits its region and removes it, checking each note.
+
+#### What P1-27 found
+
+**Nothing refused two criteria with one id.** The reviewer's answers are reconciled against the
+criteria by id (§9), so a spec holding `big-box` twice would have had the second take the first's
+result, silently. The editor's random ids made it unlikely, but the JSON editor and a shared
+criterion added twice both reach it; `resolveSharedCriteria` now refuses it on every save, for
+every criterion rather than only shared ones.
+
+**An item's saves did not tell the Criteria page.** The Playwright run found *Not used yet* beside a
+criterion an item had just started using: the page's list was cached, and its usage count depends on
+item saves. The section editor now invalidates it on save alongside the item.
+
+**A copy kept after a delete holds the identifier.** An item whose shared criterion was deleted
+keeps `original-release-not-classics` as a criterion of its own, so a shared criterion created again
+under that identifier reads *Added* in its picker, and cannot be linked until the item's copy is
+removed. That is correct — two criteria with one id is exactly what is refused — but it is worth
+knowing before reusing an identifier.
+
+**`spec-form.tsx`'s literal NUL byte** (P1-26) is `'\0'` now, since this task touched the form.
+
+**An Esc straight after typing could lose the edit.** The section editor tells the modal it has
+something to lose from an effect, and a plain `useEffect` runs after the browser paints, so an Esc
+landing in between closed the modal without asking. P1-24's check never met it because its modal was
+already dirty before anything was typed; the plus's first keystroke is what makes it dirty. It is a
+`useLayoutEffect` now, which holds Esc from the same frame.
+
+**A shared copy's identifier is in the link colour** on the item page, not only on hover, so it
+reads as the link it is.
+
+**The sign-in after *Sign out* in the Playwright run could fail on its own.** The URL reads `/login`
+a moment before the account page is replaced, and `getByLabel('Password')` matched *Current
+password* and *New password* on the way out — a strict-mode failure one run in several. The run
+matches the label exactly now.
 
 #### P1-XX Phase 1 exit — S
 

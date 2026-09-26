@@ -113,6 +113,17 @@ export {
   type Role,
 } from './config.js';
 export {
+  createSharedCriterion,
+  DuplicateSharedCriterionError,
+  deleteSharedCriterion,
+  listSharedCriteria,
+  RepeatedCriterionError,
+  resolveSharedCriteria,
+  type SharedCriterionUpdate,
+  UnknownSharedCriterionError,
+  updateSharedCriterion,
+} from './criteria/store.js';
+export {
   DecryptionError,
   decryptSecret,
   encryptSecret,
@@ -185,6 +196,7 @@ export {
   searchPlanState,
   seen,
   settings,
+  sharedCriteria,
   specVersions,
   type Verdict,
   verdicts,
@@ -282,6 +294,19 @@ export {
   sellerHash,
   sellerHashesEqual,
 } from './domain/seller.js';
+export {
+  linkedCriterion,
+  lockedFields,
+  matchesSharedCriterion,
+  SHARED_KEY_MAX_LENGTH,
+  type SharedCriterion,
+  type SharedCriterionCreateInput,
+  type SharedCriterionFields,
+  type SharedCriterionUpdateInput,
+  sharedCriterionCreateSchema,
+  sharedCriterionKeySchema,
+  sharedCriterionUpdateSchema,
+} from './domain/shared-criterion.js';
 export {
   backfillSchema,
   type Criterion,

@@ -5,6 +5,7 @@ import { loadSession, logout } from '../api/auth.js';
 import {
   CandidatesIcon,
   CostsIcon,
+  CriteriaIcon,
   DashboardIcon,
   GradingIcon,
   SettingsIcon,
@@ -33,7 +34,8 @@ const NAV = [
   { to: '/', label: 'Dashboard', Icon: DashboardIcon, soon: undefined },
   { to: '/items', label: 'Wanted Items', Icon: WantedIcon, soon: undefined },
   { to: '/candidates', label: 'Candidates', Icon: CandidatesIcon, soon: undefined },
-  { to: '/wishes', label: 'Wish list', Icon: WishIcon, soon: undefined },
+  { to: '/criteria', label: 'Criteria', Icon: CriteriaIcon, soon: undefined },
+  { to: '/wishes', label: 'Wish List', Icon: WishIcon, soon: undefined },
   { to: '/scales', label: 'Grading scales', Icon: GradingIcon, soon: 'Phase 5' },
   { to: '/costs', label: 'Costs', Icon: CostsIcon, soon: 'Phase 5' },
 ] as const;

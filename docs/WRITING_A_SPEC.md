@@ -166,6 +166,27 @@ The judgement calls: things that need the description read or the photos looked 
 - **No prices, countries, listing types or conditions-as-categories** — those are settings.
 - **Two to six criteria** is typical. More is fine; each one is another thing a listing must show.
 
+**Shared criteria.** A criterion that suits many items — "the original release, not the Nintendo
+Classics re-release" for any Game Boy game — can be written once on the **Criteria** page under an
+identifier, and added to an item from its criteria editor. In the JSON it is an ordinary criterion
+whose `id` is that identifier and which carries `"shared"` naming it:
+
+```json
+{
+  "id": "original-release-not-classics",
+  "shared": "original-release-not-classics",
+  "text": "The original release, not the Nintendo Classics re-release",
+  "kind": "hard",
+  "quantifiable": true,
+  "onUnknown": "surface"
+}
+```
+
+On every save the text, and whichever of `kind`, `quantifiable` and `onUnknown` the shared
+criterion sets, are written over this copy from the Criteria page — so write any text you like
+there, and set the flags it leaves open. A `shared` naming no shared criterion is refused. Only use
+one that already exists on the instance; to write a new one, use a criterion of the item's own.
+
 ### `searchPlans`
 
 What to search for. **Search broad, judge narrow**: several loose queries rather than one precise
@@ -218,6 +239,7 @@ JSON." when left empty), whatever the document says.
 - [ ] `onUnknown: "reject"` only where a listing that does not settle it is not worth seeing.
 - [ ] At least one criterion and one enabled `ebay` plan, with `"ebay"` in `settings.sources`.
 - [ ] Plan ids are particular to this item; criterion ids are unique within it.
+- [ ] Any `shared` names a shared criterion that exists on the Criteria page.
 - [ ] Several broad queries, not one precise one; `region` is one eBay site per plan.
 - [ ] Negative keywords are distinctive words that no wanted listing would contain.
 - [ ] `gradingScaleId` and `minimumGrade` are `null`; `referenceImages` is `[]`.

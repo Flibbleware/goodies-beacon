@@ -87,7 +87,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('setting the password signs you in and shows the dashboard', async () => {
-    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Set password' }).click();
 
     await expect(page).toHaveURL('/');
@@ -112,7 +112,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL('/settings/categories');
     await expect(page.getByRole('heading', { name: 'Categories', exact: true })).toBeVisible();
 
-    await page.getByRole('link', { name: 'Wish list' }).click();
+    await page.getByRole('link', { name: 'Wish List' }).click();
     await page.getByRole('link', { name: 'Add categories in Settings' }).click();
     await expect(page).toHaveURL('/settings/categories');
   });
@@ -154,7 +154,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('a wrong password is refused with a message', async () => {
-    await page.getByLabel('Password').fill('not-the-password');
+    await page.getByLabel('Password', { exact: true }).fill('not-the-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page.getByRole('alert')).toHaveText('That password is not correct.');
@@ -162,7 +162,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('the right password signs you back in', async () => {
-    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL('/');
@@ -524,9 +524,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(criteria).toContainText(
       'Big box release, not the jewel case or budget re-release',
     );
-    await expect(criteria).toContainText('hard — rejects');
-    await expect(criteria).toContainText('the photos may not settle it');
-    await expect(spec).not.toContainText('hard — rejects');
+    await expect(criteria.getByText('Reject', { exact: true }).first()).toBeVisible();
+    await expect(criteria).toContainText("Photos: Can't settle");
+    await expect(spec).not.toContainText("Can't settle");
     // And the reference image uploaded earlier, under the label the reviewer is shown.
     const images = section('Reference Images');
     await expect(images).toContainText('UK big box, front');
@@ -580,21 +580,25 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(table).toBeVisible();
   });
 
-  await test.step('the pencil beside a section edits that section alone, as a new version', async () => {
-    await page.getByRole('button', { name: 'Edit criteria' }).click();
+  await test.step('the plus beside Criteria adds one criterion, as a new version', async () => {
+    const add = page.getByRole('button', { name: 'Add a criterion' });
+    await add.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Edit Criteria' });
+    const dialog = page.getByRole('dialog', { name: 'Add a Criterion' });
     const save = dialog.getByRole('button', { name: 'Save as version 4' });
-    // Only the criteria: the settings and search plans are other sections' editors.
+    // One criterion: the settings, search plans and the other criteria are not here.
     await expect(dialog.getByLabel('Price ceiling')).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Add a search plan' })).toHaveCount(0);
+    await expect(dialog.getByLabel('Criterion', { exact: true })).toHaveValue('');
     await expect(save).toBeDisabled();
 
-    await dialog.getByRole('button', { name: 'Add a criterion' }).click();
-    await dialog
-      .getByLabel(/^Criterion \d+$/)
-      .last()
-      .fill('The manual is the original print');
+    // A new criterion left blank is no change, so Esc closes without asking.
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    await add.click();
+    await dialog.getByLabel('Criterion', { exact: true }).fill('The manual is the original print');
+    await expect(save).toBeEnabled();
 
     // Esc with an edit in hand asks rather than throwing it away.
     await page.keyboard.press('Escape');
@@ -607,8 +611,10 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(section('Criteria')).toContainText('The manual is the original print');
     const versions = await itemHistory();
     await expect(versions.getByRole('listitem')).toHaveCount(4);
-    // Left empty, the note says which section changed rather than repeating the last one.
-    await expect(versions.getByRole('listitem').first()).toContainText('Edited the criteria.');
+    // Left empty, the note names the criterion added, by its text since its id is random.
+    await expect(versions.getByRole('listitem').first()).toContainText(
+      'Added the criterion “The manual is the original print”.',
+    );
     await closeHistory();
   });
 
@@ -915,7 +921,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   const JURASSIC_SEARCH = 'https://www.ebay.co.uk/sch/i.html?_nkw=jurassic+park+vhs';
 
   await test.step('a wish is added with a category and a search link, and a bad link is refused', async () => {
-    await page.getByRole('link', { name: 'Wish list' }).click();
+    await page.getByRole('link', { name: 'Wish List' }).click();
     await expect(page).toHaveURL('/wishes');
     await expect(page.getByText('Nothing on the wish list yet.')).toBeVisible();
 
@@ -1082,7 +1088,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(details.getByLabel('Category').locator('option:checked')).toHaveText('Toy');
     await details.getByRole('button', { name: 'Cancel' }).click();
 
-    await page.getByRole('link', { name: 'Wish list' }).click();
+    await page.getByRole('link', { name: 'Wish List' }).click();
     await expect(wishes.getByRole('listitem')).toHaveCount(1);
     await expect(wish('Tamagotchi')).toHaveCount(0);
   });
@@ -1096,13 +1102,218 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await confirm.getByRole('button', { name: 'Delete' }).click();
     await expect(categories.getByRole('listitem')).toHaveText([/^Game/, /^Toy/]);
 
-    await page.getByRole('link', { name: 'Wish list' }).click();
+    await page.getByRole('link', { name: 'Wish List' }).click();
     await expect(wish('Jurassic Park')).toBeVisible();
     await expect(
       page
         .getByRole('navigation', { name: 'Category' })
         .getByRole('link', { name: /^Uncategorised · 1/ }),
     ).toBeVisible();
+  });
+
+  await test.step('a shared criterion is written once, found by its tag, and kept in step on an item', async () => {
+    const CLASSICS = 'original-release-not-classics';
+    await sidebar.getByRole('link', { name: 'Criteria', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Shared Criteria', level: 1 })).toBeVisible();
+    await expect(page.getByText('No shared criteria yet.')).toBeVisible();
+
+    const create = async (key: string, text: string, tags: string) => {
+      await page.getByRole('button', { name: 'Create a shared criterion' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Create a Shared Criterion' });
+      await dialog.getByLabel('Identifier').fill(key);
+      await dialog.getByLabel('Criterion', { exact: true }).fill(text);
+      await dialog.getByLabel('Tags').fill(tags);
+      return dialog;
+    };
+
+    // An identifier is checked before anything is sent.
+    let dialog = await create('Not Classics', 'The original release', 'game boy');
+    await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect(dialog.getByText(/lowercase letters, digits and single hyphens/)).toBeVisible();
+    await dialog.getByLabel('Identifier').fill(CLASSICS);
+    await dialog.getByLabel('Failure action').selectOption('hard');
+    await dialog.getByLabel('Photos can settle it').selectOption('yes');
+    await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect(dialog).toBeHidden();
+
+    dialog = await create('complete-in-box', 'Box, manual and cartridge all present', 'boxed');
+    await dialog.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect(dialog).toBeHidden();
+
+    const list = page.getByRole('list', { name: 'Shared criteria' });
+    await expect(list.getByRole('listitem')).toHaveCount(2);
+    await expect(list.getByRole('listitem').first()).toContainText('Failure: Item chooses');
+
+    // A tag narrows the list, in the URL; a pill does the same.
+    await page.getByLabel('Filter by identifier or tag').fill('game boy');
+    await expect(page).toHaveURL(/q=game/);
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list).toContainText(CLASSICS);
+    await page.getByLabel('Filter by identifier or tag').fill('');
+    await list.getByRole('button', { name: 'boxed' }).click();
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list).toContainText('complete-in-box');
+
+    // Added to an item through the plus beside Criteria, found by the same tag.
+    await page.goto(`/items/${carmageddonId}`);
+    const versions = await itemHistory();
+    const before = await versions.getByRole('listitem').count();
+    await closeHistory();
+    const latestNote = async (count: number, note: string) => {
+      const history = await itemHistory();
+      await expect(history.getByRole('listitem')).toHaveCount(count);
+      await expect(history.getByRole('listitem').first()).toContainText(note);
+      await closeHistory();
+    };
+
+    await page.getByRole('button', { name: 'Add a criterion' }).click();
+    const editor = page.getByRole('dialog', { name: 'Add a Criterion' });
+    await editor.getByRole('button', { name: 'Use a Shared Criterion' }).click();
+    const picker = editor.getByRole('region', { name: 'Add a shared criterion' });
+    await picker.getByLabel('Find a shared criterion by identifier or tag').fill('game boy');
+    await expect(picker.getByRole('listitem')).toHaveCount(1);
+    await picker.getByRole('button', { name: `Add ${CLASSICS}` }).click();
+    // What the shared criterion fixes cannot be changed here; what it leaves open can.
+    await expect(editor.getByText(`Shared criterion ${CLASSICS}`)).toBeVisible();
+    await expect(editor.getByLabel('Failure action')).toBeDisabled();
+    await expect(editor.getByLabel('Failure action')).toHaveValue('hard');
+    await expect(editor.getByLabel('When unknown')).toBeEnabled();
+    await editor.getByLabel('When unknown').selectOption('reject');
+    await editor.getByRole('button', { name: `Save as version ${before + 1}` }).click();
+    await expect(editor).toBeHidden();
+    await latestNote(before + 1, `Added the criterion ${CLASSICS}.`);
+
+    // Once added, the picker says so rather than offering it twice.
+    await page.getByRole('button', { name: 'Add a criterion' }).click();
+    await editor.getByRole('button', { name: 'Use a Shared Criterion' }).click();
+    await picker.getByLabel('Find a shared criterion by identifier or tag').fill(CLASSICS);
+    await expect(picker.getByRole('button', { name: `${CLASSICS} is added` })).toBeDisabled();
+    // Nothing was added, so Cancel closes without asking. (Esc would only clear the search box.)
+    await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(editor).toBeHidden();
+
+    // Folding is remembered per browser, so this does not depend on what an earlier step left.
+    const criteriaToggle = page.getByRole('button', { name: 'Criteria', exact: true });
+    if ((await criteriaToggle.getAttribute('aria-expanded')) === 'false') {
+      await criteriaToggle.click();
+    }
+    const criteria = section('Criteria');
+    await expect(criteria).toContainText('The original release');
+    await expect(criteria.getByRole('link', { name: CLASSICS })).toBeVisible();
+    // It leaves what an unknown does to the item, so it still has a pencil.
+    const editClassics = page.getByRole('button', { name: `Edit the criterion ${CLASSICS}` });
+    await expect(editClassics).toBeVisible();
+
+    // Rewording it, and now fixing everything, writes a version on the item that uses it.
+    await criteria.getByRole('link', { name: CLASSICS }).click();
+    await expect(page).toHaveURL(new RegExp(`/criteria\\?q=${CLASSICS}`));
+    await expect(list.getByRole('listitem')).toContainText('Used by 1 wanted item');
+    await list.getByRole('button', { name: `Edit ${CLASSICS}` }).click();
+    dialog = page.getByRole('dialog', { name: `Edit ${CLASSICS}` });
+    await expect(dialog.getByLabel('Identifier')).toBeDisabled();
+    await dialog
+      .getByLabel('Criterion', { exact: true })
+      .fill('The original release in the grey-banded box, not the red-bordered Classics one');
+    await dialog.getByLabel('When unknown').selectOption('surface');
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('status')).toHaveText(
+      `Saved ${CLASSICS}, and gave 1 wanted item a new version.`,
+    );
+
+    await page.goto(`/items/${carmageddonId}`);
+    await expect(criteria).toContainText('grey-banded box');
+    await latestNote(before + 2, `Updated the shared criterion ${CLASSICS}.`);
+    // Nothing about it is left for the item to choose, so there is nothing to edit here.
+    await expect(editClassics).toHaveCount(0);
+
+    // A criterion of the item's own is edited alone, from its own pencil.
+    await page.getByRole('button', { name: 'Edit the criterion big-box' }).click();
+    const edit = page.getByRole('dialog', { name: 'Edit Criterion' });
+    await expect(edit.getByLabel('Criterion', { exact: true })).toHaveValue(
+      'Big box release, not the jewel case or budget re-release',
+    );
+    await expect(edit.getByRole('textbox')).toHaveCount(2);
+    await edit.getByLabel('Failure action').selectOption('soft');
+    await edit.getByRole('button', { name: `Save as version ${before + 3}` }).click();
+    await expect(edit).toBeHidden();
+    await latestNote(
+      before + 3,
+      'Edited the criterion “Big box release, not the jewel case or budget re-release”.',
+    );
+
+    // Deleting it says what uses it, and the item keeps its copy as its own.
+    await page.goto('/criteria');
+    await list.getByRole('button', { name: `Delete ${CLASSICS}` }).click();
+    const confirm = list.getByRole('alertdialog', { name: `Delete ${CLASSICS}` });
+    await expect(confirm).toContainText('Used by 1 wanted item; each keeps it');
+    await confirm.getByRole('button', { name: 'Delete' }).click();
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+
+    await page.goto(`/items/${carmageddonId}`);
+    await expect(criteria).toContainText('grey-banded box');
+    await expect(criteria.getByRole('link', { name: CLASSICS })).toHaveCount(0);
+    await latestNote(before + 4, `The shared criterion ${CLASSICS} was deleted`);
+
+    // The bin removes a criterion, after asking, as a version of its own.
+    await page.getByRole('button', { name: `Remove the criterion ${CLASSICS}` }).click();
+    const removal = page.getByRole('dialog', { name: 'Remove a Criterion' });
+    await expect(removal).toContainText(`version ${before + 5}`);
+    await removal.getByRole('button', { name: 'Remove', exact: true }).click();
+    await expect(removal).toBeHidden();
+    await expect(criteria).not.toContainText('grey-banded box');
+    // The shared criterion is gone, so the copy is the item's own and is named by its text.
+    await latestNote(before + 5, 'Removed the criterion “The original release in the grey-banded');
+  });
+
+  await test.step('each search plan is added, edited and removed on its own, as a version', async () => {
+    await page.goto(`/items/${carmageddonId}`);
+    const before = await (await itemHistory()).getByRole('listitem').count();
+    await closeHistory();
+    const latestNote = async (count: number, note: string) => {
+      const history = await itemHistory();
+      await expect(history.getByRole('listitem')).toHaveCount(count);
+      await expect(history.getByRole('listitem').first()).toContainText(note);
+      await closeHistory();
+    };
+    const toggle = page.getByRole('button', { name: 'Search Plans', exact: true });
+    if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
+    const table = section('Search Plans').getByRole('table');
+
+    await page.getByRole('button', { name: 'Add a search plan' }).click();
+    let dialog = page.getByRole('dialog', { name: 'Add a Search Plan' });
+    // One plan, starting on the item's marketplace.
+    await expect(dialog.getByLabel('Query')).toHaveValue('');
+    await expect(dialog.getByLabel('Region')).toHaveValue('EBAY_GB');
+    await dialog.getByLabel('Query').fill('carmageddon mac');
+    await dialog.getByRole('button', { name: `Save as version ${before + 1}` }).click();
+    await expect(dialog).toBeHidden();
+    await expect(table).toContainText('carmageddon mac');
+    await latestNote(before + 1, 'Added the search plan “carmageddon mac” on EBAY_GB.');
+
+    await page
+      .getByRole('button', { name: 'Edit the search plan carmageddon mac on EBAY_GB' })
+      .click();
+    dialog = page.getByRole('dialog', { name: 'Edit Search Plan' });
+    await expect(dialog.getByLabel('Query')).toHaveValue('carmageddon mac');
+    await dialog.getByLabel('Region').fill('EBAY_DE');
+    await dialog.getByRole('button', { name: `Save as version ${before + 2}` }).click();
+    await expect(dialog).toBeHidden();
+    await expect(table.getByRole('row').filter({ hasText: 'carmageddon mac' })).toContainText(
+      'EBAY_DE',
+    );
+    await latestNote(before + 2, 'Edited the search plan “carmageddon mac” on EBAY_DE.');
+
+    await page
+      .getByRole('button', { name: 'Remove the search plan carmageddon mac on EBAY_DE' })
+      .click();
+    dialog = page.getByRole('dialog', { name: 'Remove a Search Plan' });
+    await expect(dialog).toContainText(`version ${before + 3}`);
+    await dialog.getByRole('button', { name: 'Remove', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    // It never ran, so there are no stats to keep and it leaves the table.
+    await expect(table).not.toContainText('carmageddon mac');
+    await latestNote(before + 3, 'Removed the search plan “carmageddon mac” on EBAY_DE.');
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {
@@ -1117,11 +1328,11 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page).toHaveURL('/login');
 
-    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page.getByRole('alert')).toHaveText('That password is not correct.');
 
-    await page.getByLabel('Password').fill(NEW_PASSWORD);
+    await page.getByLabel('Password', { exact: true }).fill(NEW_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page).toHaveURL('/');
   });

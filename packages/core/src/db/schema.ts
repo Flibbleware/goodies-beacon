@@ -22,6 +22,7 @@ import {
   CANDIDATE_STAGES,
   CATEGORY_COLOURS,
   CATEGORY_ICONS,
+  CRITERION_KINDS,
   EVENT_KINDS,
   EVENT_LEVELS,
   FEEDBACK_RESOLUTIONS,
@@ -29,6 +30,7 @@ import {
   MEDIA_KINDS,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_MODES,
+  ON_UNKNOWN,
   REJECTION_REASONS,
   SHIPS_TO_UK,
   SPEC_ORIGINS,
@@ -144,6 +146,34 @@ export const categories = pgTable(
     check('categories_icon', oneOf(table.icon, CATEGORY_ICONS)),
     check('categories_colour', oneOf(table.colour, CATEGORY_COLOURS)),
     uniqueIndex('categories_name_idx').on(sql`lower(${table.name})`),
+  ],
+);
+
+/**
+ * Criteria written once and used by many wanted items (P1-27). A spec holds a copy of each one it
+ * uses, marked with `key`, rather than a foreign key: the pipeline reads only the spec, so what
+ * judged a listing is always in the version that judged it. A null kind, quantifiable or on-unknown
+ * is chosen per item; a set one is fixed on every item.
+ */
+export const sharedCriteria = pgTable(
+  'shared_criteria',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** Lowercase and hyphenated, checked by `sharedCriterionKeySchema`; fixed once created. */
+    key: text('key').notNull(),
+    text: text('text').notNull(),
+    kind: text('kind').$type<(typeof CRITERION_KINDS)[number]>(),
+    quantifiable: boolean('quantifiable'),
+    onUnknown: text('on_unknown').$type<(typeof ON_UNKNOWN)[number]>(),
+    /** Free text, tidied by `tagsSchema`, as a wish's are (P1-21). */
+    tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [
+    check('shared_criteria_kind', oneOf(table.kind, CRITERION_KINDS)),
+    check('shared_criteria_on_unknown', oneOf(table.onUnknown, ON_UNKNOWN)),
+    uniqueIndex('shared_criteria_key_idx').on(table.key),
   ],
 );
 

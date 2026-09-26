@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { PlanRow } from '../api/items.js';
 
 /**
@@ -7,7 +8,14 @@ import type { PlanRow } from '../api/items.js';
  * its keep, which is what these five columns are for: how much a query found, how much of that
  * was expensive enough to look at, what came of it, and what the cheap stage cost meanwhile.
  */
-export function PlanTable({ plans }: { plans: PlanRow[] }) {
+export function PlanTable({
+  plans,
+  actions,
+}: {
+  plans: PlanRow[];
+  /** A plan's own edit and remove (P1-27); a plan the spec has since dropped has none. */
+  actions?: ((plan: PlanRow) => ReactNode) | undefined;
+}) {
   return plans.length === 0 ? (
     <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
       This spec has no search plans, so nothing is polled for it.
@@ -24,6 +32,11 @@ export function PlanTable({ plans }: { plans: PlanRow[] }) {
             <th className="p-3 text-right font-medium">Uncertain</th>
             <th className="p-3 text-right font-medium">Pre-filter</th>
             <th className="p-3 text-left font-medium">Last run</th>
+            {actions ? (
+              <th className="p-3">
+                <span className="sr-only">Actions</span>
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-edge dark:divide-edge-dark">
@@ -58,6 +71,11 @@ export function PlanTable({ plans }: { plans: PlanRow[] }) {
               <td className="p-3 text-xs text-ink-dim dark:text-ink-dim-dark">
                 {plan.lastRunAt ? new Date(plan.lastRunAt).toLocaleString() : 'never'}
               </td>
+              {actions ? (
+                <td className="p-2 align-top">
+                  {plan.inSpec ? <div className="flex gap-1">{actions(plan)}</div> : null}
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
