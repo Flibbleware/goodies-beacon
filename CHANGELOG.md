@@ -4,6 +4,21 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-29 Search plan regions. A search plan's Region is now a list of eBay's nine sites by name
+  (United Kingdom, United States, Germany and so on), instead of a text box that accepted anything.
+  A region eBay does not have — such as `EBAY_GB, EBAY_US` typed into one plan — is refused when you
+  save rather than failing every time the plan polls. To search several sites, add a plan for each.
+- Changing a search plan's region now starts it afresh, as changing its source does: its counts
+  begin again for the new site, and the old site's figures stay in the table under the old plan.
+- The criterion editors match: *Failure action*, *When unknown* and *Photos can settle* are three
+  dropdowns in that order, on an item and on the Criteria page. *Photos can settle* was a checkbox
+  on an item. *When unknown* offers *Uncertain* or *Reject*, as *Failure action* does, where it
+  said *Surface as uncertain*; so does the default in General Settings. The search plan editor's
+  *Polled* checkbox now lines up with the Source dropdown.
+- The Criteria page has more room under its title, between each shared criterion's identifier
+  and its text, and above the line saying how many items use it.
+- The Criteria page and Settings → Categories edit and delete with the wish list's pencil and bin
+  buttons, rather than *Edit* and *Delete* in words.
 - P1-28 Item page tabs. A wanted item's sections — Details, Search Plans, Criteria, Settings and
   Images — are now tabs under the coloured counts instead of a list that folds open and
   shut. The open tab is kept in the address, so a refresh or Back stays on it, and a red mark on a

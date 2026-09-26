@@ -13,6 +13,8 @@ import {
 } from '../api/categories.js';
 import { CategoryTile, ColourSwatch, Glyph } from '../components/category-icon.js';
 import { Alert, Button, CONTROL, Field, NO_AUTOFILL, Section } from '../components/form.js';
+import { IconButton } from '../components/icon-button.js';
+import { EditIcon, RemoveIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
 
 const ICON_LABELS: Record<CategoryIcon, string> = {
@@ -127,22 +129,16 @@ function CategoryEntry({ category, onEdit }: { category: CategoryRow; onEdit: ()
           <p className="text-xs text-ink-dim dark:text-ink-dim-dark">{usage(category)}</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="quiet"
-            onClick={onEdit}
-            aria-label={`Edit ${category.name}`}
-          >
-            Edit
-          </Button>
-          <Button
-            type="button"
-            variant="quiet"
+          <IconButton label={`Edit ${category.name}`} onClick={onEdit}>
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            label={`Delete ${category.name}`}
+            tone="danger"
             onClick={() => setConfirming(true)}
-            aria-label={`Delete ${category.name}`}
           >
-            Delete
-          </Button>
+            <RemoveIcon />
+          </IconButton>
         </div>
       </div>
 

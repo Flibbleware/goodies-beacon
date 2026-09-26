@@ -59,7 +59,7 @@ export const RELIST_LABELS: Record<RelistPolicy, string> = {
 };
 
 export const ON_UNKNOWN_LABELS: Record<OnUnknown, string> = {
-  surface: 'Surface as uncertain',
+  surface: 'Uncertain',
   reject: 'Reject',
 };
 

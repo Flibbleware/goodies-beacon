@@ -95,6 +95,11 @@ anything at or above it either way, so the last run's oldest listing is not inge
 so neither hard-codes a marketplace list. Regions are in the source's own vocabulary —
 `EBAY_GB`, `vinted.co.uk`, `jp` — because a region belongs to a search plan, not to the item.
 
+Your source's regions go in `SOURCE_REGIONS` in `packages/core/src/domain/regions.ts`, and
+`describeSearchOptions()` returns that entry rather than a copy. The spec form draws its Region
+dropdown from it and the store refuses a plan on any region not in it, neither of which can import
+an adapter. A source with no entry is not checked, and its plans' regions are free text.
+
 A filter that the source accepts but ignores is worse than one it rejects. eBay returns HTTP 200
 for `itemLocationCountry:{GB|US}` and then ignores it (S1-01), so the adapter never generates that
 form. If you are unsure whether a filter works, compare result counts against an unfiltered

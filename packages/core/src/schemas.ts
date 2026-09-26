@@ -102,6 +102,13 @@ export {
 } from './domain/listing.js';
 export { type ReadinessGap, readinessGaps } from './domain/readiness.js';
 export {
+  EBAY_MARKETPLACES,
+  type Region,
+  type RegionIssue,
+  SOURCE_REGIONS,
+  unknownRegions,
+} from './domain/regions.js';
+export {
   linkedCriterion,
   lockedFields,
   matchesSharedCriterion,

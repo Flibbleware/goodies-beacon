@@ -289,6 +289,13 @@ export {
 } from './domain/listing.js';
 export { type ReadinessGap, readinessGaps } from './domain/readiness.js';
 export {
+  EBAY_MARKETPLACES,
+  type Region,
+  type RegionIssue,
+  SOURCE_REGIONS,
+  unknownRegions,
+} from './domain/regions.js';
+export {
   loadSellerSalt,
   SELLER_SALT_BYTES,
   sellerHash,
@@ -369,6 +376,7 @@ export {
   saveItem,
   UnknownGradingScaleError,
   UnknownImageError,
+  UnknownRegionError,
   type UpdatedItem,
   updateItem,
 } from './items/store.js';

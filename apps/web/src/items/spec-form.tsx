@@ -27,6 +27,7 @@ import {
   ON_UNKNOWN,
   RELIST_POLICIES,
   SHIPS_TO_UK_POLICIES,
+  SOURCE_REGIONS,
   scheduledHours,
 } from '@goodies-beacon/core/schemas';
 import { useQuery } from '@tanstack/react-query';
@@ -132,7 +133,7 @@ export function SpecForm({
         />
       ) : null}
       {parts.includes('searchPlan') && focus ? (
-        <SearchPlanFields spec={spec} edit={edit} errors={errors} index={focus.index} />
+        <SearchPlanFields spec={spec} edit={edit} errors={errors} focus={focus} />
       ) : null}
     </div>
   );
@@ -233,6 +234,16 @@ function Choice<T extends string>({
     </Field>
   );
 }
+
+/**
+ * A checkbox in a grid of fields, level with the controls beside it rather than their hints: past a
+ * `Field`'s label and its control's top margin, then centred on the control's height. Pinned to the
+ * cell's foot, it dropped below the controls whenever a hint beside it wrapped.
+ */
+const BESIDE_CONTROL = 'flex h-9.5 items-center sm:mt-7';
+
+/** A select rather than a checkbox, so it reads as the shared criterion dialog's does beside it. */
+const SETTLES = ['yes', 'no'] as const;
 
 function Check({
   label,
@@ -734,16 +745,17 @@ function CriterionFields({
           options={ON_UNKNOWN}
           disabled={locked('onUnknown')}
           onPick={(value: OnUnknown) => update('onUnknown', value)}
-          labels={{ surface: 'Surface as uncertain', reject: 'Reject' }}
+          labels={ON_UNKNOWN_LABELS}
         />
-        <div className="flex items-end pb-2">
-          <Check
-            label="Photos can settle it"
-            checked={criterion.quantifiable}
-            disabled={locked('quantifiable')}
-            onToggle={(on) => update('quantifiable', on)}
-          />
-        </div>
+        <Choice
+          label="Photos can settle"
+          hint={lockedHint('quantifiable')}
+          value={criterion.quantifiable ? 'yes' : 'no'}
+          options={SETTLES}
+          disabled={locked('quantifiable')}
+          onPick={(value) => update('quantifiable', value === 'yes')}
+          labels={{ yes: 'Yes', no: 'No' }}
+        />
       </div>
 
       {warning ? (
@@ -808,18 +820,31 @@ function SearchPlanFields({
   spec,
   edit,
   errors,
-  index,
+  focus: { index, adding },
 }: {
   spec: WantedSpec;
   edit: Edit;
   errors: Errors;
-  index: number;
+  focus: EntryFocus;
 }) {
   const ids = { query: useId(), region: useId() };
   const plan = spec.searchPlans[index];
+  const [stored] = useState(
+    () => plan && { id: plan.id, source: plan.source, region: plan.region },
+  );
   if (!plan) return null;
 
+  // A plan's watermark, stats and schedule are its query's history on one site, keyed by its id, so
+  // a new site starts a new plan as a new source does (P1-29). Choosing the stored site again before
+  // saving gives the old id back, so a change that comes to nothing loses nothing.
+  const pickRegion = (region: string) => {
+    if (adding || !stored) return update({ region });
+    const same = region === stored.region && plan.source === stored.source;
+    update({ region, id: same ? stored.id : newPlanId() });
+  };
+
   const update = (patch: Record<string, unknown>) => patchRow(edit, 'searchPlans', index, patch);
+  const regions = SOURCE_REGIONS[plan.source];
 
   // A plan on a source no marketplace owns (the template adapter's) keeps its own value in the
   // list, rather than the select quietly showing the first marketplace instead.
@@ -853,15 +878,40 @@ function SearchPlanFields({
         <Field
           id={ids.region}
           label="Region"
-          hint="The eBay marketplace to search: EBAY_GB, EBAY_US, EBAY_DE."
+          hint={
+            regions
+              ? `The ${sourceLabel(plan.source)} site to search. Changing it starts the plan's stats afresh; to search several sites, add a plan for each.`
+              : 'Where to search, in the source’s own terms.'
+          }
           error={errors(`searchPlans.${index}.region`)}
         >
-          <input
-            id={ids.region}
-            value={plan.region}
-            onChange={(event) => update({ region: event.target.value })}
-            className={CONTROL}
-          />
+          {regions ? (
+            <select
+              id={ids.region}
+              value={plan.region}
+              onChange={(event) => pickRegion(event.target.value)}
+              className={CONTROL}
+            >
+              {/* A region saved before the list was enforced (P1-29) shows as itself, to be changed. */}
+              {regions.some(({ value }) => value === plan.region) ? null : (
+                <option value={plan.region}>
+                  {plan.region} — not a {sourceLabel(plan.source)} site
+                </option>
+              )}
+              {regions.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              id={ids.region}
+              value={plan.region}
+              onChange={(event) => pickRegion(event.target.value)}
+              className={CONTROL}
+            />
+          )}
         </Field>
 
         <Choice
@@ -882,7 +932,7 @@ function SearchPlanFields({
           }}
         />
 
-        <div className="flex items-end pb-2">
+        <div className={BESIDE_CONTROL}>
           <Check label="Polled" checked={plan.enabled} onToggle={(on) => update({ enabled: on })} />
         </div>
       </div>

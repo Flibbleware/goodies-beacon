@@ -246,6 +246,21 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     expect(body.error.message).toContain('spec.settings.gradingScaleId');
   });
 
+  it('refuses a search plan on a region eBay does not have, naming the plan (P1-29)', async () => {
+    const spec = example('carmageddon');
+    const plans = spec.searchPlans as Record<string, unknown>[];
+
+    const res = await send('POST', '/api/items', {
+      title: 'Carmageddon big box',
+      spec: { ...spec, searchPlans: [{ ...plans[0], region: 'EBAY_GB, EBAY_US' }] },
+    });
+
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('unknown_region');
+    expect(body.error.message).toContain('searchPlans.0.region: “EBAY_GB, EBAY_US”');
+  });
+
   it('saves a new version and leaves the old one readable in the history', async () => {
     const spec = example('carmageddon');
     const created = await send('POST', '/api/items', { title: 'Carmageddon', spec });
