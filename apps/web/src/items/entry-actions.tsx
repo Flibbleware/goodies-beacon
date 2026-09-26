@@ -144,16 +144,16 @@ export function RemoveFromSpec({
               {remove.error instanceof ApiError ? remove.error.message : 'Could not remove it.'}
             </Alert>
           ) : null}
-          <div className="flex gap-3">
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="quiet" onClick={close}>
+              Cancel
+            </Button>
             <Button
               type="button"
               disabled={remove.isPending}
               onClick={() => remove.mutate(removal)}
             >
               Remove
-            </Button>
-            <Button type="button" variant="quiet" onClick={close}>
-              Cancel
             </Button>
           </div>
         </div>

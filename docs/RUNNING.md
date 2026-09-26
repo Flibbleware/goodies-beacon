@@ -945,9 +945,9 @@ would surface it as uncertain instead. It is legal, just rarely what was meant.
 
 **Only an `active` item is polled.** A new one starts as a draft, which is the safe default: it
 keeps its spec and its search plans and does nothing at all until you set it active. `paused`,
-`found` and `archived` are all equally quiet. **Start polling** and **Pause polling** on the item
-page move it between active and paused; the schedule follows within the minute, because
-`schedules.reconcile` reads the status rather than being told. Pausing writes no spec version —
+`found` and `archived` are all equally quiet. The **Status** dropdown at the top of the item page
+changes it, saving as soon as you choose; the schedule follows within the minute, because
+`schedules.reconcile` reads the status rather than being told. Changing it writes no spec version —
 status says whether the instance is looking, not what it is looking for.
 
 **Saving never edits a spec.** Each save writes the next version and points the item at it, so the

@@ -42,7 +42,7 @@ export const LISTING_TYPE_LABELS: Record<BuyingType, string> = {
 };
 
 export const CONDITION_LABELS: Record<ConditionCategory, string> = {
-  any: 'Any condition',
+  any: 'Any',
   new: 'New',
   used: 'Used',
   for_parts: 'For parts or not working',

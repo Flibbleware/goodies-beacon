@@ -4,6 +4,20 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-28 Item page tabs. A wanted item's sections — Details, Search Plans, Criteria, Settings and
+  Images — are now tabs under the coloured counts instead of a list that folds open and
+  shut. The open tab is kept in the address, so a refresh or Back stays on it, and a red mark on a
+  tab shows what a new item still needs. Each tab has its edit or add button at the top, and
+  Details and Settings no longer sit in a box.
+- An item's status is now a dropdown at the top of its page, replacing the Start Polling and
+  Pause Polling button and the Status field in *Edit Details*. It saves as soon as you choose, and
+  offers all five statuses, so marking an item found or archived no longer needs the editor.
+- An item's Settings tab is split into *Marketplace Settings* and *General Settings* (price
+  ceiling, poll interval, notifications and what an unsettled criterion does), each with its own
+  edit button and a smaller editor.
+- An item's page shows its category's icon beside the title.
+- Secondary buttons such as *Cancel* are a soft grey instead of an outline, so they no longer look
+  smaller than the button beside them.
 - P1-27 Shared criteria. A new **Criteria** page holds criteria written once — "the original
   release, not the Nintendo Classics re-release" — each under an identifier and with tags to find
   it by. Add one to any wanted item from its criteria editor, searching by identifier or tag. Its

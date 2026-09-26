@@ -3,6 +3,7 @@ import { durationToHours, lintSpec, scheduledHours } from '@goodies-beacon/core/
 import { Link } from '@tanstack/react-router';
 import { type ReactNode, useLayoutEffect, useState } from 'react';
 import { CriterionFlags } from '../components/criterion-flags.js';
+import { PanelAction } from './item-tabs.js';
 import {
   BACKFILL_DEPTH_LABELS,
   CONDITION_LABELS,
@@ -17,7 +18,7 @@ import {
 /**
  * The current spec, rendered in full and human-readable (§8), in the parts the item page shows as
  * sections of their own (P1-24): what is being looked for, the settings, the criteria, and the
- * reference images. Each is a reading view; the pencil beside its heading opens its editor.
+ * reference images. Each is a reading view; its editor is opened from the top of its tab.
  *
  * "Nothing is a black box" is the requirement this satisfies: every criterion in plain English
  * with its hard/soft, quantifiable and on-unknown flags, the settings as the bounded values they
@@ -25,7 +26,7 @@ import {
  */
 export function SpecDescription({ spec }: { spec: WantedSpec }) {
   return (
-    <Card>
+    <Unboxed>
       <div>
         <Label>Summary</Label>
         <p className="mt-1.5 text-sm">{spec.summary || <Absent>No summary was written.</Absent>}</p>
@@ -36,7 +37,7 @@ export function SpecDescription({ spec }: { spec: WantedSpec }) {
           {spec.plausibilityNote || <Absent>Nothing written for the pre-filter.</Absent>}
         </p>
       </div>
-    </Card>
+    </Unboxed>
   );
 }
 
@@ -56,52 +57,96 @@ function Card({ children }: { children: ReactNode }) {
   );
 }
 
+/** Details and Settings are read as text under their tab, with no box around them (P1-28). */
+function Unboxed({ children }: { children: ReactNode }) {
+  return <div className="mt-4 space-y-6">{children}</div>;
+}
+
 /**
  * §4's settings/criteria split made visible: everything with a bounded set of values, shown as the
  * value it is. A price or a country appearing under Criteria instead would be the leak §4 warns
  * about, and the Criteria section sits directly beneath so it would be obvious.
  */
-export function SpecSettings({ spec }: { spec: WantedSpec }) {
+export function SpecSettings({
+  spec,
+  onEdit,
+}: {
+  spec: WantedSpec;
+  /** Opens a group's own editor (P1-28); without it the groups have no buttons. */
+  onEdit?: ((group: 'marketplace' | 'general') => void) | undefined;
+}) {
   const s = spec.settings;
   const ceiling = s.priceCeiling;
 
-  // In the editor's order and words; grading waits for Phase 5 and is not shown (P1-26).
-  const rows: [string, string][] = [
+  // In the editors' order and words; grading waits for Phase 5 and is not shown (P1-26).
+  const marketplace: [string, string][] = [
     ['Marketplaces', s.sources.length > 0 ? s.sources.map(sourceLabel).join(', ') : 'none'],
     ['Listing types', s.listingTypes.map((type) => LISTING_TYPE_LABELS[type]).join(' and ')],
-    ['Price ceiling', ceiling ? `£${ceiling.amount}` : 'Any price'],
     ['Negative keywords', s.negativeKeywords.join(', ') || 'None'],
-    ['Poll every', pollEvery(s.pollEvery)],
-    ['Notifications', NOTIFICATION_LABELS[s.notificationMode]],
     ['Relists', RELIST_LABELS[s.relists]],
-    ['When unknown', ON_UNKNOWN_LABELS[s.defaultOnUnknown]],
     ['Condition', CONDITION_LABELS[s.conditionCategory]],
     ['Ships to the UK', SHIPS_TO_UK_LABELS[s.shipsToUk]],
     ['Backfill', s.backfill.enabled ? `On: ${BACKFILL_DEPTH_LABELS[s.backfill.depth]}` : 'Off'],
   ];
+  const general: [string, string][] = [
+    ['Price ceiling', ceiling ? `£${ceiling.amount}` : 'Any price'],
+    ['Poll every', pollEvery(s.pollEvery)],
+    ['Notifications', NOTIFICATION_LABELS[s.notificationMode]],
+    ['When unknown', ON_UNKNOWN_LABELS[s.defaultOnUnknown]],
+  ];
 
+  // Unboxed, like Details, with room between the groups for each one's button.
   return (
-    <Card>
-      <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+    <div className="mt-4 space-y-10">
+      <SettingsGroup
+        title="Marketplace Settings"
+        rows={marketplace}
+        onEdit={onEdit ? () => onEdit('marketplace') : undefined}
+      />
+      <SettingsGroup
+        title="General Settings"
+        rows={general}
+        onEdit={onEdit ? () => onEdit('general') : undefined}
+      />
+    </div>
+  );
+}
+
+function SettingsGroup({
+  title,
+  rows,
+  onEdit,
+}: {
+  title: string;
+  rows: [string, string][];
+  onEdit: (() => void) | undefined;
+}) {
+  // No visible subtitle: the button names the group, and the section keeps it for a screen reader.
+  return (
+    <section aria-label={title}>
+      <div className="flex min-h-8 items-center justify-end">
+        {onEdit ? <PanelAction kind="edit" label={`Edit ${title}`} onClick={onEdit} /> : null}
+      </div>
+      <dl className="mt-3 grid gap-y-2">
         {rows.map(([label, value]) => (
-          <div key={label} className="flex items-baseline justify-between gap-3 text-sm">
+          <div key={label} className="grid grid-cols-[9rem_1fr] gap-x-4 text-sm">
             <dt className="text-ink-dim dark:text-ink-dim-dark">{label}</dt>
-            <dd className="text-right font-medium">{value}</dd>
+            <dd className="font-medium">{value}</dd>
           </div>
         ))}
       </dl>
-    </Card>
+    </section>
   );
 }
 
 /** The interval as it will run: hours, rounded up as the scheduler rounds them. */
 function pollEvery(duration: string | null): string {
-  if (duration === null) return 'Every 8 hours (the default)';
+  if (duration === null) return '8 hours (the default)';
   const hours = durationToHours(duration);
   if (hours === undefined) return duration;
   const runs = scheduledHours(hours);
-  const every = `Every ${runs} hour${runs === 1 ? '' : 's'}`;
-  return runs === hours ? every : `${every} (${hours} asked for)`;
+  const period = `${runs} hour${runs === 1 ? '' : 's'}`;
+  return runs === hours ? period : `${period} (${hours} asked for)`;
 }
 
 /**
@@ -157,7 +202,8 @@ export function CriteriaList({
                 ) : null}
               </div>
               {actions ? (
-                <div className="flex shrink-0 gap-1">{actions(criterion, index)}</div>
+                // Raised to centre on the criterion's first line, which is shorter than the buttons.
+                <div className="-mt-0.5 flex shrink-0 gap-1">{actions(criterion, index)}</div>
               ) : null}
             </li>
           ))}

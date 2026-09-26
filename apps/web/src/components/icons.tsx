@@ -62,15 +62,6 @@ export function PlusIcon({ className }: { className?: string | undefined }) {
   );
 }
 
-/** Points down; turned a quarter to point right when what it opens is closed. */
-export function ChevronIcon({ className }: { className?: string | undefined }) {
-  return (
-    <Icon className={className}>
-      <path d="M6 9l6 6 6-6" />
-    </Icon>
-  );
-}
-
 /** A clock with an arrow running back round it: what came before. */
 export function HistoryIcon({ className }: { className?: string | undefined }) {
   return (
@@ -177,6 +168,27 @@ export function SettingsIcon({ className }: { className?: string | undefined }) 
     <Icon className={className}>
       <path d="M9.8 4.9L10.3 2.3L13.7 2.3L14.2 4.9L15.5 5.5L17.6 4L20 6.4L18.5 8.5L19.1 9.8L21.7 10.3L21.7 13.7L19.1 14.2L18.5 15.5L20 17.6L17.6 20L15.5 18.5L14.2 19.1L13.7 21.7L10.3 21.7L9.8 19.1L8.5 18.5L6.4 20L4 17.6L5.5 15.5L4.9 14.2L2.3 13.7L2.3 10.3L4.9 9.8L5.5 8.5L4 6.4L6.4 4L8.5 5.5z" />
       <circle cx="12" cy="12" r="3" />
+    </Icon>
+  );
+}
+
+/** A page with lines of text: what an item is. */
+export function DetailsIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <path d="M6 3h8l4 4v14H6z" />
+      <path d="M14 3v4h4M9 12h6M9 16h6" />
+    </Icon>
+  );
+}
+
+/** A framed picture: a sun over hills. */
+export function ImageIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <circle cx="9" cy="10" r="1.5" />
+      <path d="M20.5 16l-5-5-8.5 8.5" />
     </Icon>
   );
 }

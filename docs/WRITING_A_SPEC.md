@@ -32,7 +32,7 @@ reviewer will later trip on — which variants count, what "complete" means, wha
 2. On the item's page, **JSON** → replace the document with the spec → **Save**. That is version 2.
 3. Upload reference photos through **Reference Images** (they cannot be written into JSON — each
    entry points at an uploaded file). Optional.
-4. **Start Polling** once the red marks are gone: at least one criterion, and one enabled search
+4. Set the **Status** to *Active* once the red marks are gone: at least one criterion, and one enabled search
    plan on a marketplace switched on in the settings.
 
 The title and category are the item's, not the spec's, so they are not in the JSON.
@@ -114,7 +114,7 @@ of a model.
 | `priceCeiling` | `{ "amount": 120, "currency": "GBP" }` or `null` | **Enforced.** GBP only; other currencies are converted first. `null` is any price. |
 | `negativeKeywords` | `["t-shirt", "poster"]` | **Enforced.** A title containing one (ignoring case, anywhere in the title) is rejected with no model called. Free but blunt: `"n64"` also matches inside a longer word, and a word that can appear in a listing you want loses it silently. Use distinctive words only. |
 | `notificationMode` | `"realtime"` or `"digest"` | **Enforced.** Real-time emails each match; digest sends one email at 08:00. |
-| `pollEvery` | `"PT8H"`, `"PT12H"`, `"P1D"`, or `null` | **Enforced.** ISO 8601; the settings editor takes hours. `null` is the default, every 8 hours. Rounded up to 1, 2, 3, 4, 6, 8, 12 or 24 hours. |
+| `pollEvery` | `"PT8H"`, `"PT12H"`, `"P1D"`, or `null` | **Enforced.** ISO 8601; the General Settings editor takes hours. `null` is the default, every 8 hours. Rounded up to 1, 2, 3, 4, 6, 8, 12 or 24 hours. |
 | `defaultOnUnknown` | `"surface"` or `"reject"` | Stored; every criterion carries its own `onUnknown`, which is what is used. Leave `"surface"`. |
 | `listingTypes` | `["auction", "fixed"]` | **Not yet acted on.** At least one. Leave both. |
 | `conditionCategory` | `"any"`, `"new"`, `"used"`, `"for_parts"` | **Not yet acted on.** Leave `"any"` and put condition in the criteria. |

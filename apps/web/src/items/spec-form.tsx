@@ -50,7 +50,12 @@ import {
 } from './labels.js';
 import { type SpecDocument, type SpecIssue, withDocument, withSetting } from './parse.js';
 
-export type SpecFormPart = 'describe' | 'settings' | 'criterion' | 'searchPlan';
+export type SpecFormPart =
+  | 'describe'
+  | 'marketplaceSettings'
+  | 'generalSettings'
+  | 'criterion'
+  | 'searchPlan';
 
 /**
  * Which criterion or search plan the `criterion` and `searchPlan` parts edit, and whether it is the
@@ -62,7 +67,7 @@ export interface EntryFocus {
   adding: boolean;
 }
 
-const ALL_PARTS: readonly SpecFormPart[] = ['describe', 'settings'];
+const ALL_PARTS: readonly SpecFormPart[] = ['describe', 'marketplaceSettings', 'generalSettings'];
 
 /**
  * The typed editing surface for a spec (P1-18), beside the JSON editor rather than instead of it.
@@ -111,8 +116,11 @@ export function SpecForm({
   return (
     <div className="space-y-8">
       {parts.includes('describe') ? <Describe spec={spec} edit={edit} titled={titled} /> : null}
-      {parts.includes('settings') ? (
-        <Settings spec={spec} setting={setting} errors={errors} titled={titled} />
+      {parts.includes('marketplaceSettings') ? (
+        <MarketplaceSettings spec={spec} setting={setting} errors={errors} titled={titled} />
+      ) : null}
+      {parts.includes('generalSettings') ? (
+        <GeneralSettings spec={spec} setting={setting} errors={errors} titled={titled} />
       ) : null}
       {parts.includes('criterion') && focus ? (
         <CriterionFields
@@ -297,7 +305,12 @@ function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled
   );
 }
 
-function Settings({
+/**
+ * The settings in the item page's two groups (P1-28): what is asked of the marketplaces and how a
+ * listing found there is filtered, and the rest — how much, how often, how you hear, and what an
+ * unsettled criterion does — which is how the item behaves wherever it searches.
+ */
+function MarketplaceSettings({
   spec,
   setting,
   errors,
@@ -309,16 +322,12 @@ function Settings({
   titled: boolean;
 }) {
   const s = spec.settings;
-  const ids = { price: useId() };
   // Only the marketplaces there is an adapter for, plus any the spec already names so nothing is
   // switched on out of sight. Grading waits for Phase 5 and is not shown at all (P1-26).
   const sources = [...OFFERED_SOURCES, ...s.sources.filter((source) => !isOffered(source))];
 
-  const toggleIn = <T extends string>(list: readonly T[], value: T, on: boolean): T[] =>
-    on ? [...list, value] : list.filter((entry) => entry !== value);
-
   return (
-    <Group title="Settings" titled={titled} hint="Everything with a bounded set of values (§4).">
+    <Group title="Marketplace Settings" titled={titled}>
       <div className="space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
@@ -360,49 +369,10 @@ function Settings({
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field
-            id={ids.price}
-            label="Price ceiling"
-            hint="In GBP; every other currency is converted before comparing. Empty means any price."
-            error={errors('settings.priceCeiling.amount')}
-          >
-            <input
-              id={ids.price}
-              type="number"
-              step="any"
-              value={s.priceCeiling ? s.priceCeiling.amount : ''}
-              placeholder="any price"
-              onChange={(event) =>
-                setting(
-                  'priceCeiling',
-                  event.target.value === ''
-                    ? null
-                    : { amount: Number(event.target.value), currency: 'GBP' },
-                )
-              }
-              className={CONTROL}
-            />
-          </Field>
-
           <Keywords
             value={s.negativeKeywords}
             onChange={(keywords) => setting('negativeKeywords', keywords)}
             error={errors('settings.negativeKeywords')}
-          />
-
-          <PollHours
-            value={s.pollEvery}
-            onChange={(pollEvery) => setting('pollEvery', pollEvery)}
-            error={errors('settings.pollEvery')}
-          />
-
-          <Choice
-            label="Notifications"
-            hint="Real-time emails on sight; digest waits for the 08:00 round-up."
-            value={s.notificationMode}
-            options={NOTIFICATION_MODES}
-            onPick={(value: NotificationMode) => setting('notificationMode', value)}
-            labels={NOTIFICATION_LABELS}
           />
 
           <Choice
@@ -411,15 +381,6 @@ function Settings({
             options={RELIST_POLICIES}
             onPick={(value: RelistPolicy) => setting('relists', value)}
             labels={RELIST_LABELS}
-          />
-
-          <Choice
-            label="When a criterion cannot be settled"
-            hint="The default each criterion starts from."
-            value={s.defaultOnUnknown}
-            options={ON_UNKNOWN}
-            onPick={(value: OnUnknown) => setting('defaultOnUnknown', value)}
-            labels={ON_UNKNOWN_LABELS}
           />
 
           <Choice
@@ -466,6 +427,78 @@ function Settings({
     </Group>
   );
 }
+
+function GeneralSettings({
+  spec,
+  setting,
+  errors,
+  titled,
+}: {
+  spec: WantedSpec;
+  setting: Setting;
+  errors: Errors;
+  titled: boolean;
+}) {
+  const s = spec.settings;
+  const ids = { price: useId() };
+
+  return (
+    <Group title="General Settings" titled={titled}>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field
+          id={ids.price}
+          label="Price ceiling"
+          hint="In GBP; every other currency is converted before comparing. Empty means any price."
+          error={errors('settings.priceCeiling.amount')}
+        >
+          <input
+            id={ids.price}
+            type="number"
+            step="any"
+            value={s.priceCeiling ? s.priceCeiling.amount : ''}
+            placeholder="any price"
+            onChange={(event) =>
+              setting(
+                'priceCeiling',
+                event.target.value === ''
+                  ? null
+                  : { amount: Number(event.target.value), currency: 'GBP' },
+              )
+            }
+            className={CONTROL}
+          />
+        </Field>
+
+        <PollHours
+          value={s.pollEvery}
+          onChange={(pollEvery) => setting('pollEvery', pollEvery)}
+          error={errors('settings.pollEvery')}
+        />
+
+        <Choice
+          label="Notifications"
+          hint="Real-time emails on sight; digest waits for the 08:00 round-up."
+          value={s.notificationMode}
+          options={NOTIFICATION_MODES}
+          onPick={(value: NotificationMode) => setting('notificationMode', value)}
+          labels={NOTIFICATION_LABELS}
+        />
+
+        <Choice
+          label="When a criterion cannot be settled"
+          hint="The default each criterion starts from."
+          value={s.defaultOnUnknown}
+          options={ON_UNKNOWN}
+          onPick={(value: OnUnknown) => setting('defaultOnUnknown', value)}
+          labels={ON_UNKNOWN_LABELS}
+        />
+      </div>
+    </Group>
+  );
+}
+
+const toggleIn = <T extends string>(list: readonly T[], value: T, on: boolean): T[] =>
+  on ? [...list, value] : list.filter((entry) => entry !== value);
 
 /**
  * The poll interval in whole hours (P1-26). The spec stores an ISO 8601 duration, which is what the
@@ -555,7 +588,7 @@ function Keywords({
     <Field
       id={id}
       label="Negative keywords"
-      hint="Comma separated. A title containing one is rejected before any model is called — free, but nothing judges it, so a word that can appear in a listing you want will lose it silently."
+      hint="Comma separated. A title containing one is rejected before any model is called."
       error={error}
     >
       <input

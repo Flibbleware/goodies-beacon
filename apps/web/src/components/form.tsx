@@ -70,11 +70,12 @@ export function Button({
   variant = 'primary',
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'quiet' }) {
-  // The primary's border is transparent rather than absent, so the two stand the same height.
+  // Both are solid shapes with a transparent border, so the two stand the same height and read as
+  // the same size; a quiet button drawn as a border round a dark fill looked the smaller (P1-28).
   const style =
     variant === 'primary'
       ? 'border border-transparent bg-beacon text-white'
-      : 'border border-edge dark:border-edge-dark bg-paper dark:bg-paper-dark';
+      : 'border border-transparent bg-edge/70 hover:bg-edge dark:bg-edge-dark/70 dark:hover:bg-edge-dark';
   return (
     <button
       {...props}

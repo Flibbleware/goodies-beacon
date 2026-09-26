@@ -51,6 +51,17 @@ async function inbox(): Promise<InboxMessage[]> {
  */
 test('first run, settings, a wanted item, and deep links survive a refresh', async ({ page }) => {
   const section = (name: string) => page.getByRole('region', { name });
+  /** The item page's sections are tabs (P1-28), each showing its panel alone. */
+  const tab = (name: string) => page.getByRole('tab', { name, exact: true });
+  const openTab = async (name: string) => {
+    await tab(name).click();
+    await expect(tab(name)).toHaveAttribute('aria-selected', 'true');
+    return page.getByRole('tabpanel', { name, exact: true });
+  };
+  /** The item page's status, chosen from its header and saved as it changes (P1-28). */
+  const itemStatus = page.getByLabel('Status', { exact: true });
+  const activeOption = itemStatus.locator('option[value="active"]');
+  const markedTabs = page.getByRole('tablist', { name: 'Sections' }).locator('[aria-describedby]');
   /** On the item page the history is a modal behind a clock button (P1-24). */
   const itemHistory = async () => {
     await page.getByRole('button', { name: 'Version History', exact: true }).click();
@@ -286,9 +297,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     const dialog = page.getByRole('dialog', { name: 'Create a Wanted Item' });
     const create = dialog.getByRole('button', { name: 'Create', exact: true });
 
-    // A new item is a draft: it starts polling from its own page once it can (P1-26).
-    await expect(dialog.getByLabel('Status')).toBeDisabled();
-    await expect(dialog.getByLabel('Status')).toHaveValue('draft');
+    // A new item is a draft, so there is no status to choose: it starts polling from its own page
+    // once it can (P1-26, P1-28).
+    await expect(dialog.getByLabel('Status')).toHaveCount(0);
     // An item's title is not a person's, so password managers are told to leave it alone.
     await expect(dialog.getByLabel('Title')).toHaveAttribute('data-bwignore', 'true');
     await expect(dialog.getByLabel('Title')).toHaveAttribute('autocomplete', 'off');
@@ -311,13 +322,23 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('a new draft says what it needs before it can poll', async () => {
-    const marks = page.getByRole('img', { name: /^Needed before polling/ });
-    await expect(marks).toHaveCount(2);
-    await expect(section('Criteria').getByRole('img', { name: /criterion/ })).toBeVisible();
-    await expect(section('Search Plans').getByRole('img', { name: /search plan/ })).toBeVisible();
+    // The mark is on the tab, so it shows whichever section is open.
+    await expect(markedTabs).toHaveCount(2);
+    await expect(tab('Criteria')).toHaveAccessibleDescription(
+      /^Needed before polling\..*criterion/,
+    );
+    await expect(tab('Search Plans')).toHaveAccessibleDescription(
+      /^Needed before polling\..*search plan/,
+    );
+    // And again at the top of the section, where it is put right.
+    const criteria = await openTab('Criteria');
+    await expect(criteria.getByText(/^Add a criterion\. A listing is only/)).toBeVisible();
+    await openTab('Details');
 
-    await expect(page.getByRole('button', { name: 'Start polling' })).toBeDisabled();
+    await expect(itemStatus).toHaveValue('draft');
+    await expect(activeOption).toBeDisabled();
     await expect(page.getByText('Before it can start polling:')).toBeVisible();
+    await expect(itemStatus).toHaveAccessibleDescription(/^Before it can start polling:/);
   });
 
   await test.step('a spec the schema rejects cannot be saved, and the error names the path', async () => {
@@ -358,46 +379,64 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await dialog.getByRole('button', { name: 'Save as version 2' }).click();
     await expect(dialog).toBeHidden();
 
-    await expect(page.getByRole('img', { name: /^Needed before polling/ })).toHaveCount(0);
+    await expect(markedTabs).toHaveCount(0);
     await expect(page.getByText('Before it can start polling:')).toBeHidden();
-    await page.getByRole('button', { name: 'Start polling' }).click();
-    await expect(page.getByRole('button', { name: 'Pause polling' })).toBeVisible();
+    await expect(activeOption).toBeEnabled();
+    await itemStatus.selectOption('active');
+    await expect(itemStatus).toBeEnabled();
+    await page.reload();
+    await expect(itemStatus).toHaveValue('active');
   });
 
   await test.step('the settings editor holds what is typed into it, and Discard writes nothing', async () => {
-    await page.getByRole('button', { name: 'Edit settings' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Edit Settings' });
+    // Two groups, each with its own editor holding only its own settings (P1-28).
+    await openTab('Settings');
+    await page.getByRole('button', { name: 'Edit general settings' }).click();
+    const general = page.getByRole('dialog', { name: 'Edit General Settings' });
+    await expect(general.getByLabel('Relists')).toHaveCount(0);
+    await expect(general.getByRole('checkbox')).toHaveCount(0);
 
-    await dialog.getByLabel('Price ceiling').fill('95');
-    await dialog.getByLabel('Relists').selectOption('suppress');
+    await general.getByLabel('Price ceiling').fill('95');
 
     // Hours, not ISO 8601, and the hint says what a schedule can actually run (P1-26).
-    await dialog.getByLabel('Poll every').pressSequentially('5');
-    await expect(dialog.getByLabel('Poll every')).toHaveValue('5');
-    await expect(dialog).toContainText('so this polls every 6 hours');
+    await general.getByLabel('Poll every').pressSequentially('5');
+    await expect(general.getByLabel('Poll every')).toHaveValue('5');
+    await expect(general).toContainText('so this polls every 6 hours');
+
+    // A price with pence must not trip the browser's own validation and block Save.
+    await general.getByLabel('Price ceiling').fill('149.99');
+    const valid = await general
+      .getByLabel('Price ceiling')
+      .evaluate((input) => (input as unknown as { checkValidity(): boolean }).checkValidity());
+    expect(valid).toBe(true);
+    await expect(general.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
+
+    await general.getByRole('button', { name: 'Cancel' }).click();
+    await general.getByRole('button', { name: 'Discard' }).click();
+    await expect(general).toBeHidden();
+
+    await page.getByRole('button', { name: 'Edit marketplace settings' }).click();
+    const marketplace = page.getByRole('dialog', { name: 'Edit Marketplace Settings' });
+    await expect(marketplace.getByLabel('Price ceiling')).toHaveCount(0);
+    await expect(marketplace.getByLabel('Poll every')).toHaveCount(0);
+
+    await marketplace.getByLabel('Relists').selectOption('suppress');
 
     // Only the marketplace there is an adapter for, grading not at all, and words not codes.
-    await expect(dialog.getByRole('checkbox', { name: 'eBay' })).toBeChecked();
-    await expect(dialog.getByRole('checkbox', { name: /vinted/i })).toHaveCount(0);
-    await expect(dialog.getByLabel('Grading scale')).toHaveCount(0);
-    await expect(dialog.getByLabel('Minimum grade')).toHaveCount(0);
-    await expect(dialog.getByLabel('How far back').locator('option')).toHaveText([
+    await expect(marketplace.getByRole('checkbox', { name: 'eBay' })).toBeChecked();
+    await expect(marketplace.getByRole('checkbox', { name: /vinted/i })).toHaveCount(0);
+    await expect(marketplace.getByLabel('Grading scale')).toHaveCount(0);
+    await expect(marketplace.getByLabel('Minimum grade')).toHaveCount(0);
+    await expect(marketplace.getByLabel('How far back').locator('option')).toHaveText([
       'Newest 50',
       'Newest 200',
       'Last 30 days',
     ]);
+    await expect(marketplace.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
 
-    // A price with pence must not trip the browser's own validation and block Save.
-    await dialog.getByLabel('Price ceiling').fill('149.99');
-    const valid = await dialog
-      .getByLabel('Price ceiling')
-      .evaluate((input) => (input as unknown as { checkValidity(): boolean }).checkValidity());
-    expect(valid).toBe(true);
-    await expect(dialog.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
-
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await dialog.getByRole('button', { name: 'Discard' }).click();
-    await expect(dialog).toBeHidden();
+    await marketplace.getByRole('button', { name: 'Cancel' }).click();
+    await marketplace.getByRole('button', { name: 'Discard' }).click();
+    await expect(marketplace).toBeHidden();
 
     await page.getByRole('button', { name: 'JSON', exact: true }).click();
     const json = page.getByRole('dialog', { name: 'Edit JSON' });
@@ -408,6 +447,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('a reference image is uploaded, labelled, and saved as a version', async () => {
+    await openTab('Images');
     await page.getByRole('button', { name: 'Edit reference images' }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit Reference Images' });
 
@@ -433,7 +473,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await dialog.getByRole('button', { name: 'Save as version 3' }).click();
     await expect(dialog).toBeHidden();
 
-    await expect(section('Reference Images')).toContainText('UK big box, front');
+    await expect(page.getByRole('tabpanel', { name: 'Images' })).toContainText('UK big box, front');
     const versions = await itemHistory();
     await expect(versions.getByRole('listitem')).toHaveCount(3);
     await expect(versions.getByRole('listitem').first()).toContainText('Added a photo of the box.');
@@ -499,42 +539,53 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
     await expect(page.getByRole('heading', { name: 'Carmageddon big box' })).toBeVisible();
+    // Its category's icon beside the title, named for a reader without the colour (P1-28).
+    await expect(page.getByRole('img', { name: 'Category: Game' })).toBeVisible();
 
-    // Only Details starts open; every other section is one click away.
-    const toggle = (name: string) => page.getByRole('button', { name, exact: true });
-    await expect(toggle('Details')).toHaveAttribute('aria-expanded', 'true');
-    for (const name of ['Settings', 'Criteria', 'Reference Images', 'Search Plans']) {
-      await expect(toggle(name)).toHaveAttribute('aria-expanded', 'false');
-      await toggle(name).click();
-    }
+    // A tab for each section, in order, opening on Details with nothing in the URL.
+    await expect(page.getByRole('tab')).toHaveText([
+      'Details',
+      'Search Plans',
+      'Criteria',
+      'Settings',
+      'Images',
+    ]);
+    await expect(tab('Details')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toHaveCount(1);
 
-    const details = section('Details');
+    const details = page.getByRole('tabpanel', { name: 'Details' });
     await expect(details).toContainText('Carmageddon, the original 1997 big-box release');
     await expect(details).toContainText('How sellers list this');
 
-    const spec = section('Settings');
+    const spec = await openTab('Settings');
     // The settings, as the bounded values they are — not as criteria (§4's split).
-    await expect(spec).toContainText('£120');
-    await expect(spec).toContainText('Real-time email');
-    await expect(spec).toContainText('Auction and Fixed price');
+    // In two groups: what the marketplaces are asked for, and the rest (P1-28).
+    const marketplaceGroup = spec.getByRole('region', { name: 'Marketplace Settings' });
+    const generalGroup = spec.getByRole('region', { name: 'General Settings' });
+    await expect(generalGroup).toContainText('£120');
+    await expect(generalGroup).toContainText('Real-time email');
+    await expect(marketplaceGroup).toContainText('Auction and Fixed price');
+    await expect(marketplaceGroup).not.toContainText('£120');
     await expect(spec).not.toContainText('Grading');
     await expect(spec).not.toContainText('Carmageddon, the original 1997 big-box release');
+    await expect(spec).not.toContainText("Can't settle");
     // Every criterion in plain English with its flags, in a section of its own.
-    const criteria = section('Criteria');
+    const criteria = await openTab('Criteria');
     await expect(criteria).toContainText(
       'Big box release, not the jewel case or budget re-release',
     );
     await expect(criteria.getByText('Reject', { exact: true }).first()).toBeVisible();
     await expect(criteria).toContainText("Photos: Can't settle");
-    await expect(spec).not.toContainText("Can't settle");
+    // Only the open tab's panel is on the page.
+    await expect(details).toHaveCount(0);
     // And the reference image uploaded earlier, under the label the reviewer is shown.
-    const images = section('Reference Images');
+    const images = await openTab('Images');
     await expect(images).toContainText('UK big box, front');
     await expect(images).toContainText('1 image sent with every review of this item.');
   });
 
   await test.step('every search plan is listed with its stats, unrun ones included', async () => {
-    const plans = section('Search Plans');
+    const plans = await openTab('Search Plans');
 
     await expect(plans.getByRole('row')).toHaveCount(4);
     await expect(plans).toContainText('ebay · EBAY_GB');
@@ -547,40 +598,57 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
     await closeHistory();
 
-    await page.getByRole('button', { name: 'Pause polling' }).click();
-    await expect(page.getByText('paused', { exact: true })).toBeVisible();
+    await itemStatus.selectOption('paused');
+    await expect(itemStatus).toBeEnabled();
 
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Start polling' })).toBeVisible();
+    await expect(itemStatus).toHaveValue('paused');
     // Still three versions: pausing says nothing about what the item is looking for.
     await expect((await itemHistory()).getByRole('listitem')).toHaveCount(3);
     await closeHistory();
 
-    await page.getByRole('button', { name: 'Start polling' }).click();
-    await expect(page.getByRole('button', { name: 'Pause polling' })).toBeVisible();
+    await itemStatus.selectOption('active');
+    await expect(itemStatus).toBeEnabled();
+    await page.reload();
+    await expect(itemStatus).toHaveValue('active');
   });
 
   await test.step('Scan current listings is present and disabled until Phase 5', async () => {
     await expect(page.getByRole('button', { name: 'Scan current listings' })).toBeDisabled();
   });
 
-  await test.step('a section folds away, and stays folded after a reload', async () => {
-    const toggle = page.getByRole('button', { name: 'Search Plans', exact: true });
-    const table = section('Search Plans').getByRole('table');
-
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await toggle.click();
-    await expect(table).toBeHidden();
-
+  await test.step('the open tab is in the URL, so a reload and Back keep their place', async () => {
+    const plans = await openTab('Search Plans');
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+\?tab=search-plans$/);
     await page.reload();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(table).toBeHidden();
+    await expect(tab('Search Plans')).toHaveAttribute('aria-selected', 'true');
+    await expect(plans.getByRole('table')).toBeVisible();
 
-    await toggle.click();
-    await expect(table).toBeVisible();
+    await openTab('Criteria');
+    await page.goBack();
+    await expect(tab('Search Plans')).toHaveAttribute('aria-selected', 'true');
+
+    // The arrow keys, Home and End move along the strip and open what they reach.
+    await tab('Search Plans').focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(tab('Details')).toBeFocused();
+    await expect(tab('Details')).toHaveAttribute('aria-selected', 'true');
+    await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
+    await page.keyboard.press('ArrowLeft');
+    await expect(tab('Images')).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(tab('Details')).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('End');
+    await expect(page).toHaveURL(/\?tab=images$/);
+    // One tab stop for the whole strip.
+    await expect(page.getByRole('tab', { selected: false }).first()).toHaveAttribute(
+      'tabindex',
+      '-1',
+    );
   });
 
-  await test.step('the plus beside Criteria adds one criterion, as a new version', async () => {
+  await test.step('Add a Criterion adds one criterion, as a new version', async () => {
+    await openTab('Criteria');
     const add = page.getByRole('button', { name: 'Add a criterion' });
     await add.click();
 
@@ -608,7 +676,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await save.click();
     await expect(dialog).toBeHidden();
-    await expect(section('Criteria')).toContainText('The manual is the original print');
+    await expect(page.getByRole('tabpanel', { name: 'Criteria' })).toContainText(
+      'The manual is the original print',
+    );
     const versions = await itemHistory();
     await expect(versions.getByRole('listitem')).toHaveCount(4);
     // Left empty, the note names the criterion added, by its text since its id is random.
@@ -640,10 +710,12 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('Details renames the item without writing a version', async () => {
+    await openTab('Details');
     await page.getByRole('button', { name: 'Edit details' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Edit Details' });
-    await expect(dialog.getByLabel('Status')).toHaveValue('active');
+    // The status is chosen from the header, not here (P1-28).
+    await expect(dialog.getByLabel('Status')).toHaveCount(0);
     await dialog.getByLabel('Title').fill('Carmageddon big box, Mac or PC');
     // The title is the item's, not the spec's (P1-25): no version, so no note to ask for.
     await expect(dialog.getByLabel('Change note')).toHaveCount(0);
@@ -658,6 +730,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('a display image heads the card in the list, and is no version either', async () => {
+    const images = await openTab('Images');
     const display = section('Display image');
     await expect(display).toContainText('None');
 
@@ -678,9 +751,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     });
     await dialog.getByRole('button', { name: 'Upload and use' }).click();
     await expect(dialog).toBeHidden();
-    await expect(section('Reference Images')).toContainText(
-      '1 image sent with every review of this item.',
-    );
+    await expect(images).toContainText('1 image sent with every review of this item.');
 
     await nav.click();
     const card = page.getByRole('listitem').filter({ hasText: 'Carmageddon big box, Mac or PC' });
@@ -1080,8 +1151,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // It opens on the new item's own page, a draft, to be filled in there (P1-26).
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
     await expect(page.getByRole('heading', { name: 'Tamagotchi', level: 1 })).toBeVisible();
-    await expect(page.getByText('draft', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Start polling' })).toBeDisabled();
+    await expect(itemStatus).toHaveValue('draft');
+    await expect(activeOption).toBeDisabled();
     // The wish's category comes with it.
     await page.getByRole('button', { name: 'Edit details' }).click();
     const details = page.getByRole('dialog', { name: 'Edit Details' });
@@ -1155,7 +1226,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(list).toContainText('complete-in-box');
 
     // Added to an item through the plus beside Criteria, found by the same tag.
-    await page.goto(`/items/${carmageddonId}`);
+    await page.goto(`/items/${carmageddonId}?tab=criteria`);
     const versions = await itemHistory();
     const before = await versions.getByRole('listitem').count();
     await closeHistory();
@@ -1192,12 +1263,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(editor).toBeHidden();
 
-    // Folding is remembered per browser, so this does not depend on what an earlier step left.
-    const criteriaToggle = page.getByRole('button', { name: 'Criteria', exact: true });
-    if ((await criteriaToggle.getAttribute('aria-expanded')) === 'false') {
-      await criteriaToggle.click();
-    }
-    const criteria = section('Criteria');
+    const criteria = page.getByRole('tabpanel', { name: 'Criteria' });
     await expect(criteria).toContainText('The original release');
     await expect(criteria.getByRole('link', { name: CLASSICS })).toBeVisible();
     // It leaves what an unknown does to the item, so it still has a pencil.
@@ -1221,7 +1287,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       `Saved ${CLASSICS}, and gave 1 wanted item a new version.`,
     );
 
-    await page.goto(`/items/${carmageddonId}`);
+    await page.goto(`/items/${carmageddonId}?tab=criteria`);
     await expect(criteria).toContainText('grey-banded box');
     await latestNote(before + 2, `Updated the shared criterion ${CLASSICS}.`);
     // Nothing about it is left for the item to choose, so there is nothing to edit here.
@@ -1250,7 +1316,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await confirm.getByRole('button', { name: 'Delete' }).click();
     await expect(list.getByRole('listitem')).toHaveCount(1);
 
-    await page.goto(`/items/${carmageddonId}`);
+    await page.goto(`/items/${carmageddonId}?tab=criteria`);
     await expect(criteria).toContainText('grey-banded box');
     await expect(criteria.getByRole('link', { name: CLASSICS })).toHaveCount(0);
     await latestNote(before + 4, `The shared criterion ${CLASSICS} was deleted`);
@@ -1267,7 +1333,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   });
 
   await test.step('each search plan is added, edited and removed on its own, as a version', async () => {
-    await page.goto(`/items/${carmageddonId}`);
+    await page.goto(`/items/${carmageddonId}?tab=search-plans`);
     const before = await (await itemHistory()).getByRole('listitem').count();
     await closeHistory();
     const latestNote = async (count: number, note: string) => {
@@ -1276,9 +1342,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       await expect(history.getByRole('listitem').first()).toContainText(note);
       await closeHistory();
     };
-    const toggle = page.getByRole('button', { name: 'Search Plans', exact: true });
-    if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
-    const table = section('Search Plans').getByRole('table');
+    const table = page.getByRole('tabpanel', { name: 'Search Plans' }).getByRole('table');
 
     await page.getByRole('button', { name: 'Add a search plan' }).click();
     let dialog = page.getByRole('dialog', { name: 'Add a Search Plan' });
