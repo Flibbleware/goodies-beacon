@@ -12,6 +12,7 @@ import {
   WantedIcon,
   WishIcon,
 } from '../components/icons.js';
+import { Toaster } from '../components/toaster.js';
 import { rootRoute } from './root.js';
 
 /**
@@ -158,6 +159,7 @@ function AppLayout() {
       <main className="p-6 md:p-10">
         <Outlet />
       </main>
+      <Toaster />
     </div>
   );
 }

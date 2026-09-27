@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useEffect, useId, useState } from 'react';
 import { type EbayTestResponse, saveSettings, settingsQuery, testEbay } from '../api/settings.js';
 import { Alert, Button, CONTROL, Field, Section } from '../components/form.js';
+import { toast } from '../components/toasts.js';
 
 type Ebay = PublicSettings['sources']['ebay'];
 
@@ -26,7 +27,11 @@ export function SourcesSection({ ebay }: { ebay: Ebay }) {
 
   const save = useMutation({
     mutationFn: (patch: SettingsPatch) => saveSettings(patch),
-    onSuccess: (data) => queryClient.setQueryData(settingsQuery.queryKey, data),
+    onSuccess: (data) => {
+      queryClient.setQueryData(settingsQuery.queryKey, data);
+      toast.ok('Saved the source settings.');
+    },
+    onError: () => toast.error('Could not save the source settings.'),
   });
 
   const test = useMutation<EbayTestResponse, Error>({ mutationFn: testEbay });
@@ -117,9 +122,6 @@ export function SourcesSection({ ebay }: { ebay: Ebay }) {
           >
             {test.isPending ? 'Testing…' : 'Test'}
           </Button>
-          {save.isSuccess && !save.isPending ? (
-            <span className="text-sm text-ink-dim dark:text-ink-dim-dark">Saved.</span>
-          ) : null}
         </div>
 
         {!configured ? (

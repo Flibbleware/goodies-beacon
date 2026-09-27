@@ -202,3 +202,30 @@ export function HelpIcon({ className }: { className?: string | undefined }) {
     </Icon>
   );
 }
+
+export function CloseIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Icon>
+  );
+}
+
+export function CheckIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12.5l2.7 2.7L16 9.8" />
+    </Icon>
+  );
+}
+
+export function AlertIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5v5.5" />
+      <path d="M12 16.4v.1" />
+    </Icon>
+  );
+}

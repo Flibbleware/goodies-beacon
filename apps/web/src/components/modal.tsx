@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useId, useRef } from 'react';
+import { hostToasts } from './toaster.js';
 
 /**
  * A modal on the browser's own `<dialog>`, opened with `showModal()`: focus is trapped inside, Esc
@@ -34,6 +35,7 @@ export function Modal({
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
+    return open ? hostToasts(dialog) : undefined;
   }, [open]);
 
   return (

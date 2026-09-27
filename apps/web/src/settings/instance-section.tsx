@@ -5,6 +5,7 @@ import { type FormEvent, useEffect, useId, useState } from 'react';
 import { ApiError } from '../api/client.js';
 import { saveSettings, settingsQuery } from '../api/settings.js';
 import { Alert, Button, CONTROL, Field, Section } from '../components/form.js';
+import { toast } from '../components/toasts.js';
 import { fieldErrors } from './validate.js';
 
 type Instance = PublicSettings['instance'];
@@ -23,7 +24,11 @@ export function InstanceSection({ instance, host }: { instance: Instance; host: 
 
   const save = useMutation({
     mutationFn: () => saveSettings({ instance: form }),
-    onSuccess: (saved) => queryClient.setQueryData(settingsQuery.queryKey, saved),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(settingsQuery.queryKey, saved);
+      toast.ok('Saved the instance settings.');
+    },
+    onError: () => toast.error('Could not save the instance settings.'),
   });
 
   const onSubmit = (event: FormEvent) => {
@@ -83,18 +88,13 @@ export function InstanceSection({ instance, host }: { instance: Instance; host: 
           </Alert>
         ) : null}
 
-        <div className="mt-6 flex items-center gap-3">
+        <div className="mt-6">
           <Button
             type="submit"
             disabled={save.isPending || unchanged || Object.keys(errors).length > 0}
           >
             Save
           </Button>
-          {save.isSuccess && unchanged ? (
-            <span role="status" className="text-sm text-ink-dim dark:text-ink-dim-dark">
-              Saved.
-            </span>
-          ) : null}
         </div>
       </form>
     </Section>

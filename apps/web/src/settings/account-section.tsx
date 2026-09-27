@@ -4,6 +4,7 @@ import { type FormEvent, useId, useState } from 'react';
 import { ApiError } from '../api/client.js';
 import { changePassword } from '../api/settings.js';
 import { Alert, Button, CONTROL, Field, Section } from '../components/form.js';
+import { toast } from '../components/toasts.js';
 
 export function AccountSection() {
   const currentId = useId();
@@ -19,7 +20,9 @@ export function AccountSection() {
     onSuccess: () => {
       setCurrentPassword('');
       setNewPassword('');
+      toast.ok('Password changed.');
     },
+    onError: () => toast.error('Could not change the password.'),
   });
 
   const onSubmit = (event: FormEvent) => {
@@ -70,8 +73,6 @@ export function AccountSection() {
             {change.error instanceof ApiError ? change.error.message : 'Could not change it.'}
           </Alert>
         ) : null}
-
-        {change.isSuccess ? <Alert tone="ok">Password changed.</Alert> : null}
 
         <div className="mt-6">
           <Button type="submit" disabled={change.isPending || !parsed.success}>
