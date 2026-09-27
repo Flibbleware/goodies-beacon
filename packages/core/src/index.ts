@@ -441,6 +441,8 @@ export {
 export {
   durationToMinutes,
   IntervalError,
+  PLAN_GAP_MINUTES,
+  type PlanSlot,
   type PollSchedule,
   pollSchedule,
   snapToExpressible,

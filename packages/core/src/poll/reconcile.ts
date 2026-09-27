@@ -57,8 +57,14 @@ export function desiredSchedules(
   deps: Pick<ReconcileDeps, 'defaultInterval' | 'minimumInterval' | 'logger'>,
 ): DesiredSchedule[] {
   const schedules: DesiredSchedule[] = [];
+  const positions = new Map<string, number>();
 
   for (const entry of plans) {
+    // In the spec's order, counting only the plans that are scheduled, so a paused plan leaves
+    // no gap in its item's sweep.
+    const position = positions.get(entry.wantedItemId) ?? 0;
+    positions.set(entry.wantedItemId, position + 1);
+
     const requested = entry.pollEvery ?? deps.defaultInterval;
     const minimum = deps.minimumInterval(entry.source);
 
@@ -77,7 +83,7 @@ export function desiredSchedules(
     }
 
     const floor = minimum ? durationToMinutes(minimum) : 0;
-    const schedule = pollSchedule(entry.plan.id, minutes, floor);
+    const schedule = pollSchedule({ itemId: entry.wantedItemId, position }, minutes, floor);
 
     if (schedule.adjustedFrom !== undefined) {
       deps.logger.debug('poll interval adjusted to something cron can express', {

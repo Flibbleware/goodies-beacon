@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Database } from '../db/client.js';
 import { createSilentLogger } from '../logger.js';
 import type { MarketplaceSourceId } from '../sources.js';
+import { pollSchedule } from './interval.js';
 import type { ActivePlan } from './plans.js';
 import { desiredSchedules, reconcileSchedules } from './reconcile.js';
 
@@ -75,12 +76,30 @@ describe('desiredSchedules', () => {
     expect(schedules[0]?.cron).toMatch(/\/8 \* \* \*$/);
   });
 
-  it('staggers two plans of the same item so they do not fire together', () => {
+  it('runs the plans of one item two minutes apart, in the spec’s order', () => {
     const [first, second] = desiredSchedules(
       [activePlan({ id: 'plan-a' }), activePlan({ id: 'plan-b' })],
       deps,
     );
+    expect(second?.cron).toBe(
+      pollSchedule({ itemId: '11111111-1111-1111-1111-111111111111', position: 1 }, 480, 60).cron,
+    );
     expect(first?.cron).not.toBe(second?.cron);
+  });
+
+  it('counts each item’s plans from its own offset, so another item does not shift them', () => {
+    const other = '33333333-3333-3333-3333-333333333333';
+    const [, , third] = desiredSchedules(
+      [
+        activePlan({ id: 'plan-a' }),
+        activePlan({ id: 'plan-x', wantedItemId: other }),
+        activePlan({ id: 'plan-b' }),
+      ],
+      deps,
+    );
+    expect(third?.cron).toBe(
+      pollSchedule({ itemId: '11111111-1111-1111-1111-111111111111', position: 1 }, 480, 60).cron,
+    );
   });
 });
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   durationToMinutes,
   IntervalError,
+  PLAN_GAP_MINUTES,
   pollSchedule,
   snapToExpressible,
   staggerOffset,
@@ -58,32 +59,56 @@ describe('snapToExpressible', () => {
 });
 
 describe('staggerOffset', () => {
-  it('is stable for a plan, so a restart does not reshuffle every schedule', () => {
-    expect(staggerOffset('plan-a', 480)).toBe(staggerOffset('plan-a', 480));
+  it('is stable for an item, so a restart does not reshuffle every schedule', () => {
+    expect(staggerOffset('item-a', 480)).toBe(staggerOffset('item-a', 480));
   });
 
-  it('spreads plans across the period rather than landing them together', () => {
-    const offsets = new Set(Array.from({ length: 50 }, (_, n) => staggerOffset(`plan-${n}`, 480)));
+  it('spreads items across the period rather than landing them together', () => {
+    const offsets = new Set(Array.from({ length: 50 }, (_, n) => staggerOffset(`item-${n}`, 480)));
     expect(offsets.size).toBeGreaterThan(40);
   });
 
   it('stays inside the period', () => {
     for (let n = 0; n < 200; n += 1) {
-      expect(staggerOffset(`plan-${n}`, 60)).toBeLessThan(60);
+      expect(staggerOffset(`item-${n}`, 60)).toBeLessThan(60);
     }
   });
 });
 
+const slot = (itemId: string, position = 0) => ({ itemId, position });
+
+/** The minute of the period a cron expression written by `pollSchedule` first fires at. */
+function offsetOf(cron: string): number {
+  const [minute = '0', hour = '0'] = cron.split(' ');
+  return Number(hour.split('/')[0]) * 60 + Number(minute.split(',')[0]);
+}
+
 describe('pollSchedule', () => {
+  /** P1-31: an item's plans run as one sweep, not one by one across the whole interval. */
+  it('puts each plan of an item two minutes after the one before it', () => {
+    const offsets = [0, 1, 2, 3, 4].map((position) =>
+      offsetOf(pollSchedule(slot('item-a', position), 480).cron),
+    );
+    for (let n = 1; n < offsets.length; n += 1) {
+      expect(((offsets[n] ?? 0) - (offsets[n - 1] ?? 0) + 480) % 480).toBe(PLAN_GAP_MINUTES);
+    }
+  });
+
+  it('wraps a late plan round to the start of the period rather than past its end', () => {
+    for (let position = 0; position < 300; position += 1) {
+      expect(offsetOf(pollSchedule(slot('item-a', position), 480).cron)).toBeLessThan(480);
+    }
+  });
+
   it('writes an hourly interval as a step within the hours field', () => {
-    const schedule = pollSchedule('plan-a', 480);
+    const schedule = pollSchedule(slot('item-a'), 480);
     expect(schedule.periodMinutes).toBe(480);
     expect(schedule.cron).toMatch(/^\d{1,2} \d{1,2}\/8 \* \* \*$/);
     expect(schedule.adjustedFrom).toBeUndefined();
   });
 
   it('writes a daily interval as a single hour', () => {
-    expect(pollSchedule('plan-a', 1440).cron).toMatch(/^\d{1,2} \d{1,2} \* \* \*$/);
+    expect(pollSchedule(slot('item-a'), 1440).cron).toMatch(/^\d{1,2} \d{1,2} \* \* \*$/);
   });
 
   /**
@@ -91,7 +116,7 @@ describe('pollSchedule', () => {
    * until 10 past — a 20-minute step with a 40-minute gap in it.
    */
   it('writes a sub-hourly interval as an explicit minute list with no gap at the hour', () => {
-    const { cron } = pollSchedule('plan-a', 20);
+    const { cron } = pollSchedule(slot('item-a'), 20);
     const minutes = (cron.split(' ')[0] ?? '').split(',').map(Number);
     expect(minutes).toHaveLength(3);
     for (let n = 1; n < minutes.length; n += 1) {
@@ -101,22 +126,22 @@ describe('pollSchedule', () => {
   });
 
   it('refuses to poll faster than the source says is polite, and says it adjusted', () => {
-    const schedule = pollSchedule('plan-a', 5, 60);
+    const schedule = pollSchedule(slot('item-a'), 5, 60);
     expect(schedule.periodMinutes).toBe(60);
     expect(schedule.adjustedFrom).toBe(5);
   });
 
   it('leaves an interval slower than the minimum alone', () => {
-    expect(pollSchedule('plan-a', 480, 60).periodMinutes).toBe(480);
+    expect(pollSchedule(slot('item-a'), 480, 60).periodMinutes).toBe(480);
   });
 
   it('reports the snap when cron cannot express what was asked for', () => {
-    const schedule = pollSchedule('plan-a', 420);
+    const schedule = pollSchedule(slot('item-a'), 420);
     expect(schedule.periodMinutes).toBe(480);
     expect(schedule.adjustedFrom).toBe(420);
   });
 
-  it('gives two plans on the same interval different times', () => {
-    expect(pollSchedule('plan-a', 480).cron).not.toBe(pollSchedule('plan-b', 480).cron);
+  it('gives two items on the same interval different times', () => {
+    expect(pollSchedule(slot('item-a'), 480).cron).not.toBe(pollSchedule(slot('item-b'), 480).cron);
   });
 });
