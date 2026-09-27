@@ -133,6 +133,29 @@ export async function seedPlanFailure(
   }
 }
 
+/** A plan that has polled and found something, so its row outlives its removal from the spec. */
+export async function seedPlanStats(
+  databaseUrl: string,
+  wantedItemId: string,
+  planId: string,
+): Promise<void> {
+  const pool = createPool(databaseUrl);
+
+  try {
+    const db = createDb(pool);
+    await db.insert(searchPlanState).values({
+      planId,
+      wantedItemId,
+      source: 'ebay',
+      lastRunAt: new Date(),
+      lastSuccessAt: new Date(),
+      candidatesFound: 4,
+    });
+  } finally {
+    await pool.end();
+  }
+}
+
 /**
  * Two processes, one answering and one that stopped an hour ago (§14's worker heartbeat).
  *

@@ -4,6 +4,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-30 Criteria grouped as hard and soft. A wanted item's Criteria tab lists its criteria under
+  *Hard* (a listing that fails one is rejected) and *Soft* (it is marked uncertain), instead of
+  showing *Failure: Reject* or *Failure: Uncertain* on every row. A "?" beside each heading says
+  what it means. Adding and editing a criterion work as before.
+- Search plans removed from an item are hidden from its Search Plans table. Tick *Show removed
+  plans* under the table to see them and the figures they collected.
 - A wanted item now only tells you about listings posted after it starts polling. Its first poll
   used to pick up the newest fifty listings that were already up, and email you about any that
   matched. Resuming a paused item works the same way: it carries on from the moment you resume,

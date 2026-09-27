@@ -307,6 +307,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-27 | Shared criteria | M | P1-26 |
 | P1-28 | Item page tabs | S | P1-27 |
 | P1-29 | Search plan regions from the source's list | S | P1-28 |
+| P1-30 | Criteria grouped as hard and soft | S | P1-29 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1600,6 +1601,39 @@ inside a table's rows rather than on a card's.
 only one that touches the plan, because the store checks the whole spec as it does for shared
 criteria. The Search Plans tab shows the plan and its failures as before; the fix is to open it and
 choose a site.
+
+#### P1-30 Criteria grouped as hard and soft — S
+
+An item's Criteria tab listed every criterion in one card, each with *Failure: Reject* or
+*Failure: Uncertain* among its flags. What failing a criterion does is the first thing to know
+about it, so it becomes the grouping instead: a *Hard* section (Failure action: Reject) and then a
+*Soft* one (Failure action: Uncertain), each keeping the spec's order, with the flag dropped from
+the rows. Creating and editing are unchanged; *Failure action* in the dialog moves a criterion
+between the groups.
+
+Decided with the owner before it was built: only the item page is grouped. The Shared Criteria
+page and the picker keep *Failure:* on each row, because a shared criterion can leave it to each
+item and so belongs to neither group. A group with no criteria has no heading.
+
+Depends on P1-29.
+
+Done when:
+
+- [x] The Criteria tab shows a *Hard* section and then a *Soft* one, each a labelled region under a plain heading, holding its criteria in the spec's order; an empty group is not shown, and an item with no criteria keeps its one-line message.
+- [x] No row on the tab shows *Failure:*; *Unknown* and *Photos* are unchanged, and so is *Failure:* on the Shared Criteria page and in the picker.
+- [x] A "?" beside each heading explains the group in the editor's words — *Failure action: Reject* and *Failure action: Uncertain* — on hover, on keyboard focus and on a tap, closing on Escape and on a tap elsewhere, and is the button's accessible description whether or not it is showing.
+- [x] Each row's pencil and bin still act on that criterion, since a row's position in its group is not its position in the spec.
+- [x] The Playwright run finds the example's criteria in the right groups, no *Failure:* on the tab, the "?" described and opening on focus, and a criterion edited from hard to soft moving group with its pencil still opening it.
+- [x] The Search Plans table hides plans removed from the spec until *Show removed plans (n)* is ticked; the box appears only when there are some. The Playwright run finds a plan replaced by a region change hidden, shown when ticked and hidden again.
+
+**The "?" is a component rather than a `title`**, which is how every other hint in the app is
+given. A title shows only to a mouse that lingers, so on a phone the "?" would have done nothing.
+`HelpTip` is in `components/` for the next hint that needs to reach a touch screen.
+
+**Removed search plans are hidden by default**, at the owner's request while the task was open. A
+plan dropped from the spec keeps its row for its stats (§4), and since P1-29 every region change
+makes one, so an item's table filled with greyed-out plans below the ones actually polling. They
+are behind a *Show removed plans* checkbox under the table now, unticked on each visit.
 
 #### P1-XX Phase 1 exit — S
 

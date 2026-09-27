@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { seedCandidates, seedHeartbeats, seedPlanFailure } from './seed.js';
+import { seedCandidates, seedHeartbeats, seedPlanFailure, seedPlanStats } from './seed.js';
 
 /** The same database the app under test is using; P1-15's rows are written straight into it. */
 const databaseUrl = process.env.E2E_DATABASE_URL ?? process.env.TEST_DATABASE_URL ?? '';
@@ -580,13 +580,24 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(spec).not.toContainText('Grading');
     await expect(spec).not.toContainText('Carmageddon, the original 1997 big-box release');
     await expect(spec).not.toContainText("Can't settle");
-    // Every criterion in plain English with its flags, in a section of its own.
+    // Every criterion in plain English with its flags, grouped by what failing it does (P1-30).
     const criteria = await openTab('Criteria');
-    await expect(criteria).toContainText(
-      'Big box release, not the jewel case or budget re-release',
-    );
-    await expect(criteria.getByText('Reject', { exact: true }).first()).toBeVisible();
+    const hard = criteria.getByRole('region', { name: 'Hard' });
+    const soft = criteria.getByRole('region', { name: 'Soft' });
+    await expect(hard).toContainText('Big box release, not the jewel case or budget re-release');
+    await expect(soft).toContainText('Box, manual and disc are all present');
+    await expect(hard).not.toContainText('Box, manual and disc are all present');
+    await expect(criteria).not.toContainText('Failure:');
+    await expect(hard).toContainText('Unknown: Reject');
     await expect(criteria).toContainText("Photos: Can't settle");
+    // The "?" explains the group on focus as well as on hover, and is described either way.
+    const whatHardMeans = hard.getByRole('button', { name: 'What hard means' });
+    await expect(whatHardMeans).toHaveAccessibleDescription(/fails any of these is rejected/);
+    await expect(hard.getByRole('tooltip')).toBeHidden();
+    await whatHardMeans.focus();
+    await expect(hard.getByRole('tooltip')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(hard.getByRole('tooltip')).toBeHidden();
     // Only the open tab's panel is on the page.
     await expect(details).toHaveCount(0);
     // And the reference image uploaded earlier, under the label the reviewer is shown.
@@ -1318,6 +1329,17 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       before + 3,
       'Edited the criterion “Big box release, not the jewel case or budget re-release”.',
     );
+    // Soft now, so it has moved group, and its pencil still opens it rather than a neighbour.
+    await expect(criteria.getByRole('region', { name: 'Soft' })).toContainText('Big box release');
+    await expect(criteria.getByRole('region', { name: 'Hard' })).not.toContainText(
+      'Big box release',
+    );
+    await page.getByRole('button', { name: 'Edit the criterion big-box' }).click();
+    await expect(edit.getByLabel('Criterion', { exact: true })).toHaveValue(
+      'Big box release, not the jewel case or budget re-release',
+    );
+    await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(edit).toBeHidden();
 
     // Deleting it says what uses it, and the item keeps its copy as its own.
     await page.goto('/criteria');
@@ -1382,7 +1404,10 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       };
       return item.current.document.searchPlans.find((plan) => plan.query === 'carmageddon mac')?.id;
     };
-    const idOnGb = await planId();
+    const idOnGb = (await planId()) ?? '';
+    expect(idOnGb).not.toBe('');
+    // It has polled, so when the new site replaces it its row stays behind for its stats.
+    await seedPlanStats(databaseUrl, carmageddonId, idOnGb);
     // Another site and back again is no change: the plan gets its own id back.
     await dialog.getByLabel('Region').selectOption('EBAY_DE');
     await dialog.getByLabel('Region').selectOption('EBAY_GB');
@@ -1393,11 +1418,21 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await dialog.getByRole('button', { name: `Save as version ${before + 2}` }).click();
     await expect(dialog).toBeHidden();
     // A new site is a new plan, so no watermark or stats carry over from the old one.
-    expect(idOnGb).toBeDefined();
     expect(await planId()).not.toBe(idOnGb);
     await expect(table.getByRole('row').filter({ hasText: 'carmageddon mac' })).toContainText(
       'EBAY_DE',
     );
+    // The old plan is kept for its stats, but hidden until asked for.
+    const showRemoved = page
+      .getByRole('tabpanel', { name: 'Search Plans' })
+      .getByLabel(/^Show removed plans \(\d+\)$/);
+    await expect(table).not.toContainText(idOnGb);
+    await showRemoved.check();
+    await expect(table.getByRole('row').filter({ hasText: idOnGb })).toContainText(
+      'removed from the spec',
+    );
+    await showRemoved.uncheck();
+    await expect(table).not.toContainText(idOnGb);
     await latestNote(before + 2, 'Edited the search plan “carmageddon mac” on EBAY_DE.');
 
     await page

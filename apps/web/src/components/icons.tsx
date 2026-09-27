@@ -192,3 +192,13 @@ export function ImageIcon({ className }: { className?: string | undefined }) {
     </Icon>
   );
 }
+
+export function HelpIcon({ className }: { className?: string | undefined }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.7c0 1.7-2.5 2.2-2.5 3.9" />
+      <path d="M12 17.2v.1" />
+    </Icon>
+  );
+}
