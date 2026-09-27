@@ -4,6 +4,10 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-31 An item's search plans now poll together, two minutes apart, instead of each at its own
+  unrelated time across the interval. A newly added plan runs with the rest of its item rather
+  than possibly hours later. Existing schedules move within a minute of upgrading, and nothing is
+  missed or fetched twice.
 - P1-30 Criteria grouped as hard and soft. A wanted item's Criteria tab lists its criteria under
   *Hard* (a listing that fails one is rejected) and *Soft* (it is marked uncertain), instead of
   showing *Failure: Reject* or *Failure: Uncertain* on every row. A "?" beside each heading says

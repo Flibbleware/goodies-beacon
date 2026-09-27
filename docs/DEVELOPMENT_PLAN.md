@@ -308,6 +308,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-28 | Item page tabs | S | P1-27 |
 | P1-29 | Search plan regions from the source's list | S | P1-28 |
 | P1-30 | Criteria grouped as hard and soft | S | P1-29 |
+| P1-31 | An item's plans polled as one sweep | S | P1-30 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1634,6 +1635,32 @@ given. A title shows only to a mouse that lingers, so on a phone the "?" would h
 plan dropped from the spec keeps its row for its stats (§4), and since P1-29 every region change
 makes one, so an item's table filled with greyed-out plans below the ones actually polling. They
 are behind a *Show removed plans* checkbox under the table now, unticked on each visit.
+
+#### P1-31 An item's plans polled as one sweep — S
+
+Each search plan took its offset in the poll interval from a hash of its own id (§6), so one
+item's plans ran at unrelated times across the whole interval: five overlapping Game Boy Color
+queries at five points in eight hours, and a plan added in the afternoon saying "never" until the
+evening. The stagger exists so that many polls do not fire in the same second, and a gap of a few
+minutes does that as well as eight hours does; what the full spread added was an item nobody
+could say when was last checked.
+
+The offset now belongs to the item, from a hash of its id, so different items still start at
+different points in the interval; its plans follow `PLAN_GAP_MINUTES` (two) apart in the spec's
+order, counting only the plans that are scheduled.
+
+Decided with the owner before it was built: two minutes between plans; this is its own task
+rather than part of P1-30 because it changes a decision in §6. A "Next run" column was
+suggested alongside and is not part of it.
+
+Depends on P1-30.
+
+Done when:
+
+- [x] `pollSchedule` takes a plan's item and its position among the item's scheduled plans, and gives each plan the item's offset plus two minutes per plan before it, wrapped within the period. Unit-tested for the gap, and for a late position wrapping rather than running past the period.
+- [x] `desiredSchedules` numbers each item's plans in the spec's order, skipping plans that are not scheduled, and another item's plans in between do not shift them. Unit-tested.
+- [x] Items still start at different points in the interval, stable across restarts: the offset is a hash of the item id.
+- [x] An upgraded instance moves its existing schedules on the reconciler's first pass as *updated*, not *added*, so no plan's watermark is reset and nothing is skipped or fetched twice (§6: only an added schedule starts a plan from now).
 
 #### P1-XX Phase 1 exit — S
 

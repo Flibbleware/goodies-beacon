@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.48 — 27 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.49 — 27 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -286,7 +286,7 @@ Per-source notes for the v1 adapters:
 
 ## 6. Scheduling and polling
 
-`pg-boss` provides cron-style scheduling and job queues in Postgres. Each active WantedItem × SearchPlan gets a recurring poll job at the item's interval (default 3×/day, staggered so all eBay calls don't land in the same second). Queue names include the source (`poll.vinted`) so a remote worker can subscribe only to the sources it should handle (`WORKER_SOURCES=vinted`). The separator is a period because pg-boss validates queue names against `/^[\w.\-/]+$/` and rejects a colon.
+`pg-boss` provides cron-style scheduling and job queues in Postgres. Each active WantedItem × SearchPlan gets a recurring poll job at the item's interval (default 3×/day, staggered so all eBay calls don't land in the same second). The stagger is per item (v1.49, P1-31): an item's offset in the period comes from a hash of its id, so different items poll at different times, and its plans follow two minutes apart in the spec's order, counting only the plans that are scheduled. Until v1.49 each plan took its own offset from its own id, which spread one item's plans across the whole interval — five overlapping queries at five unrelated times, and a newly added plan saying "never" for up to eight hours — to avoid a burst that two minutes' spacing avoids just as well. Queue names include the source (`poll.vinted`) so a remote worker can subscribe only to the sources it should handle (`WORKER_SOURCES=vinted`). The separator is a period because pg-boss validates queue names against `/^[\w.\-/]+$/` and rejects a colon.
 
 Each plan keeps its own watermark, advanced only to the newest listing actually processed in that poll. Results are processed oldest-first and the watermark is written once at the end, so a run killed half way — SIGTERM, a database blip — leaves it at the last listing that finished and the next run picks up exactly there rather than skipping the remainder or redoing the lot. Broad queries are expected and cheap: several hundred new listings a day cost well under £1 a month in pre-filter calls; only survivors reach the vision model. Listings become Listings and Candidates; everything else is ignored, except that `lastSeenAt` is updated for Listings we already hold. **Which of them become Candidates is a per-item question, not a `Seen` lookup** — see `Seen` in §4, which v1.26 corrects.
 

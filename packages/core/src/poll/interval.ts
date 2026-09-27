@@ -14,15 +14,28 @@ export { durationToMinutes, IntervalError, snapToExpressible } from '../domain/d
  */
 
 /**
- * A stable offset in [0, period) for a plan, so every plan's poll lands at a different minute.
+ * A stable offset in [0, period) for an item, so different items poll at different times.
  *
  * §6 asks for the stagger so a hundred eBay plans do not all fire in the same second; deriving it
- * from the plan id rather than randomising means a restart does not reshuffle every schedule, and
+ * from the item id rather than randomising means a restart does not reshuffle every schedule, and
  * `reconcile` can compare what it wants against what is installed without a spurious difference.
  */
-export function staggerOffset(planId: string, periodMinutes: number): number {
-  const digest = createHash('sha256').update(planId).digest();
+export function staggerOffset(itemId: string, periodMinutes: number): number {
+  const digest = createHash('sha256').update(itemId).digest();
   return digest.readUInt32BE(0) % periodMinutes;
+}
+
+/**
+ * Minutes between one plan of an item and the next (P1-31). Enough that they never fire in the
+ * same second; little enough that an item's plans run as one sweep rather than one by one across
+ * the whole interval, which left an item's newest plans saying "never" for hours.
+ */
+export const PLAN_GAP_MINUTES = 2;
+
+/** Where a plan falls: its item, and its place among that item's scheduled plans. */
+export interface PlanSlot {
+  itemId: string;
+  position: number;
 }
 
 export interface PollSchedule {
@@ -34,19 +47,20 @@ export interface PollSchedule {
 }
 
 /**
- * The cron expression for one plan.
+ * The cron expression for one plan: its item's offset, then `PLAN_GAP_MINUTES` for each plan of
+ * the item before it.
  *
  * `minimumMinutes` is the source's `recommendedMinInterval` (§5): the scheduler refuses to poll
  * faster than the adapter says is polite, whatever the item asks for.
  */
 export function pollSchedule(
-  planId: string,
+  slot: PlanSlot,
   intervalMinutes: number,
   minimumMinutes = 0,
 ): PollSchedule {
   const requested = Math.max(1, Math.round(intervalMinutes));
   const period = snapToExpressible(Math.max(requested, Math.round(minimumMinutes)));
-  const offset = staggerOffset(planId, period);
+  const offset = (staggerOffset(slot.itemId, period) + slot.position * PLAN_GAP_MINUTES) % period;
 
   const cron =
     period < 60

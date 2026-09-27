@@ -471,8 +471,11 @@ that backlog to drain the first time a worker with a reviewer starts.
 ## Polling
 
 Every active wanted item's enabled search plans get a `poll.<source>` schedule at the item's
-interval — three times a day unless the item or the instance says otherwise — staggered by a hash
-of the plan id so a hundred plans do not all fire in the same second. Four things stop a plan
+interval — three times a day unless the item or the instance says otherwise. Each item starts at
+its own point in the interval, taken from a hash of its id so a hundred items do not all fire in
+the same second, and its plans run two minutes apart in the order the Search Plans table lists
+them: an item with five plans polling every eight hours is swept at, say, 03:14, 03:16 … 03:22,
+then again at 11:14. The times are UTC, as cron reads them. Four things stop a plan
 polling: the item is not `active`, the plan's own `enabled` flag is off, the item's settings have
 that marketplace switched off, or no adapter is installed for its source.
 
