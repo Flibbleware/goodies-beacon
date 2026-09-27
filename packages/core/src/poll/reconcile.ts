@@ -4,6 +4,7 @@ import type { Logger } from '../logger.js';
 import { pollQueueName, SCHEDULE_QUEUE } from '../queue/names.js';
 import type { QueueRegistration } from '../queue/registry.js';
 import type { MarketplaceSourceId } from '../sources.js';
+import { startPlanFromNow } from './ingest.js';
 import { durationToMinutes, IntervalError, pollSchedule } from './interval.js';
 import { type ActivePlan, activePlans } from './plans.js';
 
@@ -133,7 +134,18 @@ export async function reconcileSchedules(deps: ReconcileDeps): Promise<Reconcile
     result.updated.push(desired.key);
   }
 
+  /**
+   * A plan with no schedule is one that has just become active — a new item, a resume, a plan
+   * or marketplace switched back on — so it starts from now and never catches up on what was
+   * listed while it was off (§6). The watermark is written before the schedule so a failure
+   * between the two leaves a plan that is not polling yet, never one polling from the old point.
+   */
   for (const desired of wantedByKey.values()) {
+    await startPlanFromNow(deps.db, {
+      planId: desired.data.planId,
+      wantedItemId: desired.data.wantedItemId,
+      source: desired.data.source,
+    });
     await boss.schedule(desired.queue, desired.cron, desired.data, { key: desired.key });
     result.added.push(desired.key);
   }

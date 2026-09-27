@@ -8,6 +8,7 @@ import {
   type IngestResult,
   ingestListings,
   recordPollFailure,
+  startPlanFromNow,
 } from './ingest.js';
 /**
  * One poll, end to end: work out the window, ask the adapter, store what came back (§6).
@@ -57,6 +58,34 @@ export async function runPoll(options: RunPollOptions): Promise<PollOutcome> {
     wantedItemId: plan.wantedItemId,
     source: plan.source,
   });
+
+  /**
+   * The reconciler starts a plan from now when it becomes active, so a routine poll with no
+   * watermark is one that predates that or slipped past it. Searching with no `since` would take
+   * the newest page of listings that were up before the item existed and email about them, so
+   * the plan is started from now instead and nothing is asked of the marketplace.
+   */
+  if (mode === 'poll' && state.watermark === null) {
+    const watermark = await startPlanFromNow(db, {
+      planId: plan.plan.id,
+      wantedItemId: plan.wantedItemId,
+      source: plan.source,
+    });
+    logger.info('poll started the plan from now rather than sweeping what is already listed', {
+      planId: plan.plan.id,
+      source: plan.source,
+    });
+    return {
+      processed: 0,
+      newListings: 0,
+      newCandidates: 0,
+      watermark,
+      backlog: null,
+      window: { since: null, until: null },
+      stoppedAtCap: false,
+      drainingBacklog: false,
+    };
+  }
 
   /**
    * A backfill or a scan deliberately ignores the watermark: it is a sweep of what is listed

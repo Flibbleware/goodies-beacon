@@ -325,6 +325,43 @@ export async function ensurePlanState(
 }
 
 /**
+ * Moves a plan's watermark to now and drops any backlog, so its next poll sees only listings
+ * posted from this moment on (§6).
+ *
+ * Called whenever a plan becomes active — a new item, a resumed one, a plan switched back on —
+ * because a wanted item is a request to hear about what is listed *next*. What was already listed
+ * is what a backfill is for, and that is opt-in. The watermark is a timestamp rather than the
+ * newest listing's date so that setting it costs no request to the marketplace.
+ */
+export async function startPlanFromNow(
+  db: Database,
+  plan: { planId: string; wantedItemId: string; source: SourceId },
+): Promise<Date> {
+  const [row] = await db
+    .insert(searchPlanState)
+    .values({
+      planId: plan.planId,
+      wantedItemId: plan.wantedItemId,
+      source: plan.source,
+      watermark: sql`now()`,
+    })
+    .onConflictDoUpdate({
+      target: searchPlanState.planId,
+      set: {
+        source: sql`excluded.source`,
+        watermark: sql`now()`,
+        backlogFrom: null,
+        backlogUntil: null,
+        updatedAt: new Date(),
+      },
+    })
+    .returning({ watermark: searchPlanState.watermark });
+
+  if (!row?.watermark) throw new Error(`could not start plan ${plan.planId} from now`);
+  return row.watermark;
+}
+
+/**
  * Records a failed poll against the plan (§P1-07: adapter failures are health events, not silent).
  *
  * `lastSuccessAt` is left alone, so the dashboard can say "failing since" rather than only

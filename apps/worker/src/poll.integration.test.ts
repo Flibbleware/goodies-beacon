@@ -129,6 +129,8 @@ async function seedItem(options: {
   pollEvery?: string | null;
   source?: string;
   enabled?: boolean;
+  /** Where the plan has got to. Warm by default; null is a plan that has never been started. */
+  watermark?: Date | null;
 }): Promise<PollTarget> {
   const [item] = await db
     .insert(wantedItems)
@@ -167,7 +169,7 @@ async function seedItem(options: {
     .set({ currentSpecVersionId: version.id })
     .where(eq(wantedItems.id, item.id));
 
-  return {
+  const target: PollTarget = {
     wantedItemId: item.id,
     specVersionId: version.id,
     source: source as PollTarget['source'],
@@ -181,6 +183,10 @@ async function seedItem(options: {
       watermark: null,
     },
   };
+
+  const watermark = options.watermark === undefined ? EPOCH : options.watermark;
+  if (watermark) await setWatermark(target, watermark);
+  return target;
 }
 
 function poll(
@@ -203,7 +209,7 @@ function poll(
   });
 }
 
-/** Warms a plan up, so a case can be about the cap rather than about a plan's first ever run. */
+/** Warms a plan up, so a case can be about what it finds rather than about how it was started. */
 async function setWatermark(target: PollTarget, watermark: Date): Promise<void> {
   await db
     .insert(searchPlanState)
@@ -268,10 +274,9 @@ describe.skipIf(!databaseUrl)('the poll job against a real Postgres', () => {
    */
   it('resumes exactly where it stopped when a poll hits the cap', async () => {
     const target = await seedItem({ title: 'Carmageddon', planId: 'plan-cap' });
+    // Twenty-five listings have appeared since the plan last ran, and the cap is ten.
     const catalogue = stock(25);
     const marketplace = fixtureContext(catalogue, { pageSize: 5 });
-    // A warm plan: twenty-five listings have appeared since it last ran, and the cap is ten.
-    await setWatermark(target, EPOCH);
 
     const first = await poll(target, marketplace.ctx, { cap: 10 });
     expect(first.stoppedAtCap).toBe(true);
@@ -302,23 +307,30 @@ describe.skipIf(!databaseUrl)('the poll job against a real Postgres', () => {
   });
 
   /**
-   * A plan's first run has no watermark, so its window is the whole history of the query. Walking
-   * backwards through that fifty at a time until eBay runs out is what `settings.backfill` is for,
-   * and it is off by default — so a cold run takes the newest page and stops there.
+   * A wanted item is a request to hear about what is listed next. A plan with no watermark has
+   * never been started, and searching with no `since` would take the newest page of listings that
+   * were up before the item existed and email about them; sweeping those is a backfill's job.
    */
-  it('does not walk backwards through a marketplace\u2019s history on a plan\u2019s first run', async () => {
-    const target = await seedItem({ title: 'Carmageddon', planId: 'plan-cold' });
+  it('starts a plan with no watermark from now rather than sweeping what is already listed', async () => {
+    const target = await seedItem({ title: 'Carmageddon', planId: 'plan-cold', watermark: null });
     const catalogue = stock(25);
+    const marketplace = fixtureContext(catalogue);
+    const before = Date.now();
 
-    const first = await poll(target, fixtureContext(catalogue, { pageSize: 5 }).ctx, { cap: 10 });
-    expect(first.stoppedAtCap).toBe(true);
+    const first = await poll(target, marketplace.ctx);
 
-    const state = await planState('plan-cold');
-    expect(state?.backlogFrom).toBeNull();
-    expect(state?.watermark?.toISOString()).toBe(catalogue.at(-1)?.listedAt.toISOString());
+    expect(first.processed).toBe(0);
+    expect(marketplace.requests).toEqual([]);
+    expect(await db.select().from(candidates)).toHaveLength(0);
+    expect((await planState('plan-cold'))?.watermark?.getTime()).toBeGreaterThanOrEqual(
+      before - 1000,
+    );
 
-    const second = await poll(target, fixtureContext(catalogue, { pageSize: 5 }).ctx, { cap: 10 });
-    expect(second.processed).toBe(0);
+    catalogue.push({ id: 'item-fresh', listedAt: new Date(Date.now() + 60_000) });
+    const second = await poll(target, marketplace.ctx);
+
+    expect(second.processed).toBe(1);
+    expect(second.newCandidates).toBe(1);
   });
 
   it('records an adapter failure as a health event and lets the job fail so pg-boss retries', async () => {
@@ -451,6 +463,52 @@ describe.skipIf(!databaseUrl)('the schedule reconciler against a real Postgres',
     expect(calls[0]).toMatch(/^schedule poll\.ebay plan-sched /);
   });
 
+  it('starts a newly scheduled plan from now, whether or not it has run before', async () => {
+    await seedItem({ title: 'Carmageddon', planId: 'plan-new', source: 'ebay', watermark: null });
+    await seedItem({ title: 'Carmageddon 2', planId: 'plan-old', source: 'ebay' });
+    await db
+      .update(searchPlanState)
+      .set({ backlogFrom: EPOCH, backlogUntil: new Date(EPOCH.getTime() + 60_000) })
+      .where(eq(searchPlanState.planId, 'plan-old'));
+    const before = Date.now();
+
+    await reconcileSchedules({ ...reconcileDeps, db, boss: fakeBoss().boss });
+
+    for (const planId of ['plan-new', 'plan-old']) {
+      const state = await planState(planId);
+      expect(state?.watermark?.getTime()).toBeGreaterThanOrEqual(before - 1000);
+      expect(state?.backlogFrom).toBeNull();
+      expect(state?.backlogUntil).toBeNull();
+    }
+  });
+
+  /** Resuming means "from now on", not "catch up on everything listed while it was paused". */
+  it('starts a resumed item from now rather than from where it was paused', async () => {
+    const target = await seedItem({
+      title: 'Carmageddon',
+      planId: 'plan-resumed',
+      source: 'ebay',
+      status: 'paused',
+    });
+
+    const whilePaused = await reconcileSchedules({ ...reconcileDeps, db, boss: fakeBoss().boss });
+    expect(whilePaused.added).toEqual([]);
+    expect((await planState('plan-resumed'))?.watermark?.toISOString()).toBe(EPOCH.toISOString());
+
+    await db
+      .update(wantedItems)
+      .set({ status: 'active' })
+      .where(eq(wantedItems.id, target.wantedItemId));
+    const before = Date.now();
+
+    const resumed = await reconcileSchedules({ ...reconcileDeps, db, boss: fakeBoss().boss });
+
+    expect(resumed.added).toEqual(['plan-resumed']);
+    expect((await planState('plan-resumed'))?.watermark?.getTime()).toBeGreaterThanOrEqual(
+      before - 1000,
+    );
+  });
+
   /** "Changing an item's interval updates the schedule without a restart." */
   it('rewrites the schedule when the interval changes', async () => {
     const target = await seedItem({
@@ -467,11 +525,15 @@ describe.skipIf(!databaseUrl)('the schedule reconciler against a real Postgres',
       .set({ pollEvery: 'PT2H' })
       .where(eq(wantedItems.id, target.wantedItemId));
 
+    const started = (await planState('plan-interval'))?.watermark;
+
     const second = fakeBoss([{ name: 'poll.ebay', key: 'plan-interval', cron: installed }]);
     const result = await reconcileSchedules({ ...reconcileDeps, db, boss: second.boss });
 
     expect(result.updated).toEqual(['plan-interval']);
     expect(second.calls[0]).toMatch(/\/2 \* \* \*$/);
+    // A new interval is not a new start: the plan carries on from where it had got to.
+    expect((await planState('plan-interval'))?.watermark).toEqual(started);
   });
 
   /** "…or pausing it." */
