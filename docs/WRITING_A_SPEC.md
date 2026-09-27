@@ -17,13 +17,36 @@ Give a fresh session this whole file and a description of the thing, then iterat
 > exactly. The item: *a boxed Nintendo Game Boy DMG-01, PAL, complete with box, inner tray and
 > manual; working; under £150; UK and US eBay.*
 >
-> Before writing anything, ask me whatever you need to settle — completeness, condition tolerance,
-> look-alikes to exclude, price, marketplaces — a few questions at a time. Then give me: the title
-> and summary for the Create dialog, and the JSON to paste into the item's JSON editor. After the
-> JSON, list the checklist at the end of the brief with each line ticked or explained.
+> Before writing anything, interview me as the brief describes. Then give me: the title and summary
+> for the Create dialog, and the JSON to paste into the item's JSON editor. After the JSON, list
+> the checklist at the end of the brief with each line ticked or explained.
 
 Ask it to interview you first: a spec written from one sentence guesses at exactly the things the
 reviewer will later trip on — which variants count, what "complete" means, what damage is fatal.
+
+### Interviewing
+
+For the AI doing the asking:
+
+- **One question at a time.** Ask it, wait for the answer, then ask the next. Group questions only
+  when they are one decision in parts (a price and whether postage counts) or are settings the
+  owner is likely to wave through together — then offer the defaults, so "use defaults" is a
+  complete answer.
+- **What you were given is settled.** The description and any photos are answers, not a draft to
+  confirm. A pictured box means that box and no other; ask only what the picture cannot say.
+- **Never ask a question twice.** Once something is answered, read the answer the natural way,
+  state that reading in a line, and move on. Do not come back for finer detail ("any Sony
+  controller, or only the one it shipped with?") unless the two readings make different criteria
+  and the answer does not choose between them.
+- **Ask only what changes the spec.** Each question should decide a criterion, its `kind` or
+  `onUnknown`, a setting or a search plan. "Don't worry about it" means leave it out — no
+  criterion, not a softened one.
+- **Advise at the end, not in questions.** Warnings such as a negative keyword that would also
+  match a wanted title, or photos the reviewer will not see until they are uploaded as reference
+  images, go with the finished spec. Put one in a question only if it changes what you are asking.
+- **Stop when nothing is left to guess.** Completeness, condition tolerance, look-alikes to
+  exclude, price and marketplaces are the usual ground, but skip whatever the description already
+  settles.
 
 ## Where the result goes
 
