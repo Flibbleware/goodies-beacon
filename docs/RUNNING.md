@@ -6,6 +6,7 @@ below assumes you have read anything else.
 - [Installing on a fresh droplet](#installing-on-a-fresh-droplet)
 - [Upgrading and rolling back](#upgrading-and-rolling-back)
 - [Backups](#backups) and [restoring](#restoring)
+- [Resetting what has been found](#resetting-what-has-been-found)
 - [The two images](#the-two-images) · [TLS](#tls) · [Process roles](#process-roles) ·
   [Health and logs](#health-and-logs) · [Signing in](#signing-in) · [Email](#email) ·
   [Wanted items](#wanted-items) · [Candidates and verdicts](#candidates-and-verdicts) ·
@@ -359,6 +360,36 @@ docker compose exec -T db dropdb -U goodies_beacon goodies_beacon_restore
 Worth doing once when you set the instance up, so the first time you restore is not the day you
 need to.
 
+## Resetting what has been found
+
+A command that clears out everything the instance has found and keeps everything it was asked to
+look for. It deletes candidates (with their verdicts, notifications and feedback, *Retain*ed ones
+included), listings and the memory of which have been seen, the listing photos nothing else uses,
+the cost ledger and its budget-cap events, and every search plan's stats; then it starts every
+plan from now. Wanted items and their spec versions, reference and display images, categories,
+shared criteria, the wish list, settings, credentials, cookies and exchange rates are untouched.
+
+It cannot be undone, so take a backup first. The app has to be stopped — with `--yes` the command
+refuses while anything else is connected to the database:
+
+```sh
+cd /opt/goodies-beacon
+docker compose exec -T backup backup.sh --once
+docker compose stop app
+docker compose run --rm app node packages/core/dist/maintenance/reset-findings-cli.js
+docker compose run --rm app node packages/core/dist/maintenance/reset-findings-cli.js --yes
+docker compose start app
+```
+
+The first run is a preview: it makes every change inside a transaction, reports the counts and
+rolls back. It also prints the AI spend the ledger held, this month and in all — write it down
+before applying, because afterwards the budget cap counts this month from zero. The second run
+applies it, removes the image files, and clears the poll and review job queues; the poll
+*schedules* stay, so polling carries on at the next scheduled time. It is safe to run again.
+
+Locally, against the database in `.env`: `pnpm --filter @goodies-beacon/core reset-findings`
+(add `-- --yes` to apply).
+
 ## The two images
 
 | Image | Contains | For |
@@ -460,9 +491,12 @@ Two settings govern the rest, both in the `polling` section of the settings row:
 
 A run that stops at the cap does not lose the rest. Marketplaces page newest-first, so it takes the
 newest N, advances the watermark and records the window it skipped; the next runs search that
-window and walk it backwards until it is empty. A plan's *first* run is the exception — it has no
-watermark, so its window is the whole history of the query, and sweeping that is what the backfill
-setting is for, not a routine poll.
+window and walk it backwards until it is empty.
+
+A plan starts from the moment it becomes active: a new item, a resumed one, or a plan or
+marketplace switched back on has its watermark set to that minute, so its first poll finds only
+what is listed from then on. Resuming a paused item does not catch up on what was listed while it
+was paused. What was already listed is what a backfill is for.
 
 What each plan is doing is in `search_plan_state`, until P1-14 puts it on the item page:
 

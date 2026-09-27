@@ -8,6 +8,9 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
   used to pick up the newest fifty listings that were already up, and email you about any that
   matched. Resuming a paused item works the same way: it carries on from the moment you resume,
   not from where it was paused.
+- A command to reset what the instance has found — candidates, listings, listing photos, AI
+  costs and search plan stats — while keeping every wanted item as it is configured. It previews
+  first and starts every search plan from now. See *Resetting what has been found* in RUNNING.md.
 - P1-29 Search plan regions. A search plan's Region is now a list of eBay's nine sites by name
   (United Kingdom, United States, Germany and so on), instead of a text box that accepted anything.
   A region eBay does not have — such as `EBAY_GB, EBAY_US` typed into one plan — is refused when you
