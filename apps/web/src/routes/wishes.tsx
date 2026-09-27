@@ -29,6 +29,7 @@ import { IconButton } from '../components/icon-button.js';
 import { EditIcon, PromoteIcon, RemoveIcon, SearchIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
 import { TagPills } from '../components/tag-pills.js';
+import { toast } from '../components/toasts.js';
 import { sortWishes } from '../wishes/sort.js';
 import { appLayoutRoute } from './app-layout.js';
 
@@ -257,10 +258,12 @@ function WishForm({
 
   const save = useMutation({
     mutationFn: (body: WishSave) => (wish ? updateWish(wish.id, body) : createWish(body)),
-    onSuccess: async () => {
+    onSuccess: async (_, body) => {
       await queryClient.invalidateQueries({ queryKey: wishesQuery.queryKey });
       onDone();
+      toast.ok(wish ? `Saved ${body.label}.` : `Added ${body.label} to the wish list.`);
     },
+    onError: () => toast.error(wish ? `Could not save ${wish.label}.` : 'Could not add the wish.'),
   });
 
   const onSubmit = (event: FormEvent) => {
@@ -413,7 +416,14 @@ function WishEntry({
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: wishesQuery.queryKey });
 
-  const remove = useMutation({ mutationFn: () => deleteWish(wish.id), onSuccess: refresh });
+  const remove = useMutation({
+    mutationFn: () => deleteWish(wish.id),
+    onSuccess: async () => {
+      await refresh();
+      toast.ok(`Removed ${wish.label} from the wish list.`);
+    },
+    onError: () => toast.error(`Could not remove ${wish.label}.`),
+  });
   const promote = useMutation({
     mutationFn: () => promoteWish(wish.id),
     onSuccess: async (saved) => {
@@ -422,7 +432,9 @@ function WishEntry({
         queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey }),
       ]);
       await navigate({ to: '/items/$itemId', params: { itemId: saved.itemId } });
+      toast.ok(`Promoted ${wish.label} to a wanted item.`);
     },
+    onError: () => toast.error(`Could not promote ${wish.label}.`),
   });
   const failed = remove.error ?? promote.error;
 

@@ -5,6 +5,7 @@ import { ApiError } from '../api/client.js';
 import { createItem, itemsQuery } from '../api/items.js';
 import { Alert, Button } from '../components/form.js';
 import { Modal } from '../components/modal.js';
+import { toast } from '../components/toasts.js';
 import { parseSpecText, STARTING_SPEC } from './parse.js';
 import { ItemFields } from './section-editor.js';
 import { SpecForm } from './spec-form.js';
@@ -88,7 +89,9 @@ function CreateForm({
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
       // Replacing the dialog's URL, so Back from the new item does not open the dialog again.
       await navigate({ to: '/items/$itemId', params: { itemId: saved.itemId }, replace: true });
+      toast.ok(`Created ${title.trim()}.`);
     },
+    onError: () => toast.error('Could not create the item.'),
   });
 
   return (

@@ -1,8 +1,8 @@
 # Goodies Beacon — Development Plan
 
-*Phases 0 and 1. Companion to ARCHITECTURE.md v1.46; section numbers below refer to it.*
+*Phases 0 and 1. Companion to ARCHITECTURE.md v1.50; section numbers below refer to it.*
 
-Version 1.24 — 26 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
+Version 1.25 — 27 September 2026. Every *done when* line is a checkbox; tick them in the same commit as the work.
 
 ---
 
@@ -309,6 +309,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-29 | Search plan regions from the source's list | S | P1-28 |
 | P1-30 | Criteria grouped as hard and soft | S | P1-29 |
 | P1-31 | An item's plans polled as one sweep | S | P1-30 |
+| P1-32 | Toasts for saves | S | P1-31 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1661,6 +1662,51 @@ Done when:
 - [x] `desiredSchedules` numbers each item's plans in the spec's order, skipping plans that are not scheduled, and another item's plans in between do not shift them. Unit-tested.
 - [x] Items still start at different points in the interval, stable across restarts: the offset is a hash of the item id.
 - [x] An upgraded instance moves its existing schedules on the reconciler's first pass as *updated*, not *added*, so no plan's watermark is reset and nothing is skipped or fetched twice (§6: only an added schedule starts a plan from now).
+
+#### P1-32 Toasts for saves — S
+
+A save made from a modal said nothing when it worked: the dialog closed, and whether the change
+had landed was left to be read off the page behind it. The Settings pages said *Saved.* in small
+grey text beside their button, and the Criteria page a line under its filter. Every save the owner
+confirms now says how it went in a **toast**: a short message that appears, stays a few seconds
+and goes, naming what was saved — *Added the criterion “…”. Saved as version 4.*, *Created
+Carmageddon big box.*, *Saved the email settings.* — or that it was not.
+
+Decided with the owner before it was built: every modal's save gets one — the section editors,
+the create dialog, the removal dialog, the display image, and the wish, category and shared
+criterion dialogs — and so do the Settings pages, whose *Saved.* goes, the inline confirmations
+that delete a wish, a category or a shared criterion or promote a wish, and the status dropdown. A
+failure is a toast *and* the error inline beside Save, as before, because the dialog stays open so
+nothing typed is lost and the inline one can name the field at fault; the toast says only what
+failed. A failure stays up eight seconds and a success four, each with a close button, at most
+three at once. The Email page's *Send Test Email* and the Sources and Models *Test* buttons keep
+their inline results, being answers to read rather than saves to confirm.
+
+Decided in the building: the toasts are the app's own, as `Modal` and `HelpTip` are, rather than
+a library's — `toasts.ts` holds them outside React, so a mutation's callbacks call `toast.ok` and
+`toast.error` as they are and a toast raised by a dialog that closes, or by a page just left, still
+shows. The region is a popover, in the top layer with the dialogs, since anything outside it is
+drawn beneath a modal's backdrop whatever its z-index; and while a modal is open the region is
+drawn inside it, because everything outside a modal dialog is inert — a toast left in the page
+over one shows, but cannot be dismissed and is never reached by a screen reader. It sits at the
+foot of a page and at the head while a dialog is open: a page's actions are at its head, and a
+tall dialog's Save and Cancel at its foot, which is where the owner goes next after a failure.
+
+Depends on P1-31.
+
+Done when:
+
+- [x] `toast.ok` and `toast.error` show a message that dismisses itself — four seconds for a success, eight for a failure — or on its close button, with at most three at once, the oldest giving way. Unit-tested.
+- [x] The toasts are drawn above an open modal and inside it, so a failure can be dismissed without closing the dialog; at the foot of the page otherwise, and at the head of the screen while a dialog is open. A success is a `status` and a failure an `alert`, each in a region named *Notifications*.
+- [x] Every modal's save and removal says so in a toast naming what was saved and, for a spec, the version it made; a failure leaves the dialog open with its inline error beside the toast.
+- [x] The Settings pages confirm a save in a toast in place of *Saved.*, and the Account page a password change in place of its inline *Password changed.*; a failure is a toast beside the inline error.
+- [x] Deleting a wish, a category or a shared criterion, promoting a wish, and choosing a status each say so in a toast, as does a failure of any of them. The Criteria page's notice under its filter is gone, its message now a toast.
+- [x] The Playwright run finds the toasts for saved settings, a created item still showing on the page it led to, a status change dismissed by its close button, an added criterion naming its version, a duplicate category, a promoted wish, a shared criterion's save and a password change; and a save failed by the server that leaves the dialog open with its inline error, and a toast above the dialog that is what is hit at its own centre and closes without closing the dialog.
+
+The Search Plans table's *Pre-filter* cost shows anything under a cent as *$0.01*, at the owner's
+request while the task was open, where it switched to cents (*0.03¢*) — moving between cents and
+dollars down one column read as confusing. It is a display rule only; the cost is stored and
+summed exactly as before, and a plan that has cost nothing still shows *—*.
 
 #### P1-XX Phase 1 exit — S
 

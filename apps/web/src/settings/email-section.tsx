@@ -9,6 +9,7 @@ import { type FormEvent, useEffect, useId, useState } from 'react';
 import { ApiError } from '../api/client.js';
 import { saveSettings, sendTestEmail, settingsQuery } from '../api/settings.js';
 import { Alert, Button, CONTROL, Field, Section } from '../components/form.js';
+import { toast } from '../components/toasts.js';
 import { fieldErrors } from './validate.js';
 
 type Email = PublicSettings['email'];
@@ -50,7 +51,11 @@ export function EmailSection({ email }: { email: Email }) {
 
   const save = useMutation({
     mutationFn: () => saveSettings(patch),
-    onSuccess: (saved) => queryClient.setQueryData(settingsQuery.queryKey, saved),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(settingsQuery.queryKey, saved);
+      toast.ok('Saved the email settings.');
+    },
+    onError: () => toast.error('Could not save the email settings.'),
   });
 
   /**
@@ -223,11 +228,6 @@ export function EmailSection({ email }: { email: Email }) {
           >
             {test.isPending ? 'Sending…' : 'Send Test Email'}
           </Button>
-          {save.isSuccess && !dirty ? (
-            <span role="status" className="text-sm text-ink-dim dark:text-ink-dim-dark">
-              Saved.
-            </span>
-          ) : null}
         </div>
       </form>
     </Section>

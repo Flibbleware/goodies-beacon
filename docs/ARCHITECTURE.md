@@ -2,7 +2,7 @@
 
 *A self-hosted beacon for the goodies you are hunting: it watches the marketplaces so you do not have to.*
 
-Version 1.49 — 27 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
+Version 1.50 — 27 September 2026. Written from the agreed requirements; this is the reference for the development plan that follows.
 
 ---
 
@@ -459,7 +459,7 @@ Reference and grading example images are not swept by age: they belong to a spec
 
 ## 14. Web UI
 
-React + Vite, TanStack Router and Query, Tailwind. The sidebar lists the pages below, each with an icon drawn inline like the category icons. Pages:
+React + Vite, TanStack Router and Query, Tailwind. The sidebar lists the pages below, each with an icon drawn inline like the category icons. Every save the owner confirms — from a modal, a Settings page, a row's inline confirmation or the item's status — says how it went in a toast naming what was saved, or that it was not (v1.50, P1-32); a failure also stays inline beside Save, where the dialog is still open with nothing lost. The toasts are drawn inside an open modal rather than behind it, since everything outside a modal dialog is inert, at the head of the screen while one is open and at the foot of a page otherwise. Pages:
 
 *Dashboard* — active items, today's new matches/uncertains, source health, AI spend this month.
 *Wish list* — wishes added and edited in one modal, filterable by category (each with its icon, plus the uncategorised) and by a text box matching part of a tag, sorted A–Z or newest first. Each wish shows its tags as pills beside its label, a Search button opening its link in a new tab, and a Promote action that turns it into a draft wanted item.

@@ -16,6 +16,7 @@ import { Alert, Button, CONTROL, Field, NO_AUTOFILL, Section } from '../componen
 import { IconButton } from '../components/icon-button.js';
 import { EditIcon, RemoveIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
+import { toast } from '../components/toasts.js';
 
 const ICON_LABELS: Record<CategoryIcon, string> = {
   gamepad: 'Gamepad',
@@ -117,7 +118,11 @@ function CategoryEntry({ category, onEdit }: { category: CategoryRow; onEdit: ()
   const [confirming, setConfirming] = useState(false);
   const remove = useMutation({
     mutationFn: () => deleteCategory(category.id),
-    onSuccess: () => refreshCategories(queryClient),
+    onSuccess: async () => {
+      await refreshCategories(queryClient);
+      toast.ok(`Deleted ${category.name}.`);
+    },
+    onError: () => toast.error(`Could not delete ${category.name}.`),
   });
 
   return (
@@ -188,10 +193,13 @@ function CategoryForm({
   const save = useMutation({
     mutationFn: (body: CategorySave) =>
       category ? updateCategory(category.id, body) : createCategory(body),
-    onSuccess: async () => {
+    onSuccess: async (_, body) => {
       await refreshCategories(queryClient);
       onDone();
+      toast.ok(category ? `Saved ${body.name}.` : `Added ${body.name}.`);
     },
+    onError: () =>
+      toast.error(category ? `Could not save ${category.name}.` : 'Could not add the category.'),
   });
 
   const onSubmit = (event: FormEvent) => {

@@ -28,6 +28,7 @@ import { IconButton } from '../components/icon-button.js';
 import { EditIcon, RemoveIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
 import { TagPills } from '../components/tag-pills.js';
+import { toast } from '../components/toasts.js';
 import { ON_UNKNOWN_LABELS } from '../items/labels.js';
 import { appLayoutRoute } from './app-layout.js';
 
@@ -62,7 +63,6 @@ function Criteria() {
   const shown = criteria.filter((criterion) => matchesSharedCriterion(criterion, query));
   // `null` is closed; an empty object is adding, and one holding a criterion is editing it.
   const [editing, setEditing] = useState<{ criterion?: SharedCriterionRow } | null>(null);
-  const [notice, setNotice] = useState<string | undefined>();
 
   const filterBy = (value: string) => {
     setQuery(value);
@@ -73,14 +73,7 @@ function Criteria() {
     <div className="mx-auto max-w-3xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Shared Criteria</h1>
-        <Button
-          type="button"
-          aria-label="Create a shared criterion"
-          onClick={() => {
-            setNotice(undefined);
-            setEditing({});
-          }}
-        >
+        <Button type="button" aria-label="Create a shared criterion" onClick={() => setEditing({})}>
           Create
         </Button>
       </div>
@@ -100,10 +93,7 @@ function Criteria() {
           <CriterionForm
             key={editing.criterion?.id}
             criterion={editing.criterion}
-            onDone={(message) => {
-              setNotice(message);
-              setEditing(null);
-            }}
+            onDone={() => setEditing(null)}
             onCancel={() => setEditing(null)}
           />
         ) : null}
@@ -120,11 +110,6 @@ function Criteria() {
         />
       </div>
 
-      {notice ? (
-        <p role="status" className="mt-4 text-sm text-ink-dim dark:text-ink-dim-dark">
-          {notice}
-        </p>
-      ) : null}
       {isPending ? (
         <p className="mt-6 text-sm text-ink-dim dark:text-ink-dim-dark">Loading…</p>
       ) : null}
@@ -147,10 +132,7 @@ function Criteria() {
             <li key={criterion.id} className="p-4">
               <CriterionEntry
                 criterion={criterion}
-                onEdit={() => {
-                  setNotice(undefined);
-                  setEditing({ criterion });
-                }}
+                onEdit={() => setEditing({ criterion })}
                 onPickTag={filterBy}
               />
             </li>
@@ -174,7 +156,11 @@ function CriterionEntry({
   const [confirming, setConfirming] = useState(false);
   const remove = useMutation({
     mutationFn: () => deleteSharedCriterion(criterion.id),
-    onSuccess: () => refreshSharedCriteria(queryClient),
+    onSuccess: async () => {
+      await refreshSharedCriteria(queryClient);
+      toast.ok(`Deleted ${criterion.key}.`);
+    },
+    onError: () => toast.error(`Could not delete ${criterion.key}.`),
   });
 
   return (
@@ -288,7 +274,7 @@ function CriterionForm({
   onCancel,
 }: {
   criterion: SharedCriterionRow | undefined;
-  onDone: (notice: string | undefined) => void;
+  onDone: () => void;
   onCancel: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -313,14 +299,21 @@ function CriterionForm({
       const { updatedItems } = await updateSharedCriterion(criterion.id, fields);
       return updatedItems;
     },
-    onSuccess: async (updatedItems) => {
+    onSuccess: async (updatedItems, body) => {
       await refreshSharedCriteria(queryClient);
-      onDone(
-        updatedItems
-          ? `Saved ${criterion?.key}, and gave ${items(updatedItems)} a new version.`
-          : undefined,
+      onDone();
+      toast.ok(
+        !criterion
+          ? `Created ${body.key}.`
+          : updatedItems
+            ? `Saved ${criterion.key}, and gave ${items(updatedItems)} a new version.`
+            : `Saved ${criterion.key}.`,
       );
     },
+    onError: () =>
+      toast.error(
+        criterion ? `Could not save ${criterion.key}.` : 'Could not create the criterion.',
+      ),
   });
 
   const onSubmit = (event: FormEvent) => {

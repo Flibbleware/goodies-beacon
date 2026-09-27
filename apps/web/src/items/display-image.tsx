@@ -4,6 +4,7 @@ import { type ChangeEvent, useId, useState } from 'react';
 import { itemQuery, itemsQuery, type LoadedItem, updateItem, uploadImage } from '../api/items.js';
 import { Alert, Button, CONTROL, Field } from '../components/form.js';
 import { Modal } from '../components/modal.js';
+import { toast } from '../components/toasts.js';
 
 /**
  * The picture on the item's card in the wanted items list (P1-25): one of the reference images,
@@ -24,11 +25,18 @@ export function DisplayImage({
 
   const set = useMutation({
     mutationFn: (displayImageId: string | null) => updateItem(item.id, { displayImageId }),
-    onSuccess: async () => {
+    onSuccess: async (_, displayImageId) => {
       setChoosing(false);
       await queryClient.invalidateQueries({ queryKey: itemQuery(item.id).queryKey });
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
+      toast.ok(displayImageId ? 'Saved the display image.' : 'Removed the display image.');
     },
+    onError: (_, displayImageId) =>
+      toast.error(
+        displayImageId
+          ? 'Could not save the display image.'
+          : 'Could not remove the display image.',
+      ),
   });
 
   return (
@@ -126,6 +134,7 @@ function Chooser({
       return uploadImage(file);
     },
     onSuccess: (media) => onChoose(media.id),
+    onError: () => toast.error('Could not upload the image.'),
   });
 
   const busy = saving || upload.isPending;

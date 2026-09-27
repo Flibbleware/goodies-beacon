@@ -122,11 +122,11 @@ function Table({
 
 /**
  * Pre-filter calls cost hundredths of a cent, so two decimal places would read "$0.00" for
- * months and tell nobody anything. Under a cent it is shown in cents instead.
+ * months and say nothing was spent. Anything under a cent is shown as a cent instead, so the column
+ * stays in dollars rather than switching to cents for the cheap plans (stored exactly, as ever).
  */
 function money(usd: string): string {
   const value = Number(usd);
   if (!Number.isFinite(value) || value === 0) return '—';
-  if (value < 0.01) return `${(value * 100).toFixed(2)}¢`;
-  return `$${value.toFixed(2)}`;
+  return `$${Math.max(value, 0.01).toFixed(2)}`;
 }

@@ -19,6 +19,7 @@ import { HistoryIcon } from '../components/icons.js';
 import { LastPoll } from '../components/last-poll.js';
 import { Modal } from '../components/modal.js';
 import { Pill } from '../components/pill.js';
+import { toast } from '../components/toasts.js';
 import { DisplayImage } from '../items/display-image.js';
 import {
   CriterionActions,
@@ -270,10 +271,12 @@ function Header({
 
   const change = useMutation({
     mutationFn: (status: WantedItemStatus) => updateItem(item.id, { status }),
-    onSuccess: async () => {
+    onSuccess: async (_, chosen) => {
       await queryClient.invalidateQueries({ queryKey: itemQuery(item.id).queryKey });
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
+      toast.ok(`Set the status to ${STATUS_LABELS[chosen]}.`);
     },
+    onError: () => toast.error('Could not change the status.'),
   });
 
   // Held at the chosen value while it saves, rather than snapping back until the refetch lands.

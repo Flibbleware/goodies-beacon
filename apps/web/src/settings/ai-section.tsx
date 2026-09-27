@@ -13,6 +13,7 @@ import {
   testAiProvider,
 } from '../api/settings.js';
 import { Alert, Button, CONTROL, Field, Section } from '../components/form.js';
+import { toast } from '../components/toasts.js';
 
 type Ai = PublicSettings['ai'];
 
@@ -67,7 +68,11 @@ export function AiSection({ ai }: { ai: Ai }) {
 
   const save = useMutation({
     mutationFn: (patch: SettingsPatch) => saveSettings(patch),
-    onSuccess: (data) => queryClient.setQueryData(settingsQuery.queryKey, data),
+    onSuccess: (data) => {
+      queryClient.setQueryData(settingsQuery.queryKey, data);
+      toast.ok('Saved the model settings.');
+    },
+    onError: () => toast.error('Could not save the model settings.'),
   });
 
   const test = useMutation<AiTestResponse, Error, AiProvider>({
@@ -192,9 +197,6 @@ export function AiSection({ ai }: { ai: Ai }) {
           <Button type="submit" disabled={save.isPending}>
             {save.isPending ? 'Saving…' : 'Save'}
           </Button>
-          {save.isSuccess && !save.isPending ? (
-            <span className="text-sm text-ink-dim dark:text-ink-dim-dark">Saved.</span>
-          ) : null}
         </div>
 
         {save.error ? (

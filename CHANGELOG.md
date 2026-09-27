@@ -4,6 +4,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-32 Toasts for saves. Saving from a dialog, a Settings page or the status dropdown, and
+  deleting or promoting from a list, now shows a short message saying what was saved — *Added the
+  criterion “…”. Saved as version 4.* — or that it was not. A failed save keeps its dialog open with
+  the reason beside Save, as before. The Settings pages' *Saved.* is replaced by the toast.
+- The Search Plans table shows a pre-filter cost under a cent as $0.01 rather than in cents, so the
+  column is always in dollars. The exact cost is still what is stored.
 - P1-31 An item's search plans now poll together, two minutes apart, instead of each at its own
   unrelated time across the interval. A newly added plan runs with the rest of its item rather
   than possibly hours later. Existing schedules move within a minute of upgrading, and nothing is

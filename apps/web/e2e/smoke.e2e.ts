@@ -52,6 +52,8 @@ async function inbox(): Promise<InboxMessage[]> {
  */
 test('first run, settings, a wanted item, and deep links survive a refresh', async ({ page }) => {
   const section = (name: string) => page.getByRole('region', { name });
+  /** What a save says when it lands or fails (P1-32), above any open dialog. */
+  const toasts = page.getByRole('region', { name: 'Notifications' });
   /** The item page's sections are tabs (P1-28), each showing its panel alone. */
   const tab = (name: string) => page.getByRole('tab', { name, exact: true });
   const openTab = async (name: string) => {
@@ -149,7 +151,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   await test.step('a setting can be saved and survives a reload', async () => {
     await page.getByLabel('Time zone').fill('Asia/Tokyo');
     await section('Instance').getByRole('button', { name: 'Save' }).click();
-    await expect(section('Instance').getByRole('status')).toHaveText('Saved.');
+    await expect(toasts.getByText('Saved the instance settings.')).toBeVisible();
 
     await page.reload();
     await expect(page.getByLabel('Time zone')).toHaveValue('Asia/Tokyo');
@@ -212,7 +214,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   await test.step('saving the section again keeps the password that was not re-typed', async () => {
     await page.getByLabel('SMTP host').fill('127.0.0.1');
     await section('Email').getByRole('button', { name: 'Save' }).click();
-    await expect(section('Email').getByRole('status')).toHaveText('Saved.');
+    await expect(toasts.getByText('Saved the email settings.')).toBeVisible();
 
     await page.reload();
     await expect(page.getByLabel('SMTP host')).toHaveValue('127.0.0.1');
@@ -246,7 +248,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await page.getByLabel('Port').fill('1025');
     await section('Email').getByRole('button', { name: 'Save' }).click();
-    await expect(section('Email').getByRole('status').last()).toHaveText('Saved.');
+    await expect(toasts.getByText('Saved the email settings.')).toBeVisible();
   });
 
   await test.step('categories are made in Settings, each with an icon and a colour', async () => {
@@ -277,7 +279,11 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await categories.getByRole('button', { name: 'Add a category' }).click();
     await dialog.getByLabel('Name').fill('vhs');
     await dialog.getByRole('button', { name: 'Add category' }).click();
-    await expect(dialog.getByRole('alert')).toHaveText('There is already a category called vhs.');
+    // The dialog holds its toasts while it is open (P1-32), so its own error is found by its words.
+    await expect(
+      dialog.getByRole('alert').filter({ hasText: 'There is already a category called vhs.' }),
+    ).toBeVisible();
+    await expect(toasts.getByRole('alert')).toHaveText('Could not add the category.');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
 
     await categories.getByRole('button', { name: 'Edit Toys' }).click();
@@ -316,6 +322,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(
       page.getByRole('heading', { name: 'Carmageddon big box', level: 1 }),
     ).toBeVisible();
+    // Raised by the dialog, and still showing on the page it led to.
+    await expect(toasts.getByText('Created Carmageddon big box.')).toBeVisible();
     const versions = await itemHistory();
     await expect(versions.getByRole('listitem')).toHaveCount(1);
     await expect(versions.getByRole('listitem').first()).toContainText('Created.');
@@ -622,6 +630,10 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await itemStatus.selectOption('paused');
     await expect(itemStatus).toBeEnabled();
+    const paused = toasts.getByRole('status').filter({ hasText: 'Set the status to Paused.' });
+    await expect(paused).toBeVisible();
+    await paused.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(paused).toBeHidden();
 
     await page.reload();
     await expect(itemStatus).toHaveValue('paused');
@@ -698,6 +710,11 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await save.click();
     await expect(dialog).toBeHidden();
+    await expect(
+      toasts.getByText(
+        'Added the criterion “The manual is the original print”. Saved as version 4.',
+      ),
+    ).toBeVisible();
     await expect(page.getByRole('tabpanel', { name: 'Criteria' })).toContainText(
       'The manual is the original print',
     );
@@ -707,6 +724,55 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(versions.getByRole('listitem').first()).toContainText(
       'Added the criterion “The manual is the original print”.',
     );
+    await closeHistory();
+  });
+
+  await test.step('a save that fails keeps its dialog open, and says so there and in a toast', async () => {
+    const itemUrl = `**/api/items/${carmageddonId}`;
+    await page.route(itemUrl, (route) =>
+      route.request().method() === 'PUT'
+        ? route.fulfill({
+            status: 500,
+            json: { error: { code: 'internal', message: 'Something went wrong.' } },
+          })
+        : route.fallback(),
+    );
+
+    await page.getByRole('button', { name: 'Add a criterion' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Add a Criterion' });
+    await dialog.getByLabel('Criterion', { exact: true }).fill('The discs are unscratched');
+    await dialog.getByRole('button', { name: 'Save as version 5' }).click();
+
+    const failure = toasts.getByRole('alert');
+    await expect(failure).toHaveText('Could not save version 5.');
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('alert').filter({ hasText: 'Something went wrong.' }),
+    ).toBeVisible();
+    await expect(dialog.getByLabel('Criterion', { exact: true })).toHaveValue(
+      'The discs are unscratched',
+    );
+    // Drawn over the dialog, and inside it rather than inert behind it: the toast is what is hit
+    // at its own centre.
+    expect(
+      await failure.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const hit = element.ownerDocument.elementFromPoint(
+          box.x + box.width / 2,
+          box.y + box.height / 2,
+        );
+        return hit !== null && element.contains(hit);
+      }),
+    ).toBe(true);
+    await failure.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(failure).toBeHidden();
+    await expect(dialog).toBeVisible();
+
+    await page.unroute(itemUrl);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await dialog.getByRole('button', { name: 'Discard' }).click();
+    await expect(dialog).toBeHidden();
+    await expect((await itemHistory()).getByRole('listitem')).toHaveCount(4);
     await closeHistory();
   });
 
@@ -1173,6 +1239,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // It opens on the new item's own page, a draft, to be filled in there (P1-26).
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
     await expect(page.getByRole('heading', { name: 'Tamagotchi', level: 1 })).toBeVisible();
+    await expect(toasts.getByText('Promoted Tamagotchi to a wanted item.')).toBeVisible();
     await expect(itemStatus).toHaveValue('draft');
     await expect(activeOption).toBeDisabled();
     // The wish's category comes with it.
@@ -1305,9 +1372,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await dialog.getByLabel('When unknown').selectOption('surface');
     await dialog.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(dialog).toBeHidden();
-    await expect(page.getByRole('status')).toHaveText(
-      `Saved ${CLASSICS}, and gave 1 wanted item a new version.`,
-    );
+    await expect(
+      toasts.getByText(`Saved ${CLASSICS}, and gave 1 wanted item a new version.`),
+    ).toBeVisible();
 
     await page.goto(`/items/${carmageddonId}?tab=criteria`);
     await expect(criteria).toContainText('grey-banded box');
@@ -1454,7 +1521,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.getByLabel('New password').fill(NEW_PASSWORD);
     await page.getByRole('button', { name: 'Change password' }).click();
 
-    await expect(section('Account').getByText('Password changed.')).toBeVisible();
+    await expect(toasts.getByText('Password changed.')).toBeVisible();
 
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page).toHaveURL('/login');

@@ -9,6 +9,7 @@ import { itemQuery, itemsQuery, type LoadedItem, saveItem, updateItem } from '..
 import { CategoryOptions } from '../components/category-filter.js';
 import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.js';
 import { Modal } from '../components/modal.js';
+import { toast } from '../components/toasts.js';
 import { criterionName, planName } from './labels.js';
 import { parseSpecText, withDocument, withoutReferenceImage, withReferenceImage } from './parse.js';
 import { ReferenceImages } from './reference-images.js';
@@ -234,6 +235,7 @@ function Body({
   const defaultNote = entryNote(entry, focus, shown) ?? config.note;
   // Only Details has anything to save that is not the spec.
   const versioned = section !== 'describe' || specChanged;
+  const nextVersion = (item.current?.version ?? 0) + 1;
   const dirty = specChanged || title !== item.title || categoryId !== (item.categoryId ?? '');
   const unsaved: ReadonlySet<string> = new Set(
     (shown?.referenceImages ?? []).map((image) => image.id).filter((id) => uploaded.has(id)),
@@ -271,7 +273,14 @@ function Body({
       // The Criteria page counts the items using each shared criterion, which a save can change.
       await queryClient.invalidateQueries({ queryKey: sharedCriteriaQuery.queryKey });
       onDone();
+      toast.ok(
+        versioned ? `${defaultNote} Saved as version ${nextVersion}.` : 'Saved the details.',
+      );
     },
+    onError: () =>
+      toast.error(
+        versioned ? `Could not save version ${nextVersion}.` : 'Could not save the details.',
+      ),
   });
 
   const held = confirming || blocker.status === 'blocked';
@@ -396,11 +405,7 @@ function Body({
                 type="submit"
                 disabled={save.isPending || !parsed.ok || !dirty || title.trim() === ''}
               >
-                {save.isPending
-                  ? 'Saving…'
-                  : versioned
-                    ? `Save as Version ${(item.current?.version ?? 0) + 1}`
-                    : 'Save'}
+                {save.isPending ? 'Saving…' : versioned ? `Save as Version ${nextVersion}` : 'Save'}
               </Button>
             </div>
           </div>

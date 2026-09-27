@@ -6,6 +6,7 @@ import { itemQuery, itemsQuery, type LoadedItem, saveItem } from '../api/items.j
 import { Alert, Button } from '../components/form.js';
 import { EditIcon, RemoveIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
+import { toast } from '../components/toasts.js';
 
 const ICON_BUTTON =
   'rounded p-1 text-ink-dim hover:bg-paper-raised hover:text-ink dark:text-ink-dim-dark dark:hover:bg-paper-raised-dark dark:hover:text-ink-dark';
@@ -117,12 +118,14 @@ export function RemoveFromSpec({
         spec: target.spec,
         changeNote: target.changeNote,
       }),
-    onSuccess: async () => {
+    onSuccess: async (_, target) => {
       await queryClient.invalidateQueries({ queryKey: itemsQuery.queryKey });
       await queryClient.invalidateQueries({ queryKey: itemQuery(item.id).queryKey });
       await queryClient.invalidateQueries({ queryKey: sharedCriteriaQuery.queryKey });
       onClose();
+      toast.ok(`${target.changeNote} Saved as version ${next}.`);
     },
+    onError: () => toast.error(`Could not save version ${next}.`),
   });
 
   const close = () => {
