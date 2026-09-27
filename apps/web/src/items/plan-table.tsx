@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import type { PlanRow } from '../api/items.js';
 
 /**
@@ -7,6 +7,9 @@ import type { PlanRow } from '../api/items.js';
  * "Search broad, judge narrow" only works if you can see which of the broad queries is earning
  * its keep, which is what these five columns are for: how much a query found, how much of that
  * was expensive enough to look at, what came of it, and what the cheap stage cost meanwhile.
+ *
+ * Plans the spec has dropped keep their rows for their stats, but are hidden until asked for:
+ * every region change makes one (P1-29), and a table of old plans buries the ones polling now.
  */
 export function PlanTable({
   plans,
@@ -16,11 +19,42 @@ export function PlanTable({
   /** A plan's own edit and remove (P1-27); a plan the spec has since dropped has none. */
   actions?: ((plan: PlanRow) => ReactNode) | undefined;
 }) {
-  return plans.length === 0 ? (
-    <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
-      This spec has no search plans, so nothing is polled for it.
-    </p>
-  ) : (
+  const [showRemoved, setShowRemoved] = useState(false);
+  const removed = plans.filter((plan) => !plan.inSpec).length;
+  const shown = showRemoved ? plans : plans.filter((plan) => plan.inSpec);
+
+  return (
+    <>
+      {shown.length === 0 ? (
+        <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
+          This spec has no search plans, so nothing is polled for it.
+        </p>
+      ) : (
+        <Table plans={shown} actions={actions} />
+      )}
+      {removed > 0 ? (
+        <label className="mt-3 flex w-fit items-center gap-2 text-sm text-ink-dim dark:text-ink-dim-dark">
+          <input
+            type="checkbox"
+            checked={showRemoved}
+            onChange={(event) => setShowRemoved(event.target.checked)}
+            className="size-4 rounded border-edge dark:border-edge-dark"
+          />
+          Show removed plans ({removed})
+        </label>
+      ) : null}
+    </>
+  );
+}
+
+function Table({
+  plans,
+  actions,
+}: {
+  plans: PlanRow[];
+  actions: ((plan: PlanRow) => ReactNode) | undefined;
+}) {
+  return (
     <div className="mt-3 overflow-x-auto rounded-xl border border-edge dark:border-edge-dark">
       <table className="w-full text-sm">
         <thead className="text-xs uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">

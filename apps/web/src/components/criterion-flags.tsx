@@ -10,20 +10,23 @@ const PLAIN_TEXT = 'text-ink dark:text-ink-dark';
 
 /**
  * A criterion's three flags as label and value — on an item, and on a shared criterion, where a
- * null is a flag it leaves to each item (P1-27).
+ * null is a flag it leaves to each item (P1-27). An item's Criteria tab leaves Failure out, because
+ * it groups the criteria under Hard and Soft instead (P1-30).
  */
 export function CriterionFlags({
   kind,
   onUnknown,
   quantifiable,
+  showFailure = true,
 }: {
   kind: CriterionKind | null;
   onUnknown: OnUnknown | null;
   quantifiable: boolean | null;
+  showFailure?: boolean;
 }) {
   return (
     <>
-      {kind === null ? (
+      {!showFailure ? null : kind === null ? (
         <Flag label="Failure" hint="Each item that uses it chooses">
           {null}
         </Flag>

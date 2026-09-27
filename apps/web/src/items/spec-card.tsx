@@ -1,8 +1,9 @@
 import type { Criterion, ReferenceImage, WantedSpec } from '@goodies-beacon/core/schemas';
 import { durationToHours, lintSpec, scheduledHours } from '@goodies-beacon/core/schemas';
 import { Link } from '@tanstack/react-router';
-import { type ReactNode, useLayoutEffect, useState } from 'react';
+import { type ReactNode, useId, useLayoutEffect, useState } from 'react';
 import { CriterionFlags } from '../components/criterion-flags.js';
+import { HelpTip } from '../components/help-tip.js';
 import { PanelAction } from './item-tabs.js';
 import {
   BACKFILL_DEPTH_LABELS,
@@ -150,8 +151,13 @@ function pollEvery(duration: string | null): string {
 }
 
 /**
+ * The criteria in two groups, hard then soft (P1-30): what failing one does is the first thing to
+ * know about a criterion, so it is the heading rather than a flag repeated on every row. Each
+ * group keeps the spec's order.
+ *
  * The warnings come from the whole spec, because `lintSpec` judges a criterion against the item's
- * settings as well as its own flags. `actions` draws each criterion's own controls beside it.
+ * settings as well as its own flags. `actions` draws each criterion's own controls beside it, and
+ * is given the criterion's index in the spec, not in its group, since that is what an edit needs.
  */
 export function CriteriaList({
   spec,
@@ -162,54 +168,110 @@ export function CriteriaList({
 }) {
   const criteria: Criterion[] = spec.criteria;
   const warnings = new Map(lintSpec(spec).map((warning) => [warning.criterionId, warning.message]));
+  const headingId = useId();
 
-  return (
-    <Card>
-      {criteria.length === 0 ? (
+  if (criteria.length === 0) {
+    return (
+      <Card>
         <p className="text-sm">
           <Absent>Nothing is judged by reading or looking; the settings decide everything.</Absent>
         </p>
-      ) : (
-        <ul className="-my-3 divide-y divide-edge dark:divide-edge-dark">
-          {criteria.map((criterion, index) => (
-            <li key={criterion.id} className="flex items-start gap-4 py-2.5">
-              <div className="min-w-0 flex-1">
-                <CriterionText text={criterion.text} />
-                <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
-                  <CriterionFlags
-                    kind={criterion.kind}
-                    onUnknown={criterion.onUnknown}
-                    quantifiable={criterion.quantifiable}
+      </Card>
+    );
+  }
+
+  const indexed = criteria.map((criterion, index) => ({ criterion, index }));
+  return (
+    <div className="space-y-8">
+      {CRITERION_GROUPS.map((group) => {
+        const members = indexed.filter((entry) => entry.criterion.kind === group.kind);
+        if (members.length === 0) return null;
+        return (
+          <section key={group.kind} aria-labelledby={`${headingId}-${group.kind}`}>
+            <div className="mt-3 flex items-center gap-1.5">
+              <h3
+                id={`${headingId}-${group.kind}`}
+                className="text-xs font-medium uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark"
+              >
+                {group.title}
+              </h3>
+              <HelpTip label={`What ${group.title.toLowerCase()} means`}>{group.help}</HelpTip>
+            </div>
+            <Card>
+              <ul className="-my-3 divide-y divide-edge dark:divide-edge-dark">
+                {members.map(({ criterion, index }) => (
+                  <CriterionRow
+                    key={criterion.id}
+                    criterion={criterion}
+                    warning={warnings.get(criterion.id)}
+                    actions={actions ? actions(criterion, index) : null}
                   />
-                  {criterion.shared ? (
-                    <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
-                      Shared:{' '}
-                      <Link
-                        to="/criteria"
-                        search={{ q: criterion.shared }}
-                        title="A shared criterion: edited on the Criteria page"
-                        className="font-mono text-beacon hover:underline"
-                      >
-                        {criterion.shared}
-                      </Link>
-                    </span>
-                  ) : null}
-                </p>
-                {warnings.has(criterion.id) ? (
-                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-500">
-                    {warnings.get(criterion.id)}
-                  </p>
-                ) : null}
-              </div>
-              {actions ? (
-                // Raised to centre on the criterion's first line, which is shorter than the buttons.
-                <div className="-mt-0.5 flex shrink-0 gap-1">{actions(criterion, index)}</div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
+                ))}
+              </ul>
+            </Card>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+const CRITERION_GROUPS = [
+  {
+    kind: 'hard',
+    title: 'Hard',
+    help: 'A listing that fails any of these is rejected. This is Failure action: Reject.',
+  },
+  {
+    kind: 'soft',
+    title: 'Soft',
+    help: 'A listing that fails one of these is marked uncertain, so you still see it. This is Failure action: Uncertain.',
+  },
+] as const;
+
+function CriterionRow({
+  criterion,
+  warning,
+  actions,
+}: {
+  criterion: Criterion;
+  warning: string | undefined;
+  actions: ReactNode;
+}) {
+  return (
+    <li className="flex items-start gap-4 py-2.5">
+      <div className="min-w-0 flex-1">
+        <CriterionText text={criterion.text} />
+        <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <CriterionFlags
+            kind={criterion.kind}
+            onUnknown={criterion.onUnknown}
+            quantifiable={criterion.quantifiable}
+            showFailure={false}
+          />
+          {criterion.shared ? (
+            <span className="text-xs text-ink-dim dark:text-ink-dim-dark">
+              Shared:{' '}
+              <Link
+                to="/criteria"
+                search={{ q: criterion.shared }}
+                title="A shared criterion: edited on the Criteria page"
+                className="font-mono text-beacon hover:underline"
+              >
+                {criterion.shared}
+              </Link>
+            </span>
+          ) : null}
+        </p>
+        {warning ? (
+          <p className="mt-2 text-xs text-amber-700 dark:text-amber-500">{warning}</p>
+        ) : null}
+      </div>
+      {actions ? (
+        // Raised to centre on the criterion's first line, which is shorter than the buttons.
+        <div className="-mt-0.5 flex shrink-0 gap-1">{actions}</div>
+      ) : null}
+    </li>
   );
 }
 
