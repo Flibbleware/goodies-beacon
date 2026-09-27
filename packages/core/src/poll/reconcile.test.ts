@@ -106,14 +106,28 @@ function fakeBoss(rows: Partial<Schedule>[] = []) {
   };
 }
 
-/** `activePlans` reads two tables; the join is exercised by the integration test in apps/worker. */
-function fakeDb(rows: unknown[]): Database {
+/**
+ * `activePlans` reads two tables and `startPlanFromNow` upserts a third; both are exercised
+ * against Postgres by the integration test in apps/worker. `started` is the plans it restarted.
+ */
+function fakeDb(rows: unknown[]): Database & { started: string[] } {
+  const started: string[] = [];
   const chain = {
     from: () => chain,
     innerJoin: () => chain,
     where: () => rows,
   };
-  return { select: () => chain } as unknown as Database;
+  const upsert = {
+    values: (value: { planId: string }) => {
+      started.push(value.planId);
+      return upsert;
+    },
+    onConflictDoUpdate: () => upsert,
+    returning: () => [{ watermark: new Date() }],
+  };
+  return { select: () => chain, insert: () => upsert, started } as unknown as Database & {
+    started: string[];
+  };
 }
 
 const row = (planId: string, enabled = true) => ({
@@ -129,10 +143,13 @@ describe('reconcileSchedules', () => {
   it('installs a schedule for a plan that has none', async () => {
     const { boss, calls } = fakeBoss();
 
-    const result = await reconcileSchedules({ ...deps, db: fakeDb([row('plan-a')]), boss });
+    const db = fakeDb([row('plan-a')]);
+
+    const result = await reconcileSchedules({ ...deps, db, boss });
 
     expect(result.added).toEqual(['plan-a']);
     expect(calls[0]).toMatch(/^schedule poll\.ebay plan-a /);
+    expect(db.started).toEqual(['plan-a']);
   });
 
   /** "Pausing an item updates the schedule without a restart" is this line. */
@@ -148,10 +165,14 @@ describe('reconcileSchedules', () => {
   it('rewrites a schedule whose interval has changed', async () => {
     const { boss, calls } = fakeBoss([{ key: 'plan-a', cron: '0 0 * * *' }]);
 
-    const result = await reconcileSchedules({ ...deps, db: fakeDb([row('plan-a')]), boss });
+    const db = fakeDb([row('plan-a')]);
+
+    const result = await reconcileSchedules({ ...deps, db, boss });
 
     expect(result.updated).toEqual(['plan-a']);
     expect(calls[0]).toMatch(/\/8 \* \* \*$/);
+    // A new interval is not a new start: the plan carries on from where it had got to.
+    expect(db.started).toEqual([]);
   });
 
   /** Runs every minute, so an unchanged instance must not rewrite its schedules each time. */

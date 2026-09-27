@@ -24,7 +24,8 @@
     "build": "tsc -b",
     "test": "vitest run --root ../.. --project @goodies-beacon/core",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate-cli.ts"
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate-cli.ts",
+    "reset-findings": "tsx --env-file-if-exists=../../.env src/maintenance/reset-findings-cli.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.1",

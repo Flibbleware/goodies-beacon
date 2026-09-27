@@ -1,4 +1,4 @@
-import { PgBoss } from 'pg-boss';
+import { type ConstructorOptions, PgBoss } from 'pg-boss';
 import type { Config } from '../config.js';
 import type { Logger } from '../logger.js';
 
@@ -9,11 +9,16 @@ export const QUEUE_SCHEMA = 'pgboss';
  * A pg-boss instance on the application database. Not started: the caller registers queues and
  * error logging first, so nothing is fetched before there is a handler for it.
  */
-export function createBoss(config: Config, logger: Logger): PgBoss {
+export function createBoss(
+  config: Config,
+  logger: Logger,
+  options: Pick<ConstructorOptions, 'schedule' | 'supervise'> = {},
+): PgBoss {
   const boss = new PgBoss({
     connectionString: config.databaseUrl,
     schema: QUEUE_SCHEMA,
     application_name: `goodies-beacon-${config.role}`,
+    ...options,
   });
 
   // pg-boss emits rather than throws for background failures; unhandled, they would be silent.
