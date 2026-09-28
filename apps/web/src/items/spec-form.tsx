@@ -35,6 +35,7 @@ import { Link } from '@tanstack/react-router';
 import { type ReactNode, useEffect, useId, useState } from 'react';
 import { sharedCriteriaQuery } from '../api/criteria.js';
 import { Button, CONTROL, Field } from '../components/form.js';
+import { PROMPT_CONTROL, PROMPT_INLINE, ReadByLine } from '../components/prompt-text.js';
 import { SharedCriterionPicker } from '../criteria/picker.js';
 import {
   BACKFILL_DEPTH_LABELS,
@@ -280,6 +281,7 @@ function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled
           id={ids.summary}
           label="Summary"
           hint="Shown to the pre-filter and the reviewer as context. One or two sentences."
+          reader="both"
         >
           <textarea
             id={ids.summary}
@@ -290,7 +292,7 @@ function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled
                 document.summary = event.target.value;
               })
             }
-            className={CONTROL}
+            className={PROMPT_CONTROL}
           />
         </Field>
 
@@ -298,6 +300,7 @@ function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled
           id={ids.note}
           label="How sellers list this"
           hint="Given to the pre-filter alone: how titles are written, what looks plausible, what plainly is not. Worth more than any other field when the name is a common phrase."
+          reader="prefilter"
         >
           <textarea
             id={ids.note}
@@ -308,7 +311,7 @@ function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled
                 document.plausibilityNote = event.target.value === '' ? null : event.target.value;
               })
             }
-            className={CONTROL}
+            className={PROMPT_CONTROL}
           />
         </Field>
       </div>
@@ -708,7 +711,7 @@ function CriterionFields({
             </Link>{' '}
             page
           </p>
-          <p className="text-sm">{source?.text ?? criterion.text}</p>
+          <p className={`${PROMPT_INLINE} whitespace-pre-wrap`}>{source?.text ?? criterion.text}</p>
         </>
       ) : (
         <div>
@@ -721,8 +724,9 @@ function CriterionFields({
             rows={3}
             value={criterion.text}
             onChange={(event) => update('text', event.target.value)}
-            className={CONTROL}
+            className={PROMPT_CONTROL}
           />
+          <ReadByLine reader="both" />
           {/* An empty criterion is what every new one starts as, so it is not called an error. */}
           {criterion.text === '' ? null : <FieldError message={errors(`criteria.${index}.text`)} />}
         </div>

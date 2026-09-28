@@ -97,6 +97,14 @@ export type CriterionResult = (typeof CRITERION_RESULTS)[number];
 export const REJECTION_REASONS = ['over_budget', 'negative_keyword', 'prefilter'] as const;
 export type RejectionReason = (typeof REJECTION_REASONS)[number];
 
+/**
+ * Which stage reached a candidate's verdict, as the audit view filters it (P1-34): the free hard
+ * filters of §7 step 2, the text pre-filter, or the reviewer. Read from the verdict's `reason`
+ * rather than stored, so every verdict already written has one.
+ */
+export const DECIDERS = ['rules', 'prefilter', 'reviewer'] as const;
+export type Decider = (typeof DECIDERS)[number];
+
 export const FEEDBACK_TYPES = ['not_a_match', 'challenge'] as const;
 export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 

@@ -65,6 +65,8 @@ export {
   CRITERION_KINDS,
   type CriterionKind,
   type CriterionResult,
+  DECIDERS,
+  type Decider,
   IMAGE_STRATEGIES,
   type ImageStrategy,
   NOTIFICATION_MODES,

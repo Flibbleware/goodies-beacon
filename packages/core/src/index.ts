@@ -230,6 +230,8 @@ export {
   CRITERION_RESULTS,
   type CriterionKind,
   type CriterionResult,
+  DECIDERS,
+  type Decider,
   EVENT_KINDS,
   EVENT_LEVELS,
   type EventKind,

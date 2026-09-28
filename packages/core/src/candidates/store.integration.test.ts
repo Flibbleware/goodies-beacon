@@ -185,6 +185,31 @@ describe.skipIf(!databaseUrl)('the candidate store against a real Postgres', () 
       expect((await listCandidates(db, filter())).total).toBe(2);
     });
 
+    /**
+     * P1-34: a rejection is the rules', the pre-filter's or the reviewer's, read from the reason
+     * each verdict already carries. A match is always the reviewer's, so it answers to that too.
+     */
+    it('filters by the stage that decided, from the reason on the verdict', async () => {
+      await seed({ decision: 'reject', reason: 'over_budget' });
+      await seed({ decision: 'reject', reason: 'negative_keyword' });
+      await seed({ decision: 'reject', reason: 'prefilter' });
+      await seed({ decision: 'reject' });
+      await seed({ decision: 'match' });
+      await seed();
+
+      const rejected = (decidedBy: string) =>
+        listCandidates(db, filter({ decision: 'reject', decidedBy }));
+
+      expect((await rejected('rules')).rows.map((row) => row.reason).sort()).toEqual([
+        'negative_keyword',
+        'over_budget',
+      ]);
+      expect((await rejected('prefilter')).rows.map((row) => row.reason)).toEqual(['prefilter']);
+      expect((await rejected('reviewer')).rows.map((row) => row.reason)).toEqual([null]);
+      expect((await rejected('all')).total).toBe(4);
+      expect((await listCandidates(db, filter({ decidedBy: 'reviewer' }))).total).toBe(2);
+    });
+
     /** §4 makes re-reviews append and the newest authoritative, so the filter must read that one. */
     it('filters on the newest verdict rather than on any verdict', async () => {
       const candidateId = await seed({ decision: 'reject' });

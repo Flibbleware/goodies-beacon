@@ -581,6 +581,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     const details = page.getByRole('tabpanel', { name: 'Details' });
     await expect(details).toContainText('Carmageddon, the original 1997 big-box release');
     await expect(details).toContainText('How sellers list this');
+    // P1-34: what a model is sent word for word says which model reads it.
+    await expect(details).toContainText('read by the pre-filter and reviewer');
+    await expect(details).toContainText('read by the pre-filter');
 
     const spec = await openTab('Settings');
     // The settings, as the bounded values they are — not as criteria (§4's split).
@@ -940,8 +943,19 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await page.reload();
     await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
 
+    // P1-34: Origin is not drawn until Phase 5; which stage decided a rejection is.
+    await expect(page.getByRole('navigation', { name: 'Origin' })).toHaveCount(0);
+    const decidedBy = page.getByRole('navigation', { name: 'Decided by' });
+    await decidedBy.getByRole('link', { name: 'Reviewer' }).click();
+    await expect(page).toHaveURL('/candidates?decision=reject&decidedBy=reviewer');
+    await expect(page.getByText('Nothing today.')).toBeVisible();
+    await decidedBy.getByRole('link', { name: 'Pre-filter' }).click();
+    await expect(page.getByText('Carmageddon t-shirt, size L')).toBeVisible();
+
     await verdictFilter.getByRole('link', { name: 'Uncertain' }).click();
     await expect(page.getByText('Carmageddon, box only, no disc')).toBeVisible();
+    // Only a rejection can be decided by more than one stage, so the filter goes with the verdict.
+    await expect(decidedBy).toHaveCount(0);
 
     // Everything seeded is today's, so All shows the same, and says so in the URL.
     await fromFilter.getByRole('link', { name: 'All' }).click();

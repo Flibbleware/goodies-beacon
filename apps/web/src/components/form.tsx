@@ -1,4 +1,5 @@
 import { type ReactNode, useId } from 'react';
+import { ReadByLine, type Reader } from './prompt-text.js';
 
 /**
  * For a text field a password manager takes for personal details — "Title", "Name", "Label" read
@@ -20,12 +21,15 @@ export function Field({
   label,
   hint,
   error,
+  reader,
   children,
 }: {
   id: string;
   label: string;
   hint?: string | undefined;
   error?: string | undefined;
+  /** For a field a model is sent word for word, which one; the control should be `PROMPT_CONTROL`. */
+  reader?: Reader | undefined;
   children: ReactNode;
 }) {
   return (
@@ -34,6 +38,7 @@ export function Field({
         {label}
       </label>
       {children}
+      {reader ? <ReadByLine reader={reader} /> : null}
       {error ? (
         <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>
       ) : hint ? (

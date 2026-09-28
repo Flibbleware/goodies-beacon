@@ -311,6 +311,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-31 | An item's plans polled as one sweep | S | P1-30 |
 | P1-32 | Toasts for saves | S | P1-31 |
 | P1-33 | AI spend by role and period | S | P1-32 |
+| P1-34 | Rejections filtered by the stage that decided them | S | P1-33 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1747,6 +1748,57 @@ Done when:
 - [x] With no cap set, the month's spend is reported rather than *not known*.
 - [x] A failure reading the breakdown leaves the rest of the dashboard, and the month's figure, standing.
 - [x] The Playwright run finds a row for the pre-filter and the reviewer with their calls, a total, and a role that links to the model settings. Checked by hand at 375 px wide, light and dark: the table fits without scrolling sideways, the calls and cost per call on two lines.
+
+#### P1-34 Rejections filtered by the stage that decided them — S
+
+A rejected candidate was decided by one of three stages, and the list did not say which without
+opening it: the free hard filters of §7 step 2 (the price ceiling, a negative keyword), the text
+pre-filter at a fortieth of a penny, or the reviewer at about half a penny after looking at the
+photographs. Which stage turned a listing down is what the owner needs to tune an item — a colour
+the pre-filter could have read from the title but let through to the reviewer, or a real match
+the pre-filter wrongly discarded — so the candidate list gains a *Decided by* filter: Any, Rules,
+Pre-filter, Reviewer. The Origin filter's place is taken: every candidate is a poll's until
+Phase 5 builds the backfill and the scan, so it had nothing to tell apart.
+
+Decided with the owner before it was built: three stages rather than the two first asked for
+(pre-filter only, or pre-filter and reviewer), because a rules rejection is neither; the filter
+is drawn only while *Rejected* is chosen, since a match or an uncertain is always the reviewer's
+and a queued candidate nobody's yet, so on any other verdict it could only empty the list; and
+Origin is hidden, not removed — `?origin=` still filters, so Phase 5 has only to draw it again.
+
+Decided in the building: the stage is read from the verdict's `reason` rather than stored, so
+every verdict already written has one and nothing is migrated. Changing the verdict drops the
+stage from the URL, and the page sends it to the API only with a rejection. The Candidates page is
+a step wider than the others (`max-w-4xl`), at the owner's request, so the three filter groups fit
+on one line on a desktop; they needed about 800 px of the 768 the page had.
+
+Also in this task, asked for while it was open: **text a model reads is drawn like a terminal**.
+The summary, *How sellers list this* and each criterion's text are sent to the models word for
+word, so they are shown monospace on an inset ground of their own — a box on the Details tab, a
+strip in each criterion row, on the Criteria page and in its picker, and the same ground on the
+textareas that edit them — with a caption naming the reader: *read by the pre-filter* for the
+note, *read by the pre-filter and reviewer* for the rest (the pre-filter is shown the criteria as
+context). The caption matters when tuning, because a note the reviewer never sees cannot change
+what it decides. Decided with the owner: reference image labels are left as they are, although
+the reviewer is sent them as captions; search queries, which go to a marketplace and not to a
+model, and the criterion flags, which are sent as fixed values rather than as anything written,
+are out by design.
+
+Also in this task: the first day of P1-33's table corrected §9's cost estimate. The owner's
+instance spent 16p on the pre-filter in one day, where §9 said under $1 a month. The ledger agreed
+with the dashboard — 816 calls averaging 848 input and 30 output tokens, $0.00033 each — so the
+estimate was wrong rather than the table: five times the assumed volume, on a model three times
+the assumed price. §6 and §9 now carry the measured figure (v1.52).
+
+Depends on P1-33.
+
+Done when:
+
+- [x] The candidate list filters a rejection by the stage that decided it — rules (the price ceiling or a negative keyword), the pre-filter, or the reviewer — read from the newest verdict's `reason`, with no migration. Tested against a real Postgres for every stage, through the route as well as the store.
+- [x] *Decided by* is drawn only while *Rejected* is chosen; choosing another verdict drops it from the URL.
+- [x] The Origin filter is no longer drawn, and `?origin=` still filters.
+- [x] The summary, *How sellers list this* and criterion text are drawn monospace on the terminal ground, read and edited alike, each captioned with the model that reads it; the Playwright run finds both captions on the Details tab. Checked by hand in light and dark, and at 375 px.
+- [x] The Playwright run chooses Reviewer and Pre-filter on the rejected list, finds the pre-filter's rejection under the one and not the other, finds no Origin filter, and finds *Decided by* gone on *Uncertain*. Checked by hand at 375 px: the filters wrap without scrolling sideways.
 
 #### P1-XX Phase 1 exit — S
 
