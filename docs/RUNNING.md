@@ -938,6 +938,13 @@ A cap with no exchange rate stored is not enforced — the ledger is in dollars 
 pounds — and reviews continue with a warning rather than stopping, because a rates outage should
 not take the product down. Leave the cap empty for no limit.
 
+The dashboard's *API Spend* panel shows the month's spend against the cap and, under it, the spend
+by role for today (from midnight in the instance time zone), the last seven days and the month (the
+cap's, in UTC), with each role's calls this month and its cost per call. The cost per call is the
+figure to compare when trying a different model for a role. A figure marked *≥* includes calls to
+a model with no price in the table, so it is a floor; a table in dollars means no exchange rate has
+been stored yet.
+
 ## The dashboard
 
 The page you land on, and the fastest way to find out whether anything is wrong.

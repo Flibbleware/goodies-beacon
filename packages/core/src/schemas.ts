@@ -38,7 +38,10 @@ export {
 export type {
   DashboardSummary,
   ItemCounts,
+  RoleSpend,
   SourceHealth,
+  SpendBreakdown,
+  SpendFigure,
   TodayCounts,
   WorkerLiveness,
 } from './dashboard/schema.js';

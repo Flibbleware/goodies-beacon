@@ -2,8 +2,10 @@ import {
   authSession,
   authUser,
   categories,
+  costLedger,
   createDb,
   createPool,
+  fxRates,
   listings,
   media,
   processHeartbeat,
@@ -54,6 +56,11 @@ export default async function globalSetup(): Promise<void> {
      * the dashboard's Processes panel say something different on every run.
      */
     await db.delete(processHeartbeat);
+    // The dashboard's spend table counts calls, so a ledger carried over from the last run would
+    // change what it asserts; the rates go too, so whether it is in pounds does not depend on
+    // whatever an earlier run or the rates job left behind.
+    await db.delete(costLedger);
+    await db.delete(fxRates);
   } finally {
     await pool.end();
   }

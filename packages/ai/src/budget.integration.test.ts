@@ -99,13 +99,20 @@ describe.skipIf(!databaseUrl)('the monthly budget cap against a real Postgres', 
     await db.delete(settingsTable);
   });
 
-  it('allows spending when no cap is set', async () => {
+  it('allows spending when no cap is set, and still reports what was spent', async () => {
     await spend(1000);
 
     const state = await checkBudget(deps());
 
-    expect(state.ok).toBe(true);
-    expect(state.capGbp).toBeNull();
+    expect(state).toMatchObject({ ok: true, spentGbp: 1000, capGbp: null });
+  });
+
+  it('reports an unconvertible spend without a cap as unknown, and keeps reviewing', async () => {
+    await spend(1000);
+
+    const state = await checkBudget(deps({ converter: noRates }));
+
+    expect(state).toMatchObject({ ok: true, spentGbp: null, capGbp: null });
   });
 
   it('allows spending below the cap', async () => {

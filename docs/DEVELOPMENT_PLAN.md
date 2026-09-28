@@ -310,6 +310,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-30 | Criteria grouped as hard and soft | S | P1-29 |
 | P1-31 | An item's plans polled as one sweep | S | P1-30 |
 | P1-32 | Toasts for saves | S | P1-31 |
+| P1-33 | AI spend by role and period | S | P1-32 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1707,6 +1708,45 @@ The Search Plans table's *Pre-filter* cost shows anything under a cent as *$0.01
 request while the task was open, where it switched to cents (*0.03¢*) — moving between cents and
 dollars down one column read as confusing. It is a display rule only; the cost is stored and
 summed exactly as before, and a plan that has cost nothing still shows *—*.
+
+#### P1-33 AI spend by role and period — S
+
+The dashboard's *API Spend* panel gave one figure: the calendar month against the cap. That says
+whether the cap is near, but not where the money goes or whether a change of model made a
+difference. Under the month's figure, which stays as it was, a table now breaks the spend down by
+role — pre-filter, reviewer, and the interviewer once Phase 3 gives it calls to make — over today,
+the last seven days and the month, with a total row. Each role also says how many calls it made
+this month and what one cost, which is the figure that answers "would a cheaper model be worth
+it". This is a small part of Phase 5's costs page (§9), pulled forward; spend per item stays there.
+
+Decided with the owner before it was built: *today* is from midnight in the instance time zone,
+as the Today tiles count it; the week is the **last seven days** rather than the calendar week,
+so a Monday morning is not an empty column; the month is the budget cap's calendar month in UTC,
+so the table's month agrees with the figure above it. A role with no calls in any period is left
+out rather than shown as a row of dashes, so the interviewer appears when it first spends. A
+figure that includes a call to a model missing from the price table (OpenRouter, always) is shown
+as a floor, *≥£0.40*, as §9 asks. Fixed in the same task: with no cap set, `checkBudget` returned
+before reading the ledger at all, so an instance without a cap was told its month's spend was
+*not known*.
+
+Decided in the building: the breakdown is sent in dollars with the newest dollar rate beside it,
+and converted in the page, because `toGbp` rounds to whole pence and the cost per call is a
+fraction of one — a pre-filter call is thousandths of a penny. Without a stored rate the table
+stays in dollars and says so. A total under a penny shows as a penny, as the Search Plans table's
+pre-filter column does. The query has no upper bound on time: the ledger's timestamps come from
+the database's clock, and bounding them by the app's `now` dropped rows whenever the two clocks
+disagreed by a second — which a database on another host, or in a VM, easily does.
+
+Depends on P1-32.
+
+Done when:
+
+- [x] The dashboard's *API Spend* panel keeps the month's figure against the cap, and under it a table of each role that has spent — today (from local midnight), the last seven days and the calendar month in UTC — with a total row when more than one role has. Tested against a real Postgres, including a call after local midnight but before UTC midnight, seven days across a month boundary, and calls older than every period.
+- [x] Each role says how many calls it made this month and what one cost, in fractions of a penny where that is what it is, and links to the model settings. Unit-tested.
+- [x] A period that includes an unpriced call is shown as a floor (*≥*), and only that period; without a stored dollar rate the table is in dollars and says so.
+- [x] With no cap set, the month's spend is reported rather than *not known*.
+- [x] A failure reading the breakdown leaves the rest of the dashboard, and the month's figure, standing.
+- [x] The Playwright run finds a row for the pre-filter and the reviewer with their calls, a total, and a role that links to the model settings. Checked by hand at 375 px wide, light and dark: the table fits without scrolling sideways, the calls and cost per call on two lines.
 
 #### P1-XX Phase 1 exit — S
 

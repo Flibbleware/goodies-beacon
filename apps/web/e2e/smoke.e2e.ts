@@ -1,6 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { seedCandidates, seedHeartbeats, seedPlanFailure, seedPlanStats } from './seed.js';
+import {
+  seedCandidates,
+  seedHeartbeats,
+  seedPlanFailure,
+  seedPlanStats,
+  seedSpend,
+} from './seed.js';
 
 /** The same database the app under test is using; P1-15's rows are written straight into it. */
 const databaseUrl = process.env.E2E_DATABASE_URL ?? process.env.TEST_DATABASE_URL ?? '';
@@ -1031,6 +1037,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
   await test.step('the dashboard fills in, and a failing source is on it rather than in a log', async () => {
     await seedPlanFailure(databaseUrl, carmageddonId, 'eBay said 503 Service Unavailable');
     await seedHeartbeats(databaseUrl);
+    await seedSpend(databaseUrl);
 
     await page.getByRole('link', { name: 'Dashboard' }).click();
     await expect(page).toHaveURL('/');
@@ -1050,7 +1057,12 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(sources).toContainText('eBay said 503 Service Unavailable');
     await expect(sources.getByRole('link', { name: 'Carmageddon big box' })).toBeVisible();
 
-    await expect(section('API Spend')).toContainText('no cap set');
+    const spend = section('API Spend');
+    await expect(spend).toContainText('no cap set');
+    // P1-33: the month's figure broken down by role, with each role's cost per call.
+    await expect(spend.getByRole('row', { name: /Pre-filter/ })).toContainText('1 call this month');
+    await expect(spend.getByRole('row', { name: /Reviewer/ })).toContainText('1 call this month');
+    await expect(spend.getByRole('row', { name: /Total/ })).toBeVisible();
     // A process that has stopped answering says so, in the words §6 asks for.
     const processes = section('Processes');
     await expect(processes).toContainText('api last seen');
@@ -1070,7 +1082,13 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
 
     await page.getByRole('link', { name: 'Dashboard' }).click();
-    await section('API Spend').getByRole('link').click();
+    await section('API Spend')
+      .getByRole('link', { name: /no cap set/ })
+      .click();
+    await expect(page).toHaveURL('/settings/models');
+
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+    await section('API Spend').getByRole('link', { name: 'Reviewer' }).click();
     await expect(page).toHaveURL('/settings/models');
     await expect(page.getByRole('heading', { name: 'Models' })).toBeVisible();
   });

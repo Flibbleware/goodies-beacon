@@ -133,10 +133,14 @@ export {
 export type {
   DashboardSummary,
   ItemCounts,
+  RoleSpend,
   SourceHealth,
+  SpendBreakdown,
+  SpendFigure,
   TodayCounts,
   WorkerLiveness,
 } from './dashboard/schema.js';
+export { type SpendOptions, spendBreakdown } from './dashboard/spend.js';
 export {
   dashboardSummary,
   itemCounts,

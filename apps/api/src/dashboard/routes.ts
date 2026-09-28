@@ -5,6 +5,7 @@ import {
   dashboardSummary,
   type Logger,
   readSettings,
+  spendBreakdown,
 } from '@goodies-beacon/core';
 import { Hono } from 'hono';
 
@@ -29,24 +30,27 @@ export function createDashboardRoutes({ db, logger }: DashboardRouteDeps) {
   routes.get('/', async (c) => {
     const settings = await readSettings(db);
 
-    const [summary, budget] = await Promise.all([
-      dashboardSummary(db, { timezone: settings.instance.timezone, logger }),
-      /**
-       * A failure here must not take the page down with it: the spend is one panel, and the
-       * others answer the question "is anything broken", which is exactly what someone is asking
-       * when a query has just failed.
-       */
-      checkBudget({ db, logger, converter: createConverter(db, logger), settings }).catch(
-        (error: unknown) => {
-          logger.warn('could not read the AI spend for the dashboard', {
-            error: error instanceof Error ? error.message : String(error),
-          });
-          return null;
-        },
-      ),
+    const timezone = settings.instance.timezone;
+
+    /**
+     * A failure here must not take the page down with it: the spend is one panel, and the others
+     * answer the question "is anything broken", which is exactly what someone is asking when a
+     * query has just failed.
+     */
+    const orNull = (error: unknown) => {
+      logger.warn('could not read the AI spend for the dashboard', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    };
+
+    const [summary, budget, spend] = await Promise.all([
+      dashboardSummary(db, { timezone, logger }),
+      checkBudget({ db, logger, converter: createConverter(db, logger), settings }).catch(orNull),
+      spendBreakdown(db, { timezone }).catch(orNull),
     ]);
 
-    return c.json({ dashboard: { ...summary, budget } });
+    return c.json({ dashboard: { ...summary, budget, spend } });
   });
 
   return routes;

@@ -1,5 +1,6 @@
 import {
   candidates,
+  costLedger,
   createDb,
   createPool,
   listings,
@@ -178,6 +179,29 @@ export async function seedHeartbeats(databaseUrl: string): Promise<void> {
         .values(row)
         .onConflictDoUpdate({ target: processHeartbeat.role, set: { lastSeenAt: row.lastSeenAt } });
     }
+  } finally {
+    await pool.end();
+  }
+}
+
+/**
+ * A pre-filter call and a reviewer call on the ledger, so the dashboard's spend breaks down by
+ * role (P1-33). Dated now, so they fall in every period whatever day the run happens on.
+ */
+export async function seedSpend(databaseUrl: string): Promise<void> {
+  const pool = createPool(databaseUrl);
+  const db = createDb(pool);
+
+  try {
+    await db.insert(costLedger).values([
+      {
+        role: 'prefilter',
+        provider: 'google',
+        model: 'gemini-3.5-flash-lite',
+        costUsd: '0.000100',
+      },
+      { role: 'reviewer', provider: 'openai', model: 'gpt-5-mini', costUsd: '0.006600' },
+    ]);
   } finally {
     await pool.end();
   }

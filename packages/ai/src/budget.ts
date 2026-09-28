@@ -57,14 +57,15 @@ export interface BudgetDeps {
  * rate of its own day. A budget is a decision about roughly how much to spend this month, and a
  * figure that shifted as old rates were re-read would be harder to reason about than one that is
  * a few pence out.
+ *
+ * The spend is read even with no cap set, because the dashboard shows it either way.
  */
 export async function checkBudget(deps: BudgetDeps): Promise<BudgetState> {
   const now = (deps.now ?? (() => new Date()))();
   const settings = deps.settings ?? (await readSettings(deps.db));
   const cap = settings.ai.monthlyBudget;
+  const capGbp = cap?.amount ?? null;
   const resetsAt = nextMonthStart(now);
-
-  if (!cap) return { ok: true, spentGbp: null, capGbp: null, resetsAt };
 
   const [row] = await deps.db
     .select({ total: sql<string>`coalesce(sum(${costLedger.costUsd}), 0)` })
@@ -72,9 +73,11 @@ export async function checkBudget(deps: BudgetDeps): Promise<BudgetState> {
     .where(and(gte(costLedger.createdAt, monthStart(now)), lt(costLedger.createdAt, resetsAt)));
 
   const spentUsd = Number(row?.total ?? 0);
-  if (spentUsd === 0) return { ok: true, spentGbp: 0, capGbp: cap.amount, resetsAt };
+  if (spentUsd === 0) return { ok: true, spentGbp: 0, capGbp, resetsAt };
 
   const converted = await deps.converter.toGbp(spentUsd, 'USD');
+  if (!cap) return { ok: true, spentGbp: converted?.amountGbp ?? null, capGbp, resetsAt };
+
   if (!converted) {
     /**
      * No dollar rate has ever been stored, so the spend cannot be compared against a pound cap.
