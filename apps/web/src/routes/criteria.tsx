@@ -27,6 +27,7 @@ import { Alert, Button, CONTROL, Field, NO_AUTOFILL } from '../components/form.j
 import { IconButton } from '../components/icon-button.js';
 import { EditIcon, RemoveIcon } from '../components/icons.js';
 import { Modal } from '../components/modal.js';
+import { PROMPT_CONTROL, PROMPT_INLINE } from '../components/prompt-text.js';
 import { TagPills } from '../components/tag-pills.js';
 import { toast } from '../components/toasts.js';
 import { ON_UNKNOWN_LABELS } from '../items/labels.js';
@@ -171,7 +172,7 @@ function CriterionEntry({
             <p className="font-mono text-sm font-medium break-all">{criterion.key}</p>
             <TagPills tags={criterion.tags} onPick={onPickTag} />
           </div>
-          <p className="mt-3 text-sm">{criterion.text}</p>
+          <p className={`mt-3 ${PROMPT_INLINE} whitespace-pre-wrap`}>{criterion.text}</p>
           <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
             <CriterionFlags
               kind={criterion.kind}
@@ -358,14 +359,14 @@ function CriterionForm({
           />
         </Field>
 
-        <Field id={ids.text} label="Criterion" error={errors.text}>
+        <Field id={ids.text} label="Criterion" error={errors.text} reader="both">
           <textarea
             id={ids.text}
             rows={3}
             value={values.text}
             onChange={(event) => setValues({ ...values, text: event.target.value })}
             placeholder="The original release in the standard box, not the Nintendo Classics re-release whose box has a red border"
-            className={CONTROL}
+            className={PROMPT_CONTROL}
           />
         </Field>
 

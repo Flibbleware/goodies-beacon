@@ -4,6 +4,7 @@ import {
   type CandidateOrigin,
   type CandidateStage,
   type CriterionResult,
+  DECIDERS,
   type RejectionReason,
   type ShipsToUk,
   VERDICT_DECISIONS,
@@ -26,6 +27,8 @@ export const candidateFilterSchema = z.object({
   wantedItemId: z.uuid().nullable().default(null),
   decision: z.enum([...VERDICT_DECISIONS, 'pending', 'all']).default('all'),
   origin: z.enum([...CANDIDATE_ORIGINS, 'all']).default('all'),
+  /** Meaningful for rejections: a match or an uncertain is always the reviewer's. */
+  decidedBy: z.enum([...DECIDERS, 'all']).default('all'),
   /**
    * `today` is the owner's day, dated as the dashboard dates it: by the newest verdict, or by when
    * the candidate was found if it has none yet. The caller resolves the day's start (P1-25).

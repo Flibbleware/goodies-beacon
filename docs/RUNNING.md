@@ -689,8 +689,14 @@ docker compose logs app | grep 'keeping the listing for review'
 A run of those means reviews are costing more than they should and a provider needs looking at; it
 does not mean anything has been lost. The reverse — a listing wrongly discarded — is the failure
 worth worrying about, because nothing reports it. If you find the pre-filter throwing away things
-it should not, the fix is the item's **plausibility note**: a sentence about how sellers actually
-title the thing does more than any change to the criteria. The Carmageddon example spec has one.
+it should not, the fix is the item's **plausibility note** (*How sellers list this*, under Edit
+Details on the item's page): a sentence about how sellers actually title the thing does more than
+any change to the criteria. The Carmageddon example spec has one.
+
+To see what the pre-filter discarded, open Candidates, choose *Rejected* and then *Decided by:
+Pre-filter*. *Reviewer* on the same list is the other half of the tuning: listings that reached the
+vision model only to fail on something their title already said — a colour, say — which the note
+can tell the pre-filter to discard at a fortieth of the price.
 
 To check a model before pointing the instance at it:
 

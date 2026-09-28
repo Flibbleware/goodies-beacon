@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import { type ReactNode, useId, useLayoutEffect, useState } from 'react';
 import { CriterionFlags } from '../components/criterion-flags.js';
 import { HelpTip } from '../components/help-tip.js';
+import { PROMPT_INLINE, PromptBlock, ReadByLine } from '../components/prompt-text.js';
 import { PanelAction } from './item-tabs.js';
 import {
   BACKFILL_DEPTH_LABELS,
@@ -30,13 +31,15 @@ export function SpecDescription({ spec }: { spec: WantedSpec }) {
     <Unboxed>
       <div>
         <Label>Summary</Label>
-        <p className="mt-1.5 text-sm">{spec.summary || <Absent>No summary was written.</Absent>}</p>
+        <PromptBlock reader="both">
+          {spec.summary || <Absent>No summary was written.</Absent>}
+        </PromptBlock>
       </div>
       <div>
         <Label>How sellers list this</Label>
-        <p className="mt-1.5 text-sm">
+        <PromptBlock reader="prefilter">
           {spec.plausibilityNote || <Absent>Nothing written for the pre-filter.</Absent>}
-        </p>
+        </PromptBlock>
       </div>
     </Unboxed>
   );
@@ -209,6 +212,7 @@ export function CriteriaList({
                 ))}
               </ul>
             </Card>
+            <ReadByLine reader="both" />
           </section>
         );
       })}
@@ -268,8 +272,8 @@ function CriterionRow({
         ) : null}
       </div>
       {actions ? (
-        // Raised to centre on the criterion's first line, which is shorter than the buttons.
-        <div className="-mt-0.5 flex shrink-0 gap-1">{actions}</div>
+        // Lowered to centre on the criterion's box, which is taller than the buttons.
+        <div className="mt-1 flex shrink-0 gap-1">{actions}</div>
       ) : null}
     </li>
   );
@@ -297,7 +301,7 @@ function CriterionText({ text }: { text: string }) {
     return () => observer.disconnect();
   }, [element, open]);
 
-  const body = `block text-[0.8125rem] text-ink/80 dark:text-ink-dark/80 ${open ? '' : 'truncate'}`;
+  const body = `${PROMPT_INLINE} text-ink/85 dark:text-ink-dark/85 ${open ? 'whitespace-pre-wrap' : 'truncate'}`;
   if (!clipped && !open) {
     return (
       <span ref={setElement} className={body}>

@@ -1,6 +1,7 @@
-import { and, count, desc, eq, gte, isNull, or } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNotNull, isNull, or } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { candidates, listings, specVersions, verdicts, wantedItems } from '../db/schema.js';
+import { REJECTION_REASONS } from '../domain/constants.js';
 import { decideVerdict } from '../domain/decide.js';
 import type { ListingImage } from '../domain/listing.js';
 import { type Criterion, criterionSchema, specSettingsSchema } from '../domain/spec.js';
@@ -40,6 +41,26 @@ function latestVerdicts(db: Database) {
     .as('latest');
 }
 
+/** Every rejection reason but the pre-filter's is one of §7 step 2's free hard filters. */
+const RULE_REASONS = REJECTION_REASONS.filter((reason) => reason !== 'prefilter');
+
+/** A verdict with no `reason` is the reviewer's; one with a reason names the stage before it. */
+function decidedBy(
+  decider: CandidateFilter['decidedBy'],
+  latest: ReturnType<typeof latestVerdicts>,
+) {
+  switch (decider) {
+    case 'rules':
+      return inArray(latest.reason, RULE_REASONS);
+    case 'prefilter':
+      return eq(latest.reason, 'prefilter');
+    case 'reviewer':
+      return and(isNotNull(latest.decision), isNull(latest.reason));
+    case 'all':
+      return undefined;
+  }
+}
+
 /**
  * The candidate list. `since` is the start of the owner's day, required when the filter asks for
  * `today` — the time zone is a setting, which this module does not read — and ignored otherwise.
@@ -56,6 +77,7 @@ export async function listCandidates(
     ...[
       filter.wantedItemId ? eq(candidates.wantedItemId, filter.wantedItemId) : undefined,
       filter.origin === 'all' ? undefined : eq(candidates.origin, filter.origin),
+      decidedBy(filter.decidedBy, latest),
       filter.retained === null ? undefined : eq(candidates.retain, filter.retained),
       filter.decision === 'all'
         ? undefined

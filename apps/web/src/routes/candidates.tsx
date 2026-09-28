@@ -27,6 +27,9 @@ export const candidatesRoute = createRoute({
     origin: ORIGINS.includes(search.origin as string)
       ? (search.origin as CandidateSearch['origin'])
       : undefined,
+    decidedBy: DECIDERS.includes(search.decidedBy as string)
+      ? (search.decidedBy as CandidateSearch['decidedBy'])
+      : undefined,
     from: search.from === 'all' ? 'all' : undefined,
     offset: typeof search.offset === 'number' && search.offset > 0 ? search.offset : undefined,
   }),
@@ -36,7 +39,12 @@ export const candidatesRoute = createRoute({
 /** No "everything": the list opens on the matches, and each other verdict is one chip away. */
 const DECISIONS = ['match', 'uncertain', 'reject', 'pending'];
 const DEFAULT_DECISION = 'match';
+/**
+ * Still read from the URL, and still applied, though the filter is not drawn until Phase 5 gives
+ * backfill and scan candidates to tell apart from the polls (P1-34).
+ */
 const ORIGINS = ['all', 'poll', 'backfill', 'scan'];
+const DECIDERS = ['rules', 'prefilter', 'reviewer'];
 const FROM = ['today', 'all'];
 
 const FROM_LABELS: Record<string, string> = { today: 'Today', all: 'All' };
@@ -48,11 +56,11 @@ const DECISION_LABELS: Record<string, string> = {
   pending: 'Queued',
 };
 
-const ORIGIN_LABELS: Record<string, string> = {
+const DECIDED_BY_LABELS: Record<string, string> = {
   all: 'Any',
-  poll: 'Poll',
-  backfill: 'Backfill',
-  scan: 'Scan',
+  rules: 'Rules',
+  prefilter: 'Pre-filter',
+  reviewer: 'Reviewer',
 };
 
 /**
@@ -73,7 +81,8 @@ function Candidates() {
   const item = items.data?.items.find((row) => row.id === search.item);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    // A step wider than the other pages, so the three filter groups fit on one line (P1-34).
+    <div className="mx-auto max-w-4xl">
       <h1 className="text-xl font-semibold tracking-tight">
         {item ? `Candidates · ${item.title}` : 'Candidates'}
       </h1>
@@ -155,20 +164,24 @@ function Filters({ search }: { search: CandidateSearch }) {
         to={(value) => ({
           ...search,
           decision: value as CandidateSearch['decision'],
+          decidedBy: undefined,
           offset: undefined,
         })}
       />
-      <Chips
-        label="Origin"
-        values={ORIGINS}
-        labels={ORIGIN_LABELS}
-        current={search.origin ?? 'all'}
-        to={(value) => ({
-          ...search,
-          origin: value as CandidateSearch['origin'],
-          offset: undefined,
-        })}
-      />
+      {/* A match or an uncertain is always the reviewer's, and a queued one nobody's yet. */}
+      {search.decision === 'reject' ? (
+        <Chips
+          label="Decided by"
+          values={['all', ...DECIDERS]}
+          labels={DECIDED_BY_LABELS}
+          current={search.decidedBy ?? 'all'}
+          to={(value) => ({
+            ...search,
+            decidedBy: value === 'all' ? undefined : (value as CandidateSearch['decidedBy']),
+            offset: undefined,
+          })}
+        />
+      ) : null}
     </div>
   );
 }

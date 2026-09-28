@@ -60,7 +60,10 @@ const patch = (path: string, body: unknown) =>
     body: JSON.stringify(body),
   });
 
-async function seed(decision?: 'match' | 'uncertain' | 'reject'): Promise<string> {
+async function seed(
+  decision?: 'match' | 'uncertain' | 'reject',
+  reason: 'prefilter' | null = null,
+): Promise<string> {
   sequence += 1;
 
   const [listing] = await db
@@ -86,6 +89,7 @@ async function seed(decision?: 'match' | 'uncertain' | 'reject'): Promise<string
       candidateId: candidate.id,
       specVersionId,
       decision,
+      reason,
       criteriaResults: [{ criterionId: 'big-box', result: 'pass', evidence: 'the box is shown' }],
       promptText: 'SYSTEM\n\n# The listing',
       promptImages: [
@@ -179,6 +183,17 @@ describe.skipIf(!databaseUrl)('the candidate routes', () => {
 
     expect(body.total).toBe(1);
     expect(body.candidates[0]?.decision).toBe('reject');
+  });
+
+  it('filters rejections by the stage that decided them', async () => {
+    await seed('reject');
+    await seed('reject', 'prefilter');
+
+    const res = await get(`/api/candidates?decision=reject&decidedBy=prefilter`);
+    const body = (await res.json()) as { candidates: { reason: string | null }[]; total: number };
+
+    expect(body.total).toBe(1);
+    expect(body.candidates[0]?.reason).toBe('prefilter');
   });
 
   /** A form that submits `?decision=` means "everything", not "an empty string is not a verdict". */

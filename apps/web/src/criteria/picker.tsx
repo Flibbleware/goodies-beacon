@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { type SharedCriterionRow, sharedCriteriaQuery } from '../api/criteria.js';
 import { CriterionFlags } from '../components/criterion-flags.js';
 import { Button, CONTROL } from '../components/form.js';
+import { PROMPT_INLINE } from '../components/prompt-text.js';
 import { TagPills } from '../components/tag-pills.js';
 
 /**
@@ -84,7 +85,7 @@ export function SharedCriterionPicker({
                     <code className="font-mono text-xs font-medium break-all">{criterion.key}</code>
                     <TagPills tags={criterion.tags} onPick={setQuery} />
                   </div>
-                  <p className="mt-1 text-sm">{criterion.text}</p>
+                  <p className={`mt-1.5 ${PROMPT_INLINE} whitespace-pre-wrap`}>{criterion.text}</p>
                   <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
                     <CriterionFlags
                       kind={criterion.kind}

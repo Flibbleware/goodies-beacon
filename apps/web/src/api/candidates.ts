@@ -37,6 +37,8 @@ export interface CandidateSearch {
   item?: string | undefined;
   decision?: CandidateFilter['decision'] | undefined;
   origin?: CandidateFilter['origin'] | undefined;
+  /** Sent only with `decision: 'reject'`, the one verdict more than one stage can reach. */
+  decidedBy?: Exclude<CandidateFilter['decidedBy'], 'all'> | undefined;
   /** Absent is today, the page's default, so the plain URL is today's list (P1-25). */
   from?: 'all' | undefined;
   offset?: number | undefined;
@@ -49,6 +51,7 @@ function queryString(search: CandidateSearch): string {
   if (search.item) params.set('wantedItemId', search.item);
   if (search.decision && search.decision !== 'all') params.set('decision', search.decision);
   if (search.origin && search.origin !== 'all') params.set('origin', search.origin);
+  if (search.decidedBy && search.decision === 'reject') params.set('decidedBy', search.decidedBy);
   // The API's default is everything, for links written before the filter; the page's is today.
   params.set('from', search.from ?? 'today');
   if (search.offset) params.set('offset', String(search.offset));

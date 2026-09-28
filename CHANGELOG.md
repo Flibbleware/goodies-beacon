@@ -4,6 +4,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-34 Rejections by stage. The Candidates page's Rejected list can now be narrowed by what
+  rejected each listing: Rules (the price ceiling or a negative keyword), the Pre-filter, or the
+  Reviewer. The Origin filter is hidden until backfills and scans arrive in Phase 5.
+- Text the AI reads — an item's summary, *How sellers list this* and each criterion — is now shown
+  in a terminal-style box, with a caption saying whether the pre-filter, the reviewer or both read
+  it.
 - P1-33 AI spend by role. The dashboard's API Spend panel now shows, under the month's total, what
   the pre-filter and the reviewer each cost today, over the last seven days and this month, with
   how many calls each made and what one call cost. With no budget cap set, the month's spend is
