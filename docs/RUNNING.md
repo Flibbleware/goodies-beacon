@@ -698,6 +698,23 @@ Pre-filter*. *Reviewer* on the same list is the other half of the tuning: listin
 vision model only to fail on something their title already said — a colour, say — which the note
 can tell the pre-filter to discard at a fortieth of the price.
 
+When those listings share a seller country rather than a word — a Japanese console listed by a
+seller in Japan, with nothing in the text to say so — exclude the country in the item's
+Marketplace Settings instead. That rejects them before the pre-filter, for nothing. It goes by
+where the seller is, so an import sold from somewhere else still reaches the reviewer. To see
+which countries your reviews come from:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c "
+  select l.item_location_country as country, count(*) as candidates,
+         count(*) filter (where v.decision is not null and v.reason is null) as reached_reviewer
+  from candidates c
+  join listings l on l.id = c.listing_id
+  left join lateral (select decision, reason from verdicts
+                     where candidate_id = c.id order by created_at desc limit 1) v on true
+  group by 1 order by 2 desc"
+```
+
 To check a model before pointing the instance at it:
 
 ```sh

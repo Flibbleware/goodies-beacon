@@ -1,0 +1,2 @@
+ALTER TABLE "verdicts" DROP CONSTRAINT "verdicts_reason";--> statement-breakpoint
+ALTER TABLE "verdicts" ADD CONSTRAINT "verdicts_reason" CHECK ("verdicts"."reason" is null or "verdicts"."reason" in ('over_budget', 'negative_keyword', 'excluded_location', 'prefilter'));

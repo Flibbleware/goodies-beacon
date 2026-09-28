@@ -265,6 +265,7 @@ export {
   WANTED_ITEM_STATUSES,
   type WantedItemStatus,
 } from './domain/constants.js';
+export { COUNTRY_CODES, type CountryCode, countryName } from './domain/countries.js';
 export {
   type DecidableCriterion,
   type Decision,

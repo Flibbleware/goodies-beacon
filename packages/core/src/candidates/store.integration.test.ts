@@ -192,6 +192,7 @@ describe.skipIf(!databaseUrl)('the candidate store against a real Postgres', () 
     it('filters by the stage that decided, from the reason on the verdict', async () => {
       await seed({ decision: 'reject', reason: 'over_budget' });
       await seed({ decision: 'reject', reason: 'negative_keyword' });
+      await seed({ decision: 'reject', reason: 'excluded_location' });
       await seed({ decision: 'reject', reason: 'prefilter' });
       await seed({ decision: 'reject' });
       await seed({ decision: 'match' });
@@ -201,12 +202,13 @@ describe.skipIf(!databaseUrl)('the candidate store against a real Postgres', () 
         listCandidates(db, filter({ decision: 'reject', decidedBy }));
 
       expect((await rejected('rules')).rows.map((row) => row.reason).sort()).toEqual([
+        'excluded_location',
         'negative_keyword',
         'over_budget',
       ]);
       expect((await rejected('prefilter')).rows.map((row) => row.reason)).toEqual(['prefilter']);
       expect((await rejected('reviewer')).rows.map((row) => row.reason)).toEqual([null]);
-      expect((await rejected('all')).total).toBe(4);
+      expect((await rejected('all')).total).toBe(5);
       expect((await listCandidates(db, filter({ decidedBy: 'reviewer' }))).total).toBe(2);
     });
 

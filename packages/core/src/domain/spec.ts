@@ -11,6 +11,7 @@ import {
   SHIPS_TO_UK_POLICIES,
   SPEC_ORIGINS,
 } from './constants.js';
+import { COUNTRY_CODES } from './countries.js';
 
 /**
  * The wanted spec, as ARCHITECTURE.md §4 defines it.
@@ -54,6 +55,11 @@ export const specSettingsSchema = z.object({
   gradingScaleId: z.uuid().nullable().default(null),
   minimumGrade: z.string().nullable().default(null),
   negativeKeywords: z.array(z.string().min(1)).default([]),
+  /**
+   * Sellers located in these countries are rejected before any model is called (P1-35). Where the
+   * seller is, from the listing's `itemLocationCountry`: an import sold from elsewhere still passes.
+   */
+  excludedCountries: z.array(z.enum(COUNTRY_CODES)).default([]),
   notificationMode: z.enum(NOTIFICATION_MODES).default('digest'),
   pollEvery: durationSchema.nullable().default(null),
   relists: z.enum(RELIST_POLICIES).default('show'),

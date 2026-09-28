@@ -447,6 +447,20 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await marketplace.getByLabel('Relists').selectOption('suppress');
 
+    // P1-35: sellers excluded by country, found by name or by code and removed from their chip.
+    const countries = marketplace.getByRole('combobox', { name: 'Exclude sellers located in' });
+    await countries.fill('jap');
+    await marketplace.getByRole('option', { name: /Japan/ }).click();
+    await expect(marketplace.getByRole('button', { name: 'Remove Japan' })).toBeVisible();
+    await expect(countries).toHaveValue('');
+    await countries.fill('cn');
+    await countries.press('Enter');
+    await expect(marketplace.getByRole('button', { name: 'Remove China' })).toBeVisible();
+    // Enter took the country rather than submitting the dialog.
+    await expect(marketplace).toBeVisible();
+    await marketplace.getByRole('button', { name: 'Remove Japan' }).click();
+    await expect(marketplace.getByRole('button', { name: 'Remove Japan' })).toHaveCount(0);
+
     // Only the marketplace there is an adapter for, grading not at all, and words not codes.
     await expect(marketplace.getByRole('checkbox', { name: 'eBay' })).toBeChecked();
     await expect(marketplace.getByRole('checkbox', { name: /vinted/i })).toHaveCount(0);
@@ -589,6 +603,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // The settings, as the bounded values they are — not as criteria (§4's split).
     // In two groups: what the marketplaces are asked for, and the rest (P1-28).
     const marketplaceGroup = spec.getByRole('region', { name: 'Marketplace Settings' });
+    await expect(marketplaceGroup).toContainText('Sellers excluded in');
     const generalGroup = spec.getByRole('region', { name: 'General Settings' });
     await expect(generalGroup).toContainText('£120');
     await expect(generalGroup).toContainText('Real-time email');
