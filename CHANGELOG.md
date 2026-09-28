@@ -4,6 +4,10 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-33 AI spend by role. The dashboard's API Spend panel now shows, under the month's total, what
+  the pre-filter and the reviewer each cost today, over the last seven days and this month, with
+  how many calls each made and what one call cost. With no budget cap set, the month's spend is
+  now shown instead of *not known*.
 - P1-32 Toasts for saves. Saving from a dialog, a Settings page or the status dropdown, and
   deleting or promoting from a list, now shows a short message saying what was saved — *Added the
   criterion “…”. Saved as version 4.* — or that it was not. A failed save keeps its dialog open with

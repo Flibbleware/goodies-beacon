@@ -51,6 +51,10 @@ interface DashboardBody {
     workers: { role: string; stale: boolean }[];
     timezone: string;
     budget: { ok: boolean; spentGbp: number | null; capGbp: number | null } | null;
+    spend: {
+      roles: { role: string; month: { calls: number; usd: number; known: boolean } }[];
+      usdPerGbp: number | null;
+    } | null;
   };
 }
 
@@ -183,6 +187,7 @@ describe.skipIf(!databaseUrl)('the dashboard route', () => {
       'budget',
       'items',
       'sources',
+      'spend',
       'timezone',
       'today',
       'workers',
@@ -243,11 +248,34 @@ describe.skipIf(!databaseUrl)('the dashboard route', () => {
   });
 
   it('reports the month’s spend against the cap', async () => {
-    expect((await read()).budget).toMatchObject({ ok: true, capGbp: null });
+    expect((await read()).budget).toMatchObject({ ok: true, spentGbp: 0, capGbp: null });
 
     await writeSettings(db, { ai: { monthlyBudget: { amount: 40, currency: 'GBP' } } }, SECRET_KEY);
 
     expect((await read()).budget).toMatchObject({ ok: true, spentGbp: 0, capGbp: 40 });
+  });
+
+  it('reports the month’s spend with no cap set, rather than calling it not known', async () => {
+    await spend('12.500000');
+    await db
+      .insert(fxRates)
+      .values({ currency: 'USD', rateDate: '2026-09-16', unitsPerGbp: '1.25000000' });
+
+    expect((await read()).budget).toMatchObject({ ok: true, spentGbp: 10, capGbp: null });
+  });
+
+  it('breaks the spend down by role, with the rate to convert it at', async () => {
+    await spend('0.020000');
+    await db
+      .insert(fxRates)
+      .values({ currency: 'USD', rateDate: '2026-09-16', unitsPerGbp: '1.25000000' });
+
+    expect((await read()).spend).toEqual({
+      roles: [
+        expect.objectContaining({ role: 'reviewer', month: { calls: 1, usd: 0.02, known: true } }),
+      ],
+      usdPerGbp: 1.25,
+    });
   });
 
   it('converts the month’s dollars into the pounds the cap is written in', async () => {

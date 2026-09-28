@@ -1,3 +1,4 @@
+import type { RoleSpend, SpendBreakdown } from '@goodies-beacon/core/schemas';
 import { useQuery } from '@tanstack/react-query';
 import { createRoute, Link } from '@tanstack/react-router';
 import { type ReactNode, useId } from 'react';
@@ -9,6 +10,7 @@ import {
   type WorkerRow,
 } from '../api/dashboard.js';
 import { DECISION_TILES } from '../candidates/bits.js';
+import { moneyIn, totalOf } from '../dashboard/money.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export const dashboardRoute = createRoute({
@@ -61,7 +63,7 @@ function DashboardPage() {
       <Today dashboard={dashboard} />
       <Items counts={dashboard.items} />
       <Sources sources={dashboard.sources} />
-      <Spend budget={dashboard.budget} />
+      <Spend budget={dashboard.budget} spend={dashboard.spend} />
       <Workers workers={dashboard.workers} />
     </Page>
   );
@@ -257,13 +259,14 @@ function Sources({ sources }: { sources: SourceRow[] }) {
   );
 }
 
-function Spend({ budget }: { budget: Budget | null }) {
+function Spend({ budget, spend }: { budget: Budget | null; spend: SpendBreakdown | null }) {
   if (!budget) {
     return (
       <Panel title="API Spend">
         <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
           The month's spend could not be read.
         </p>
+        <SpendTable spend={spend} />
       </Panel>
     );
   }
@@ -301,7 +304,98 @@ function Spend({ budget }: { budget: Budget | null }) {
             : `Reviews are paused until ${new Date(budget.resetsAt).toLocaleDateString()}, or until the cap is raised in Settings.`}
         </span>
       </Link>
+
+      <SpendTable spend={spend} />
     </Panel>
+  );
+}
+
+const ROLE_LABELS: Record<RoleSpend['role'], string> = {
+  prefilter: 'Pre-filter',
+  reviewer: 'Reviewer',
+  interviewer: 'Interviewer',
+};
+
+const PERIODS = ['today', 'week', 'month'] as const;
+
+/**
+ * The month's figure above, broken down by role and over shorter periods (P1-33).
+ *
+ * The role names link to the model settings, because a role's model is what sets its cost per
+ * call.
+ */
+function SpendTable({ spend }: { spend: SpendBreakdown | null }) {
+  if (!spend) {
+    return (
+      <p className="mt-3 text-sm text-ink-dim dark:text-ink-dim-dark">
+        The breakdown by role could not be read.
+      </p>
+    );
+  }
+
+  if (spend.roles.length === 0) return null;
+
+  const money = moneyIn(spend.usdPerGbp);
+
+  return (
+    <div className="mt-3 overflow-x-auto rounded-xl border border-edge dark:border-edge-dark">
+      <table className="w-full text-sm">
+        <thead className="whitespace-nowrap text-xs uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
+          <tr className="border-b border-edge dark:border-edge-dark">
+            <th className="p-3 text-left font-medium">Role</th>
+            <th className="p-3 text-right font-medium">Today</th>
+            <th className="p-3 text-right font-medium">7 days</th>
+            <th className="p-3 text-right font-medium">Month</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-edge dark:divide-edge-dark">
+          {spend.roles.map((row) => (
+            <tr key={row.role} className="align-top">
+              <td className="p-3">
+                <Link to="/settings/models" className="font-medium hover:underline">
+                  {ROLE_LABELS[row.role]}
+                </Link>
+                <span className="block text-xs text-ink-dim dark:text-ink-dim-dark">
+                  {row.month.calls === 0 ? (
+                    'no calls this month'
+                  ) : (
+                    <>
+                      {`${row.month.calls.toLocaleString()} call${row.month.calls === 1 ? '' : 's'}`}
+                      <span className="hidden sm:inline"> this month</span>
+                      <span className="hidden sm:inline"> · </span>
+                      <span className="block sm:inline">{money.perCall(row.month)} each</span>
+                    </>
+                  )}
+                </span>
+              </td>
+              {PERIODS.map((period) => (
+                <td key={period} className="p-3 text-right tabular-nums">
+                  {money.total(row[period])}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+        {spend.roles.length > 1 ? (
+          <tfoot className="border-t border-edge font-medium dark:border-edge-dark">
+            <tr>
+              <td className="p-3">Total</td>
+              {PERIODS.map((period) => (
+                <td key={period} className="p-3 text-right tabular-nums">
+                  {money.total(totalOf(spend.roles.map((role) => role[period])))}
+                </td>
+              ))}
+            </tr>
+          </tfoot>
+        ) : null}
+      </table>
+
+      {spend.usdPerGbp === null ? (
+        <p className="border-t border-edge p-3 text-xs text-ink-dim dark:border-edge-dark dark:text-ink-dim-dark">
+          In dollars: no exchange rate has been stored yet.
+        </p>
+      ) : null}
+    </div>
   );
 }
 

@@ -2,6 +2,7 @@ import type {
   DashboardSummary,
   ItemCounts,
   SourceHealth,
+  SpendBreakdown,
   TodayCounts,
 } from '@goodies-beacon/core/schemas';
 import { api } from './client.js';
@@ -33,6 +34,8 @@ export interface Dashboard extends Omit<DashboardSummary, 'sources' | 'workers'>
   workers: WorkerRow[];
   /** Null when the spend could not be read; the rest of the page is still worth showing. */
   budget: Budget | null;
+  /** Null when the breakdown could not be read; the month's figure above it may still stand. */
+  spend: SpendBreakdown | null;
 }
 
 export const dashboardQuery = {

@@ -1,3 +1,4 @@
+import type { AiRole } from '../domain/constants.js';
 import type { SourceId } from '../sources.js';
 
 /**
@@ -49,6 +50,37 @@ export interface WorkerLiveness {
   role: string;
   lastSeenAt: Date;
   stale: boolean;
+}
+
+/** One role's calls over one period, in the dollars the ledger is kept in. */
+export interface SpendFigure {
+  calls: number;
+  usd: number;
+  /** False when any of the calls was to a model missing from the price table: `usd` is a floor. */
+  known: boolean;
+}
+
+export interface RoleSpend {
+  role: AiRole;
+  /** Since midnight in the instance time zone, as the Today tiles count. */
+  today: SpendFigure;
+  /** The last seven days, so a Monday morning is not an empty week. */
+  week: SpendFigure;
+  /** The calendar month in UTC — the budget cap's month, so this column agrees with it. */
+  month: SpendFigure;
+}
+
+/**
+ * The spend by role and period (P1-33).
+ *
+ * Kept in dollars with the rate beside it, rather than converted here, because the rate is what
+ * the page needs to show a per-call cost of a fraction of a penny: `toGbp` rounds to whole pence.
+ */
+export interface SpendBreakdown {
+  /** Only the roles with a call in one of the periods, in pipeline order. */
+  roles: RoleSpend[];
+  /** The newest stored USD rate, or null when there is none and the page must show dollars. */
+  usdPerGbp: number | null;
 }
 
 export interface DashboardSummary {
