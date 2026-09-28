@@ -136,6 +136,7 @@ of a model.
 | `sources` | `["ebay"]` | Only eBay has an adapter until Phase 4. A plan whose source is not listed here is not polled. |
 | `priceCeiling` | `{ "amount": 120, "currency": "GBP" }` or `null` | **Enforced.** GBP only; other currencies are converted first. `null` is any price. |
 | `negativeKeywords` | `["t-shirt", "poster"]` | **Enforced.** A title containing one (ignoring case, anywhere in the title) is rejected with no model called. Free but blunt: `"n64"` also matches inside a longer word, and a word that can appear in a listing you want loses it silently. Use distinctive words only. |
+| `excludedCountries` | `["JP"]` | **Enforced.** ISO country codes. A listing whose *seller* is in one is rejected with no model called — where the seller is, not where the item was made, so an import sold from the UK still reaches the reviewer. Use it when a country's sellers are almost never what you want: for a UK-market console, Japan. |
 | `notificationMode` | `"realtime"` or `"digest"` | **Enforced.** Real-time emails each match; digest sends one email at 08:00. |
 | `pollEvery` | `"PT8H"`, `"PT12H"`, `"P1D"`, or `null` | **Enforced.** ISO 8601; the General Settings editor takes hours. `null` is the default, every 8 hours. Rounded up to 1, 2, 3, 4, 6, 8, 12 or 24 hours. |
 | `defaultOnUnknown` | `"surface"` or `"reject"` | Stored; every criterion carries its own `onUnknown`, which is what is used. Leave `"surface"`. |
@@ -288,6 +289,7 @@ brief asks (the fixture's are older and generic) and backfill off, since nothing
     "gradingScaleId": null,
     "minimumGrade": null,
     "negativeKeywords": ["t-shirt", "poster", "soundtrack", "nintendo 64", "n64"],
+    "excludedCountries": [],
     "notificationMode": "realtime",
     "pollEvery": null,
     "relists": "show",

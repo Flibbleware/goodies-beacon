@@ -10,6 +10,7 @@
     "gradingScaleId": null,
     "minimumGrade": null,
     "negativeKeywords": ["logic board only", "motherboard only", "spares or repair lot", "empty case"],
+    "excludedCountries": [],
     "notificationMode": "digest",
     "pollEvery": "PT8H",
     "relists": "show",

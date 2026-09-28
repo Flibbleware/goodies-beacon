@@ -312,6 +312,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-32 | Toasts for saves | S | P1-31 |
 | P1-33 | AI spend by role and period | S | P1-32 |
 | P1-34 | Rejections filtered by the stage that decided them | S | P1-33 |
+| P1-35 | Exclude sellers by country | S | P1-34 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1799,6 +1800,38 @@ Done when:
 - [x] The Origin filter is no longer drawn, and `?origin=` still filters.
 - [x] The summary, *How sellers list this* and criterion text are drawn monospace on the terminal ground, read and edited alike, each captioned with the model that reads it; the Playwright run finds both captions on the Details tab. Checked by hand in light and dark, and at 375 px.
 - [x] The Playwright run chooses Reviewer and Pre-filter on the rejected list, finds the pre-filter's rejection under the one and not the other, finds no Origin filter, and finds *Decided by* gone on *Uncertain*. Checked by hand at 375 px: the filters wrap without scrolling sideways.
+
+#### P1-35 Exclude sellers by country — S
+
+A Japanese Game Boy Color listed by a seller in Japan says nothing about being Japanese: no
+keyword catches it, and the pre-filter, which reads only the text, keeps it for the reviewer to
+settle from the photographs at about half a penny. Measured on the owner's instance on 28
+September 2026, sellers in Japan were 22% of the candidates and **44% of the reviews** (41 of
+93). Every eBay search result carries the seller's country, so an item can now exclude countries
+and a listing from one is rejected with the hard filters of §7 step 2, before any model is called.
+
+Decided with the owner before it was built: a per-item setting in *Marketplace Settings*, not an
+instance-wide one, because a country that is noise for one item is the point of another; and the
+countries are chosen from a searchable list — type a name or a code, pick from the matches, and
+the chosen ones show as chips — rather than a fixed checklist or typed codes.
+
+Decided in the building: eBay's own `itemLocationCountry` filter includes and takes one country
+(S1-01), so exclusion is a hard filter on our side, with a reason of its own, `excluded_location`,
+which *Decided by: Rules* (P1-34) picks up with no change. A listing whose country is unknown is
+never excluded, as a price that cannot be read never trips the ceiling. The codes are ISO
+3166-1's 249, listed in core rather than taken from `Intl`, which also knows retired codes and
+groupings (SU, EU); the names come from `Intl` in English. The list of matches is drawn in the
+dialog's flow rather than floating over it, since the dialog scrolls and its footer drew over a
+list hanging below the last field on a phone. One migration widens the verdict reason check.
+
+Depends on P1-34.
+
+Done when:
+
+- [x] `excludedCountries` is a spec setting of ISO 3166-1 codes, defaulting to none, so every existing spec parses unchanged; a grouping or a retired code is refused. Unit-tested.
+- [x] A listing whose seller is in an excluded country is rejected as `excluded_location` with no pre-filter, enrichment or review call and nothing on the ledger; one elsewhere, or with no country, goes on. Tested against a real Postgres through the pipeline.
+- [x] *Decided by: Rules* includes it, and the candidate says the seller is in an excluded country.
+- [x] Marketplace Settings chooses the countries from a searchable list — by name, a later word or the code, best match first — shown as removable chips, and the Settings tab lists them. The matching is unit-tested; the Playwright run picks a country by clicking and one by Enter without submitting the dialog, and removes one by its chip. Checked by hand on a phone and in both themes.
 
 #### P1-XX Phase 1 exit — S
 

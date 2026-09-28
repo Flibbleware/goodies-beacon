@@ -4,6 +4,10 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-35 Exclude sellers by country. Marketplace Settings has *Exclude sellers located in*: pick
+  countries from a searchable list, and listings from sellers there are rejected before any AI is
+  used. They show on the Candidates page under *Rejected → Decided by: Rules*. Useful when a
+  country's sellers are almost never what you want, such as Japan for a UK-market console.
 - P1-34 Rejections by stage. The Candidates page's Rejected list can now be narrowed by what
   rejected each listing: Rules (the price ceiling or a negative keyword), the Pre-filter, or the
   Reviewer. The Origin filter is hidden until backfills and scans arrive in Phase 5.

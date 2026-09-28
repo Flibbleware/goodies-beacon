@@ -10,6 +10,7 @@
     "gradingScaleId": null,
     "minimumGrade": null,
     "negativeKeywords": ["t-shirt", "poster", "soundtrack", "nintendo 64", "n64"],
+    "excludedCountries": [],
     "notificationMode": "realtime",
     "pollEvery": null,
     "relists": "show",

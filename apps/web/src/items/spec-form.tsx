@@ -2,6 +2,7 @@ import type {
   BackfillDepth,
   BuyingType,
   ConditionCategory,
+  CountryCode,
   Criterion,
   CriterionKind,
   MarketplaceSourceId,
@@ -34,6 +35,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { type ReactNode, useEffect, useId, useState } from 'react';
 import { sharedCriteriaQuery } from '../api/criteria.js';
+import { CountryPicker } from '../components/country-picker.js';
 import { Button, CONTROL, Field } from '../components/form.js';
 import { PROMPT_CONTROL, PROMPT_INLINE, ReadByLine } from '../components/prompt-text.js';
 import { SharedCriterionPicker } from '../criteria/picker.js';
@@ -415,6 +417,12 @@ function MarketplaceSettings({
           />
         </div>
 
+        <ExcludedCountries
+          value={s.excludedCountries}
+          onChange={(codes) => setting('excludedCountries', codes)}
+          error={errors('settings.excludedCountries')}
+        />
+
         <div className="rounded-lg border border-edge p-4 dark:border-edge-dark">
           <Check
             label="Sweep what is already listed when this item is first polled"
@@ -619,6 +627,29 @@ function Keywords({
         }}
         className={CONTROL}
       />
+    </Field>
+  );
+}
+
+function ExcludedCountries({
+  value,
+  onChange,
+  error,
+}: {
+  value: readonly CountryCode[];
+  onChange: (codes: CountryCode[]) => void;
+  error: string | undefined;
+}) {
+  const id = useId();
+
+  return (
+    <Field
+      id={id}
+      label="Exclude sellers located in"
+      hint="A listing from a seller in one of these countries is rejected before any model is called. It is where the seller is, not where the item is from: an import sold from elsewhere still reaches the reviewer."
+      error={error}
+    >
+      <CountryPicker id={id} value={value} onChange={onChange} />
     </Field>
   );
 }

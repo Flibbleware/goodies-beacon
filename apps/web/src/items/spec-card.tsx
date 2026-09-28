@@ -1,5 +1,10 @@
 import type { Criterion, ReferenceImage, WantedSpec } from '@goodies-beacon/core/schemas';
-import { durationToHours, lintSpec, scheduledHours } from '@goodies-beacon/core/schemas';
+import {
+  countryName,
+  durationToHours,
+  lintSpec,
+  scheduledHours,
+} from '@goodies-beacon/core/schemas';
 import { Link } from '@tanstack/react-router';
 import { type ReactNode, useId, useLayoutEffect, useState } from 'react';
 import { CriterionFlags } from '../components/criterion-flags.js';
@@ -90,6 +95,7 @@ export function SpecSettings({
     ['Relists', RELIST_LABELS[s.relists]],
     ['Condition', CONDITION_LABELS[s.conditionCategory]],
     ['Ships to the UK', SHIPS_TO_UK_LABELS[s.shipsToUk]],
+    ['Sellers excluded in', s.excludedCountries.map(countryName).join(', ') || 'None'],
     ['Backfill', s.backfill.enabled ? `On: ${BACKFILL_DEPTH_LABELS[s.backfill.depth]}` : 'Off'],
   ];
   const general: [string, string][] = [

@@ -63,6 +63,7 @@ export function DecisionChip({ decision }: { decision: VerdictDecision | null })
 export const REJECTION_REASONS: Record<string, string> = {
   over_budget: 'over the price ceiling',
   negative_keyword: 'a negative keyword in the title',
+  excluded_location: 'the seller is in an excluded country',
   prefilter: 'discarded by the pre-filter',
 };
 

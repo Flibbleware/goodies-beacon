@@ -94,7 +94,12 @@ export type CriterionResult = (typeof CRITERION_RESULTS)[number];
  * Why a candidate was rejected without reaching the vision model, so the audit view can say so
  * (§7 step 2). `null` on a verdict means the reviewer decided it.
  */
-export const REJECTION_REASONS = ['over_budget', 'negative_keyword', 'prefilter'] as const;
+export const REJECTION_REASONS = [
+  'over_budget',
+  'negative_keyword',
+  'excluded_location',
+  'prefilter',
+] as const;
 export type RejectionReason = (typeof REJECTION_REASONS)[number];
 
 /**

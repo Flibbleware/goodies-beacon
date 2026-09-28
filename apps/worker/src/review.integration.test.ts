@@ -128,6 +128,8 @@ interface SeedOptions {
   priceGbp?: string | null;
   priceCeiling?: { amount: number; currency: 'GBP' } | null;
   negativeKeywords?: string[];
+  excludedCountries?: string[];
+  itemLocationCountry?: string | null;
   notificationMode?: 'realtime' | 'digest';
   origin?: 'poll' | 'backfill';
   title?: string;
@@ -160,6 +162,7 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
         listingTypes: ['auction', 'fixed'],
         priceCeiling: options.priceCeiling === undefined ? null : options.priceCeiling,
         negativeKeywords: options.negativeKeywords ?? [],
+        excludedCountries: options.excludedCountries ?? [],
         defaultOnUnknown: 'surface',
       },
       criteria: [
@@ -191,6 +194,7 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
       priceAmount: '25.00',
       priceCurrency: 'GBP',
       priceGbp: options.priceGbp === undefined ? '25.00' : options.priceGbp,
+      itemLocationCountry: options.itemLocationCountry ?? null,
       images: [],
     })
     .returning({ id: listings.id });
@@ -331,6 +335,30 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
       expect(outcome).toMatchObject({ status: 'rejected', reason: 'negative_keyword' });
       expect(ports.spy.prefilterCalls).toBe(0);
       expect(await db.select().from(costLedger)).toHaveLength(0);
+    });
+
+    /** P1-35: a seller in a country the item excludes, read from the search result itself. */
+    it('rejects a seller in an excluded country without asking a model', async () => {
+      const { candidateId } = await seed({ excludedCountries: ['JP'], itemLocationCountry: 'JP' });
+      const ports = fakePorts();
+
+      const outcome = await runReview(depsWith(ports), candidateId);
+
+      expect(outcome).toMatchObject({ status: 'rejected', reason: 'excluded_location' });
+      expect(ports.spy).toMatchObject({ prefilterCalls: 0, reviewCalls: 0, enrichCalls: 0 });
+      expect(await db.select().from(costLedger)).toHaveLength(0);
+    });
+
+    it('lets through a seller elsewhere, and one whose country is not known', async () => {
+      const elsewhere = await seed({ excludedCountries: ['JP'], itemLocationCountry: 'GB' });
+      const unknown = await seed({ excludedCountries: ['JP'], itemLocationCountry: null });
+
+      expect(await runReview(depsWith(fakePorts()), elsewhere.candidateId)).toMatchObject({
+        status: 'reviewed',
+      });
+      expect(await runReview(depsWith(fakePorts()), unknown.candidateId)).toMatchObject({
+        status: 'reviewed',
+      });
     });
 
     /** §1's asymmetry: a price nobody can read must not silently discard the listing. */

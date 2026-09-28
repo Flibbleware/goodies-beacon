@@ -4,6 +4,7 @@ import { eq, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { candidates, listings, media, specVersions, verdicts, wantedItems } from '../db/schema.js';
 import type { CandidateStage, RejectionReason, VerdictDecision } from '../domain/constants.js';
+import { countryName } from '../domain/countries.js';
 import { decideVerdict } from '../domain/decide.js';
 import type { ListingImage } from '../domain/listing.js';
 import { type WantedSpec, wantedSpecSchema } from '../domain/spec.js';
@@ -117,8 +118,11 @@ async function stages(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcome> 
  * A rejection here still writes a verdict with its reason, so "rejected, and here is why" is in
  * the audit view without pretending a model was consulted — the model columns stay null.
  *
+ * Seller location joined them in P1-35: a listing from a country the item excludes is rejected on
+ * the `itemLocationCountry` every search result carries, so it costs nothing either.
+ *
  * Relist detection is the third thing §7 lists at this step and is **not** implemented here: the
- * task's own scope is the price ceiling and the negative keywords. It is also not simply missing
+ * task's own scope was the price ceiling and the negative keywords. It is also not simply missing
  * work, because §7 puts image-hash matching at step 2 while the images are not ingested until step
  * 4 — a new candidate has no hashes to match on yet, so only the title and seller are available
  * this early. Worth resolving before it is built.
@@ -138,6 +142,12 @@ async function hardFilters(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutc
   );
   if (hit) {
     return stopEarly(deps, loaded, 'negative_keyword', `the title contains "${hit}"`);
+  }
+
+  // An unknown location is never excluded: §1's asymmetry, as with a price that cannot be read.
+  const country = listing.itemLocationCountry?.toUpperCase();
+  if (country && (spec.settings.excludedCountries as readonly string[]).includes(country)) {
+    return stopEarly(deps, loaded, 'excluded_location', `the seller is in ${countryName(country)}`);
   }
 
   return null;
