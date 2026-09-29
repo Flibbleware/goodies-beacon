@@ -137,6 +137,7 @@ of a model.
 | `priceCeiling` | `{ "amount": 120, "currency": "GBP" }` or `null` | **Enforced.** GBP only; other currencies are converted first. `null` is any price. |
 | `negativeKeywords` | `["t-shirt", "poster"]` | **Enforced.** A title containing one (ignoring case, anywhere in the title) is rejected with no model called. Free but blunt: `"n64"` also matches inside a longer word, and a word that can appear in a listing you want loses it silently. Use distinctive words only. |
 | `excludedCountries` | `["JP"]` | **Enforced.** ISO country codes. A listing whose *seller* is in one is rejected with no model called — where the seller is, not where the item was made, so an import sold from the UK still reaches the reviewer. Use it when a country's sellers are almost never what you want: for a UK-market console, Japan. |
+| `sellerCountry` | `"GB"` or `null` | **Enforced.** One ISO country code. Every eBay plan asks eBay for sellers in that country only, unless the plan sets its own `itemLocationCountry`; the rest are never fetched. `null` is anywhere. One country only — eBay ignores a list. Use this or `excludedCountries`, not both: with a country set, the exclusions filter nothing, and the editor clears them. |
 | `notificationMode` | `"realtime"` or `"digest"` | **Enforced.** Real-time emails each match; digest sends one email at 08:00. |
 | `pollEvery` | `"PT8H"`, `"PT12H"`, `"P1D"`, or `null` | **Enforced.** ISO 8601; the General Settings editor takes hours. `null` is the default, every 8 hours. Rounded up to 1, 2, 3, 4, 6, 8, 12 or 24 hours. |
 | `defaultOnUnknown` | `"surface"` or `"reject"` | Stored; every criterion carries its own `onUnknown`, which is what is used. Leave `"surface"`. |
@@ -241,9 +242,12 @@ one, because sellers title things inconsistently and the pre-filter and reviewer
   one of those ids: a save with anything else, a list like `"EBAY_GB, EBAY_US"` included, is
   refused. For two sites, write two plans.
 - **`options`** — usually `{}`. Two are honoured:
-  - `"itemLocationCountry": "GB"` — only sellers located in one country. **One code only**: eBay
-    accepts a set and silently ignores it, so two countries means two plans. Off by default, since
-    ships-to-UK is reported on every listing anyway.
+  - `"itemLocationCountry": "GB"` — only sellers located in one country, asked of eBay's own
+    search, so the rest never arrive. **One ISO code only**: eBay accepts a set and silently ignores
+    it, so two countries means two plans, and anything but a code is refused on save. Off by
+    default, since ships-to-UK is reported on every listing anyway. The plan editor sets it as
+    *Only sellers located in*, and it wins over the item's `sellerCountry`; to drop a few countries
+    and keep the rest, use `excludedCountries`.
   - `"conditions": ["USED"]` — `NEW`, `USED`, `UNSPECIFIED`. Rarely worth it: sellers mislabel.
 - **`enabled`** — `false` pauses a plan without deleting it. **`watermark`** — always `null`.
 
@@ -290,6 +294,7 @@ brief asks (the fixture's are older and generic) and backfill off, since nothing
     "minimumGrade": null,
     "negativeKeywords": ["t-shirt", "poster", "soundtrack", "nintendo 64", "n64"],
     "excludedCountries": [],
+    "sellerCountry": null,
     "notificationMode": "realtime",
     "pollEvery": null,
     "relists": "show",

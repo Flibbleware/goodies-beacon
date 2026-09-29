@@ -299,8 +299,11 @@ export {
   EBAY_MARKETPLACES,
   type Region,
   type RegionIssue,
+  SELLER_COUNTRY_OPTION,
   SOURCE_REGIONS,
+  sellerCountryOf,
   unknownRegions,
+  withSellerCountry,
 } from './domain/regions.js';
 export {
   loadSellerSalt,

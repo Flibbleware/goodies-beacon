@@ -13,6 +13,7 @@ import {
   wantedItems,
 } from '../db/schema.js';
 import type { VerdictDecision } from '../domain/constants.js';
+import { activePlans } from '../poll/plans.js';
 import { recordPrefilterCost, recordReviewedCandidate } from '../poll/stats.js';
 import { itemSaveSchema, summarisePollState } from './schema.js';
 import { candidateCounts, planStats, pollStates } from './stats.js';
@@ -227,6 +228,46 @@ describe.skipIf(!databaseUrl)('the item stats against a real Postgres', () => {
 
       expect(plans).toHaveLength(1);
       expect(plans[0]).toMatchObject({ planId: 'ebay-gb-retired', inSpec: false, enabled: false });
+    });
+
+    it('says which country a plan asks for sellers in, and anywhere when it asks for none', async () => {
+      const { itemId } = await seedItem();
+      const [first, ...rest] = carmageddon().searchPlans as Record<string, unknown>[];
+      const narrowed = { ...first, options: { itemLocationCountry: 'GB' } };
+
+      const plans = await planStats(db, itemId, [narrowed, ...rest]);
+
+      expect(plans[0]?.sellerCountry).toBe('GB');
+      expect(plans[1]?.sellerCountry).toBeNull();
+    });
+
+    it("shows the item's country on a plan without its own, and a plan's own over it", async () => {
+      const { itemId } = await seedItem();
+      const [first, ...rest] = carmageddon().searchPlans as Record<string, unknown>[];
+      const own = { ...first, options: { itemLocationCountry: 'DE' } };
+
+      const plans = await planStats(db, itemId, [own, ...rest], 'GB');
+
+      expect(plans.map((plan) => plan.sellerCountry)).toEqual(['DE', 'GB', 'GB']);
+    });
+
+    /** The poll is what eBay is actually asked with, so the item's country must reach it. */
+    it("hands the poll each plan with the item's country written in", async () => {
+      const spec = carmageddon();
+      const settings = spec.settings as Record<string, unknown>;
+      const { itemId } = await createItem(
+        db,
+        itemSaveSchema.parse({
+          title: 'Carmageddon, UK sellers',
+          status: 'active',
+          spec: { ...spec, settings: { ...settings, sellerCountry: 'GB' } },
+        }),
+      );
+
+      const plans = (await activePlans(db)).filter((entry) => entry.wantedItemId === itemId);
+
+      expect(plans.length).toBeGreaterThan(0);
+      expect(plans.every((entry) => entry.plan.options.itemLocationCountry === 'GB')).toBe(true);
     });
   });
 

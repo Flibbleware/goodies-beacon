@@ -313,6 +313,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-33 | AI spend by role and period | S | P1-32 |
 | P1-34 | Rejections filtered by the stage that decided them | S | P1-33 |
 | P1-35 | Exclude sellers by country | S | P1-34 |
+| P1-36 | Only sellers located in | S | P1-35 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1832,6 +1833,63 @@ Done when:
 - [x] A listing whose seller is in an excluded country is rejected as `excluded_location` with no pre-filter, enrichment or review call and nothing on the ledger; one elsewhere, or with no country, goes on. Tested against a real Postgres through the pipeline.
 - [x] *Decided by: Rules* includes it, and the candidate says the seller is in an excluded country.
 - [x] Marketplace Settings chooses the countries from a searchable list — by name, a later word or the code, best match first — shown as removable chips, and the Settings tab lists them. The matching is unit-tested; the Playwright run picks a country by clicking and one by Enter without submitting the dialog, and removes one by its chip. Checked by hand on a phone and in both themes.
+
+#### P1-36 Only sellers located in — S
+
+A search on `EBAY_GB` is a search of ebay.co.uk, which carries sellers from anywhere who will post
+to the UK — S1-01 measured half of one search as foreign, and the owner's instance shows sellers
+in the US, Japan, Germany and Canada on GB-region plans. eBay's search can be asked for sellers in
+one country only, and the adapter has sent that option since P1-04, but nothing in the app could
+set it short of the JSON editor. An item now has *Only sellers located in* in its Marketplace
+Settings, which every eBay plan searches with, and a plan can choose its own country instead.
+
+Decided with the owner while it was open: first built per plan only, because the option lives in
+a plan's `options` and each plan is one eBay request; the owner asked why, since wanting UK
+sellers for a whole item meant setting it on every plan and again on each new one. So the item
+has the country and a plan overrides it. The item's is written into each plan's options where the
+poll hands the plans over (`withSellerCountry`), so the adapter still reads one place and never
+knows an item has a default. A plan cannot ask for anywhere while its item names a country; no
+case for that has come up.
+
+Also decided with the owner: an item has one or the other of *Only sellers located in* and P1-35's
+*Exclude sellers located in*, not both. With a country set, every eBay plan searches one country,
+so a list of countries to drop does nothing — and one that named that country would reject
+everything found while the item looked healthy. The two sit side by side on one row, always
+shown: choosing a country clears the exclusions in the same edit and disables that box, which
+says why; removing the country makes it usable again, empty. A first version hid the exclusions
+instead and swapped the chosen country's box for a chip, and the owner found the form jumped about
+too much — so nothing in the picker moves its box now: a single choice is held in the box with a
+clear button, and several choices are chips below it. Kept to the editor rather than refused by
+the schema: a spec with both, written by hand, does no harm beyond the pointless list.
+
+Decided in the building: it is the P1-35 country picker in a single-choice mode — a chosen
+country is held in the box until it is cleared — because eBay takes one country and
+ignores a list, so the control should not be able to express one. The option is checked on save
+as an ISO code, on the `options` field so the web form's `.extend()` of the plan schema still
+works: eBay answers an unknown country with no results, which would read as a quiet query rather
+than a broken one. Which option key a source uses sits beside its regions in core
+(`SELLER_COUNTRY_OPTION`), because the form cannot import an adapter. Changing it keeps the
+plan's id, unlike the region: the plan still searches the same site, and its watermark is a time.
+The Search Plans table says *sellers in Germany only* beside the region. What eBay filters out
+never arrives, so unlike P1-35's exclusions it leaves nothing to audit — the hint says so, and
+points at the exclusions for dropping a few countries and keeping the rest.
+
+Also in this task, at the owner's request: the backfill sweep is no longer drawn — not the box in
+Marketplace Settings nor its row on the Settings tab — because nothing acts on it until Phase 5
+builds the backfill (§6). The setting stays in the spec at its default, so nothing stored changes
+and Phase 5 only has to draw it again, as with P1-34's Origin filter.
+
+Depends on P1-35.
+
+Done when:
+
+- [x] The backfill sweep is not shown in Marketplace Settings or on the Settings tab, and stays in the spec unchanged; the Playwright run finds neither its checkbox nor *How far back*.
+- [x] An item's Marketplace Settings chooses *Only sellers located in*, one country at most, shown on the Settings tab; every eBay plan without its own is polled with it, and a plan's own wins. Tested against a real Postgres through the plans the poll is handed, and unit-tested.
+- [x] An item's *Only sellers located in* and *Exclude sellers located in* share one row, both always shown; choosing a country clears the exclusions and disables that box until the country is removed. Unit-tested for the combined edit; the Playwright run finds the exclusions cleared and disabled, then usable and empty again.
+- [x] A search plan on eBay chooses its own *Only sellers located in* from the searchable country list, one country at most, and can clear it; the plan keeps its id, and while it has none its hint names the item's. The Playwright run picks one, finds it held in the box, clears it, picks again, saves, and finds the country beside the region in the table.
+- [x] The option is refused on save unless it is an ISO country code, with the error beside it; one written in lower case is read upper-cased, so a plan saved that way through the JSON editor keeps polling rather than being skipped as unparseable; a plan with none is unchanged. Unit-tested.
+- [x] The Search Plans table names the country a plan asks for sellers in, its own or its item's. Tested against a real Postgres.
+- [x] Checked by hand on a phone and in both themes.
 
 #### P1-XX Phase 1 exit — S
 

@@ -30,6 +30,41 @@ export const SOURCE_REGIONS: Partial<Record<SourceId, readonly Region[]>> = {
   ebay: EBAY_MARKETPLACES,
 };
 
+/**
+ * The plan option that asks a source for sellers in one country only, for the sources whose search
+ * can (P1-36). eBay's takes one country, not a list: S1-01 found it accepts `{GB|US}` and then
+ * ignores it. Here for the same reason as the regions — the spec form cannot import an adapter.
+ */
+export const SELLER_COUNTRY_OPTION: Partial<Record<SourceId, string>> = {
+  ebay: 'itemLocationCountry',
+};
+
+/** The country a plan asks for sellers in: its own, or else its item's; null for anywhere. */
+export function sellerCountryOf(
+  plan: Pick<SearchPlan, 'source' | 'options'>,
+  itemCountry: string | null,
+): string | null {
+  const key = SELLER_COUNTRY_OPTION[plan.source];
+  if (!key) return null;
+  const own = plan.options[key];
+  return typeof own === 'string' && own !== '' ? own : itemCountry;
+}
+
+/**
+ * The plan as its source should search it, with the item's seller country written into the
+ * options where the plan has none of its own. Done where plans are handed to the poll, so an
+ * adapter reads one place and never has to know the item has a default.
+ */
+export function withSellerCountry<T extends Pick<SearchPlan, 'source' | 'options'>>(
+  plan: T,
+  itemCountry: string | null,
+): T {
+  const key = SELLER_COUNTRY_OPTION[plan.source];
+  const country = sellerCountryOf(plan, itemCountry);
+  if (!key || !country || plan.options[key] === country) return plan;
+  return { ...plan, options: { ...plan.options, [key]: country } };
+}
+
 export interface RegionIssue {
   /** The plan's position in `searchPlans`, so the issue can be placed beside its field. */
   index: number;

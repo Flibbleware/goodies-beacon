@@ -5,7 +5,7 @@ import type { Database } from '../db/client.js';
 import { gradingScales, media, specVersions, wantedItems } from '../db/schema.js';
 import { readinessGaps } from '../domain/readiness.js';
 import { unknownRegions } from '../domain/regions.js';
-import { type WantedSpec, wantedSpecSchema } from '../domain/spec.js';
+import { specSettingsSchema, type WantedSpec, wantedSpecSchema } from '../domain/spec.js';
 import type {
   CandidateCounts,
   ItemPatchInput,
@@ -190,7 +190,12 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
   const currentRow = versions.find((row) => row.id === item.currentSpecVersionId);
 
   const [plans, counts] = await Promise.all([
-    planStats(db, id, currentRow?.searchPlans ?? []),
+    planStats(
+      db,
+      id,
+      currentRow?.searchPlans ?? [],
+      specSettingsSchema.safeParse(currentRow?.settings ?? {}).data?.sellerCountry ?? null,
+    ),
     candidateCounts(db, id),
   ]);
 
