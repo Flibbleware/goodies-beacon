@@ -1,5 +1,4 @@
 import type {
-  BackfillDepth,
   BuyingType,
   ConditionCategory,
   CountryCode,
@@ -16,10 +15,11 @@ import type {
   WantedSpec,
 } from '@goodies-beacon/core/schemas';
 import {
-  BACKFILL_DEPTHS,
   BUYING_TYPES,
   CONDITION_CATEGORIES,
+  COUNTRY_CODES,
   CRITERION_KINDS,
+  countryName,
   durationToHours,
   hoursToDuration,
   isMarketplaceSourceId,
@@ -27,6 +27,7 @@ import {
   NOTIFICATION_MODES,
   ON_UNKNOWN,
   RELIST_POLICIES,
+  SELLER_COUNTRY_OPTION,
   SHIPS_TO_UK_POLICIES,
   SOURCE_REGIONS,
   scheduledHours,
@@ -40,7 +41,6 @@ import { Button, CONTROL, Field } from '../components/form.js';
 import { PROMPT_CONTROL, PROMPT_INLINE, ReadByLine } from '../components/prompt-text.js';
 import { SharedCriterionPicker } from '../criteria/picker.js';
 import {
-  BACKFILL_DEPTH_LABELS,
   CONDITION_LABELS,
   isOffered,
   LISTING_TYPE_LABELS,
@@ -52,7 +52,13 @@ import {
   SOURCE_LABELS,
   sourceLabel,
 } from './labels.js';
-import { type SpecDocument, type SpecIssue, withDocument, withSetting } from './parse.js';
+import {
+  type SpecDocument,
+  type SpecIssue,
+  withDocument,
+  withSetting,
+  withSettings,
+} from './parse.js';
 
 export type SpecFormPart =
   | 'describe'
@@ -113,6 +119,11 @@ export function SpecForm({
     if (updated !== undefined) onChange(updated);
   };
 
+  const patchSettings = (patch: Record<string, unknown>) => {
+    const updated = withSettings(text, patch);
+    if (updated !== undefined) onChange(updated);
+  };
+
   const errors: Errors = (path) => issues.find((issue) => issue.path === path)?.message;
 
   const titled = parts.length > 1;
@@ -121,7 +132,13 @@ export function SpecForm({
     <div className="space-y-8">
       {parts.includes('describe') ? <Describe spec={spec} edit={edit} titled={titled} /> : null}
       {parts.includes('marketplaceSettings') ? (
-        <MarketplaceSettings spec={spec} setting={setting} errors={errors} titled={titled} />
+        <MarketplaceSettings
+          spec={spec}
+          setting={setting}
+          patchSettings={patchSettings}
+          errors={errors}
+          titled={titled}
+        />
       ) : null}
       {parts.includes('generalSettings') ? (
         <GeneralSettings spec={spec} setting={setting} errors={errors} titled={titled} />
@@ -329,17 +346,20 @@ function Describe({ spec, edit, titled }: { spec: WantedSpec; edit: Edit; titled
 function MarketplaceSettings({
   spec,
   setting,
+  patchSettings,
   errors,
   titled,
 }: {
   spec: WantedSpec;
   setting: Setting;
+  patchSettings: (patch: Record<string, unknown>) => void;
   errors: Errors;
   titled: boolean;
 }) {
   const s = spec.settings;
   // Only the marketplaces there is an adapter for, plus any the spec already names so nothing is
-  // switched on out of sight. Grading waits for Phase 5 and is not shown at all (P1-26).
+  // switched on out of sight. Grading waits for Phase 5 and is not shown at all (P1-26), nor is the
+  // backfill sweep, which nothing acts on until then (P1-36).
   const sources = [...OFFERED_SOURCES, ...s.sources.filter((source) => !isOffered(source))];
 
   return (
@@ -417,33 +437,25 @@ function MarketplaceSettings({
           />
         </div>
 
-        <ExcludedCountries
-          value={s.excludedCountries}
-          onChange={(codes) => setting('excludedCountries', codes)}
-          error={errors('settings.excludedCountries')}
-        />
-
-        <div className="rounded-lg border border-edge p-4 dark:border-edge-dark">
-          <Check
-            label="Sweep what is already listed when this item is first polled"
-            checked={s.backfill.enabled}
-            onToggle={(on) => setting('backfill', { ...s.backfill, enabled: on })}
+        <div className="grid items-start gap-5 sm:grid-cols-2">
+          <ItemSellerCountry
+            value={s.sellerCountry}
+            // Choosing one clears the exclusions: eBay then returns that country's sellers alone,
+            // so a list of countries to drop would do nothing (P1-36).
+            onChange={(code) =>
+              patchSettings(
+                code ? { sellerCountry: code, excludedCountries: [] } : { sellerCountry: null },
+              )
+            }
+            error={errors('settings.sellerCountry')}
           />
-          <div className="mt-3 max-w-xs">
-            <Choice
-              label="How far back"
-              value={s.backfill.depth}
-              options={BACKFILL_DEPTHS}
-              onPick={(value: BackfillDepth) =>
-                setting('backfill', { ...s.backfill, depth: value })
-              }
-              labels={BACKFILL_DEPTH_LABELS}
-            />
-          </div>
-          <p className="mt-2 text-xs text-ink-dim dark:text-ink-dim-dark">
-            A backfill reaches the item page and one summary email, never a real-time email — but it
-            is pre-filter calls, so set the budget cap before turning it on.
-          </p>
+
+          <ExcludedCountries
+            value={s.excludedCountries}
+            onChange={(codes) => setting('excludedCountries', codes)}
+            error={errors('settings.excludedCountries')}
+            only={s.sellerCountry}
+          />
         </div>
       </div>
     </Group>
@@ -631,13 +643,13 @@ function Keywords({
   );
 }
 
-function ExcludedCountries({
+function ItemSellerCountry({
   value,
   onChange,
   error,
 }: {
-  value: readonly CountryCode[];
-  onChange: (codes: CountryCode[]) => void;
+  value: CountryCode | null;
+  onChange: (code: CountryCode | null) => void;
   error: string | undefined;
 }) {
   const id = useId();
@@ -645,11 +657,49 @@ function ExcludedCountries({
   return (
     <Field
       id={id}
-      label="Exclude sellers located in"
-      hint="A listing from a seller in one of these countries is rejected before any model is called. It is where the seller is, not where the item is from: an import sold from elsewhere still reaches the reviewer."
+      label="Only sellers located in"
+      hint="Optional. Every eBay plan asks for sellers in this one country, unless the plan chooses its own; the rest are never fetched. Choosing one clears Exclude sellers located in, which it makes pointless."
       error={error}
     >
-      <CountryPicker id={id} value={value} onChange={onChange} />
+      <CountryPicker
+        id={id}
+        single
+        chosenLabel="Item seller country"
+        value={value ? [value] : []}
+        onChange={([code]) => onChange(code ?? null)}
+      />
+    </Field>
+  );
+}
+
+function ExcludedCountries({
+  value,
+  onChange,
+  error,
+  only,
+}: {
+  value: readonly CountryCode[];
+  onChange: (codes: CountryCode[]) => void;
+  error: string | undefined;
+  /** The item's one seller country, which leaves nothing to exclude while it is set. */
+  only: CountryCode | null;
+}) {
+  const id = useId();
+
+  return (
+    <Field
+      id={id}
+      label="Exclude sellers located in"
+      hint="A seller in one of these countries is rejected before any model is called. It is where the seller is, not the item: an import sold from elsewhere still reaches the reviewer."
+      error={error}
+    >
+      <CountryPicker
+        id={id}
+        value={value}
+        onChange={onChange}
+        chosenLabel="Excluded countries"
+        disabled={only ? `Only ${countryName(only)} sellers are searched for` : undefined}
+      />
     </Field>
   );
 }
@@ -862,7 +912,7 @@ function SearchPlanFields({
   errors: Errors;
   focus: EntryFocus;
 }) {
-  const ids = { query: useId(), region: useId() };
+  const ids = { query: useId(), region: useId(), seller: useId() };
   const plan = spec.searchPlans[index];
   const [stored] = useState(
     () => plan && { id: plan.id, source: plan.source, region: plan.region },
@@ -880,6 +930,13 @@ function SearchPlanFields({
 
   const update = (patch: Record<string, unknown>) => patchRow(edit, 'searchPlans', index, patch);
   const regions = SOURCE_REGIONS[plan.source];
+  // Kept on the plan's id when changed, unlike the region: the plan searches the same site, and
+  // its watermark is a time, which a narrower search leaves as true as it was.
+  const sellerKey = SELLER_COUNTRY_OPTION[plan.source];
+  const storedCountry = sellerKey ? plan.options[sellerKey] : undefined;
+  const sellerCountry = (COUNTRY_CODES as readonly unknown[]).includes(storedCountry)
+    ? (storedCountry as CountryCode)
+    : null;
 
   // A plan on a source no marketplace owns (the template adapter's) keeps its own value in the
   // list, rather than the select quietly showing the first marketplace instead.
@@ -971,6 +1028,30 @@ function SearchPlanFields({
           <Check label="Polled" checked={plan.enabled} onToggle={(on) => update({ enabled: on })} />
         </div>
       </div>
+
+      {sellerKey ? (
+        <Field
+          id={ids.seller}
+          label="Only sellers located in"
+          hint={`${
+            spec.settings.sellerCountry && !sellerCountry
+              ? `Empty, so it uses the item's: ${countryName(spec.settings.sellerCountry)}, from Marketplace Settings. Choose one here for this plan alone.`
+              : 'Optional; the item’s Marketplace Settings can set one for every plan.'
+          } ${sourceLabel(plan.source)} is asked for sellers in this country only, so the rest never arrive and nothing records them. One country per plan: for two, add a plan for each.`}
+          error={errors(`searchPlans.${index}.options.${sellerKey}`)}
+        >
+          <CountryPicker
+            id={ids.seller}
+            single
+            chosenLabel="Seller country"
+            value={sellerCountry ? [sellerCountry] : []}
+            onChange={([code]) => {
+              const { [sellerKey]: _dropped, ...rest } = plan.options;
+              update({ options: code ? { ...rest, [sellerKey]: code } : rest });
+            }}
+          />
+        </Field>
+      ) : null}
     </div>
   );
 }

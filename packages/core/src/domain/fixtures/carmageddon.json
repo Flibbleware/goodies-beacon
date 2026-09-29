@@ -11,6 +11,7 @@
     "minimumGrade": null,
     "negativeKeywords": ["t-shirt", "poster", "soundtrack", "nintendo 64", "n64"],
     "excludedCountries": [],
+    "sellerCountry": null,
     "notificationMode": "realtime",
     "pollEvery": null,
     "relists": "show",

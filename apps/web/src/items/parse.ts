@@ -188,13 +188,18 @@ export function withDocument(
  * narrowing, and one of them getting it wrong would write a sibling of `settings` instead.
  */
 export function withSetting(text: string, key: string, value: unknown): string | undefined {
+  return withSettings(text, { [key]: value });
+}
+
+/** Several settings in one edit, where one change implies another (P1-36). */
+export function withSettings(text: string, patch: Record<string, unknown>): string | undefined {
   return withDocument(text, (document) => {
     const settings = document.settings;
     if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) {
-      document.settings = { [key]: value };
+      document.settings = { ...patch };
       return;
     }
-    (settings as SpecDocument)[key] = value;
+    Object.assign(settings as SpecDocument, patch);
   });
 }
 

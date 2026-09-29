@@ -1,3 +1,4 @@
+import { countryName } from '@goodies-beacon/core/schemas';
 import { type ReactNode, useState } from 'react';
 import type { PlanRow } from '../api/items.js';
 
@@ -82,7 +83,16 @@ function Table({
                 <span className="font-medium">{plan.query || plan.planId}</span>
                 <span className="block text-xs text-ink-dim dark:text-ink-dim-dark">
                   {plan.inSpec
-                    ? `${plan.source} · ${plan.region}${plan.enabled ? '' : ' · paused'}`
+                    ? [
+                        plan.source,
+                        plan.region,
+                        plan.sellerCountry
+                          ? `sellers in ${countryName(plan.sellerCountry)} only`
+                          : null,
+                        plan.enabled ? null : 'paused',
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
                     : 'removed from the spec; its stats are kept'}
                 </span>
                 {plan.lastError ? (

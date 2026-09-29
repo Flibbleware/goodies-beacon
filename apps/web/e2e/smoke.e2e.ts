@@ -461,16 +461,32 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await marketplace.getByRole('button', { name: 'Remove Japan' }).click();
     await expect(marketplace.getByRole('button', { name: 'Remove Japan' })).toHaveCount(0);
 
+    // P1-36: one seller country for every plan of the item, one country at most.
+    const only = marketplace.getByRole('combobox', { name: 'Only sellers located in' });
+    await only.fill('united kingdom');
+    await only.press('Enter');
+    // Held in the box rather than as a chip, so nothing below it moves.
+    await expect(only).toHaveValue('United Kingdom');
+    await expect(marketplace.getByRole('button', { name: 'Remove United Kingdom' })).toBeVisible();
+    // eBay now returns UK sellers alone, so a list of countries to drop would do nothing: it is
+    // cleared and disabled, where it stays, and is back to use when the country is removed.
+    await expect(countries).toBeDisabled();
+    await expect(marketplace.getByRole('button', { name: 'Remove China' })).toHaveCount(0);
+    await marketplace.getByRole('button', { name: 'Remove United Kingdom' }).click();
+    await expect(only).toHaveValue('');
+    await expect(countries).toBeEnabled();
+    await expect(marketplace.getByRole('list', { name: 'Excluded countries' })).toHaveCount(0);
+
     // Only the marketplace there is an adapter for, grading not at all, and words not codes.
     await expect(marketplace.getByRole('checkbox', { name: 'eBay' })).toBeChecked();
     await expect(marketplace.getByRole('checkbox', { name: /vinted/i })).toHaveCount(0);
     await expect(marketplace.getByLabel('Grading scale')).toHaveCount(0);
     await expect(marketplace.getByLabel('Minimum grade')).toHaveCount(0);
-    await expect(marketplace.getByLabel('How far back').locator('option')).toHaveText([
-      'Newest 50',
-      'Newest 200',
-      'Last 30 days',
-    ]);
+    // Nor the backfill sweep, which nothing acts on until Phase 5 (P1-36).
+    await expect(marketplace.getByLabel('How far back')).toHaveCount(0);
+    await expect(
+      marketplace.getByRole('checkbox', { name: /Sweep what is already listed/ }),
+    ).toHaveCount(0);
     await expect(marketplace.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
 
     await marketplace.getByRole('button', { name: 'Cancel' }).click();
@@ -604,6 +620,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // In two groups: what the marketplaces are asked for, and the rest (P1-28).
     const marketplaceGroup = spec.getByRole('region', { name: 'Marketplace Settings' });
     await expect(marketplaceGroup).toContainText('Sellers excluded in');
+    await expect(marketplaceGroup).toContainText('Only sellers in');
     const generalGroup = spec.getByRole('region', { name: 'General Settings' });
     await expect(generalGroup).toContainText('£120');
     await expect(generalGroup).toContainText('Real-time email');
@@ -1529,12 +1546,22 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       dialog.getByRole('button', { name: `Save as version ${before + 2}` }),
     ).toBeDisabled();
     await dialog.getByLabel('Region').selectOption('EBAY_DE');
+    // P1-36: eBay asked for sellers in one country only, held in the box until it is cleared,
+    // since eBay takes one country and silently ignores a list.
+    const sellers = dialog.getByRole('combobox', { name: 'Only sellers located in' });
+    await sellers.fill('germ');
+    await sellers.press('Enter');
+    await expect(sellers).toHaveValue('Germany');
+    await dialog.getByRole('button', { name: 'Remove Germany' }).click();
+    await expect(sellers).toHaveValue('');
+    await sellers.fill('germ');
+    await sellers.press('Enter');
     await dialog.getByRole('button', { name: `Save as version ${before + 2}` }).click();
     await expect(dialog).toBeHidden();
     // A new site is a new plan, so no watermark or stats carry over from the old one.
     expect(await planId()).not.toBe(idOnGb);
     await expect(table.getByRole('row').filter({ hasText: 'carmageddon mac' })).toContainText(
-      'EBAY_DE',
+      'EBAY_DE · sellers in Germany only',
     );
     // The old plan is kept for its stats, but hidden until asked for.
     const showRemoved = page

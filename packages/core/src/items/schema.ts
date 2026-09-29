@@ -98,6 +98,11 @@ export interface PlanStats {
   source: SourceId | string;
   query: string;
   region: string;
+  /**
+   * The one country the source is asked for sellers in — the plan's own, or else its item's — or
+   * null for anywhere (P1-36).
+   */
+  sellerCountry: string | null;
   enabled: boolean;
   /**
    * False for a plan that has state but is no longer in the current spec. Its stats are kept and

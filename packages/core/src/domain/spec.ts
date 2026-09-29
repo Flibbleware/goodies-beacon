@@ -60,6 +60,11 @@ export const specSettingsSchema = z.object({
    * seller is, from the listing's `itemLocationCountry`: an import sold from elsewhere still passes.
    */
   excludedCountries: z.array(z.enum(COUNTRY_CODES)).default([]),
+  /**
+   * The one country every plan asks its source for sellers in, unless a plan names its own (P1-36).
+   * Asked of the source's search, so the rest are never fetched; null is anywhere.
+   */
+  sellerCountry: z.enum(COUNTRY_CODES).nullable().default(null),
   notificationMode: z.enum(NOTIFICATION_MODES).default('digest'),
   pollEvery: durationSchema.nullable().default(null),
   relists: z.enum(RELIST_POLICIES).default('show'),
@@ -92,7 +97,27 @@ export const searchPlanSchema = z.object({
    * Vinted domain (`vinted.co.uk`), or `jp` for the Japanese sources (§4).
    */
   region: z.string().min(1, 'a search plan needs a region'),
-  options: z.record(z.string(), z.unknown()).default({}),
+  options: z
+    .record(z.string(), z.unknown())
+    .default({})
+    // Upper-cased first, so a code typed as `gb` in the JSON editor before P1-36 still parses:
+    // a plan that fails to parse is skipped by the poll, which would stop it without a word.
+    .transform((options) =>
+      typeof options.itemLocationCountry === 'string'
+        ? { ...options, itemLocationCountry: options.itemLocationCountry.trim().toUpperCase() }
+        : options,
+    )
+    // Checked here rather than left to the source: eBay answers an unknown country with nothing
+    // at all, which reads as a quiet query rather than a broken one (P1-36).
+    .refine(
+      (options) =>
+        options.itemLocationCountry === undefined ||
+        (COUNTRY_CODES as readonly unknown[]).includes(options.itemLocationCountry),
+      {
+        message: 'must be a two-letter ISO country code, such as GB',
+        path: ['itemLocationCountry'],
+      },
+    ),
   enabled: z.boolean().default(true),
   watermark: z.coerce.date().nullable().default(null),
 });

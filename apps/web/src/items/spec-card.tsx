@@ -12,7 +12,6 @@ import { HelpTip } from '../components/help-tip.js';
 import { PROMPT_INLINE, PromptBlock, ReadByLine } from '../components/prompt-text.js';
 import { PanelAction } from './item-tabs.js';
 import {
-  BACKFILL_DEPTH_LABELS,
   CONDITION_LABELS,
   LISTING_TYPE_LABELS,
   NOTIFICATION_LABELS,
@@ -87,7 +86,8 @@ export function SpecSettings({
   const s = spec.settings;
   const ceiling = s.priceCeiling;
 
-  // In the editors' order and words; grading waits for Phase 5 and is not shown (P1-26).
+  // In the editors' order and words; grading and the backfill sweep wait for Phase 5 and are not
+  // shown (P1-26, P1-36).
   const marketplace: [string, string][] = [
     ['Marketplaces', s.sources.length > 0 ? s.sources.map(sourceLabel).join(', ') : 'none'],
     ['Listing types', s.listingTypes.map((type) => LISTING_TYPE_LABELS[type]).join(' and ')],
@@ -95,8 +95,8 @@ export function SpecSettings({
     ['Relists', RELIST_LABELS[s.relists]],
     ['Condition', CONDITION_LABELS[s.conditionCategory]],
     ['Ships to the UK', SHIPS_TO_UK_LABELS[s.shipsToUk]],
+    ['Only sellers in', s.sellerCountry ? countryName(s.sellerCountry) : 'Anywhere'],
     ['Sellers excluded in', s.excludedCountries.map(countryName).join(', ') || 'None'],
-    ['Backfill', s.backfill.enabled ? `On: ${BACKFILL_DEPTH_LABELS[s.backfill.depth]}` : 'Off'],
   ];
   const general: [string, string][] = [
     ['Price ceiling', ceiling ? `£${ceiling.amount}` : 'Any price'],

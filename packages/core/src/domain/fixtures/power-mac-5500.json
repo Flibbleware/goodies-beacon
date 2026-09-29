@@ -11,6 +11,7 @@
     "minimumGrade": null,
     "negativeKeywords": ["logic board only", "motherboard only", "spares or repair lot", "empty case"],
     "excludedCountries": [],
+    "sellerCountry": null,
     "notificationMode": "digest",
     "pollEvery": "PT8H",
     "relists": "show",

@@ -1,6 +1,7 @@
 import { asc, eq, max, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { searchPlanState } from '../db/schema.js';
+import { sellerCountryOf } from '../domain/regions.js';
 import { searchPlanSchema } from '../domain/spec.js';
 import type { CandidateCounts, PlanStats, PollState } from './schema.js';
 
@@ -96,6 +97,8 @@ export async function planStats(
   db: Database,
   wantedItemId: string,
   specPlans: readonly unknown[],
+  /** The item's `sellerCountry`, which a plan without its own searches with. */
+  itemSellerCountry: string | null = null,
 ): Promise<PlanStats[]> {
   const state = await db
     .select()
@@ -113,7 +116,10 @@ export async function planStats(
 
     const plan = parsed.data;
     seen.add(plan.id);
-    rows.push(merge(plan.id, plan.source, plan.query, plan.region, plan.enabled, true, byId));
+    rows.push({
+      ...merge(plan.id, plan.source, plan.query, plan.region, plan.enabled, true, byId),
+      sellerCountry: sellerCountryOf(plan, itemSellerCountry),
+    });
   }
 
   for (const row of state) {
@@ -140,6 +146,7 @@ function merge(
     source,
     query,
     region,
+    sellerCountry: null,
     enabled,
     inSpec,
     watermark: row?.watermark ?? null,

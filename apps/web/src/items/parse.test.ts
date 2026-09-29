@@ -5,6 +5,7 @@ import {
   withDocument,
   withReferenceImage,
   withSetting,
+  withSettings,
 } from './parse.js';
 
 const image = {
@@ -244,5 +245,21 @@ describe('withSetting', () => {
     const updated = withSetting('{"settings":3}', 'relists', 'show');
 
     expect(JSON.parse(updated as string).settings).toEqual({ relists: 'show' });
+  });
+});
+
+describe('withSettings', () => {
+  /** Two writes from the same text would each start from it, and the second would undo the first. */
+  it('changes several settings in one edit, leaving the rest', () => {
+    const updated = withSettings('{"settings":{"relists":"show","excludedCountries":["JP"]}}', {
+      sellerCountry: 'GB',
+      excludedCountries: [],
+    });
+
+    expect(JSON.parse(updated as string).settings).toEqual({
+      relists: 'show',
+      sellerCountry: 'GB',
+      excludedCountries: [],
+    });
   });
 });

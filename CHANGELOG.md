@@ -4,6 +4,12 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-36 Only sellers located in. An item's Marketplace Settings can ask eBay for sellers in one
+  country only, for every search plan; a plan can choose a different country for itself. The
+  Search Plans table shows the country beside the region. eBay drops the rest before they reach
+  Goodies Beacon, so they cost nothing and are not listed.
+- The backfill sweep ("Sweep what is already listed") is hidden from Marketplace Settings and the
+  Settings tab until it is built in a later release; it never did anything yet.
 - P1-35 Exclude sellers by country. Marketplace Settings has *Exclude sellers located in*: pick
   countries from a searchable list, and listings from sellers there are rejected before any AI is
   used. They show on the Candidates page under *Rejected → Decided by: Rules*. Useful when a

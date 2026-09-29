@@ -1,6 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { EBAY_MARKETPLACES, unknownRegions } from './regions.js';
+import {
+  EBAY_MARKETPLACES,
+  sellerCountryOf,
+  unknownRegions,
+  withSellerCountry,
+} from './regions.js';
 import { wantedSpecSchema } from './spec.js';
 
 const example = (name: string) =>
@@ -46,5 +51,32 @@ describe('unknownRegions', () => {
         { source: '_template', region: 'example' },
       ]),
     ).toEqual([]);
+  });
+});
+
+describe('the seller country a plan searches with (P1-36)', () => {
+  const ebay = (options: Record<string, unknown> = {}) => ({ source: 'ebay' as const, options });
+
+  it("uses the plan's own country, or else the item's, or anywhere", () => {
+    expect(sellerCountryOf(ebay({ itemLocationCountry: 'DE' }), 'GB')).toBe('DE');
+    expect(sellerCountryOf(ebay(), 'GB')).toBe('GB');
+    expect(sellerCountryOf(ebay(), null)).toBeNull();
+  });
+
+  it('writes the item country into a plan without its own, and leaves the rest of it alone', () => {
+    const plan = { ...ebay({ conditions: ['USED'] }), id: 'p', query: 'q' };
+
+    expect(withSellerCountry(plan, 'GB')).toEqual({
+      ...plan,
+      options: { conditions: ['USED'], itemLocationCountry: 'GB' },
+    });
+    expect(withSellerCountry(plan, null)).toBe(plan);
+  });
+
+  it('asks nothing of a source whose search cannot filter by seller country', () => {
+    const vinted = { source: 'vinted' as const, options: {} };
+
+    expect(sellerCountryOf(vinted, 'GB')).toBeNull();
+    expect(withSellerCountry(vinted, 'GB')).toBe(vinted);
   });
 });

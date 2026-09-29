@@ -701,7 +701,10 @@ can tell the pre-filter to discard at a fortieth of the price.
 When those listings share a seller country rather than a word — a Japanese console listed by a
 seller in Japan, with nothing in the text to say so — exclude the country in the item's
 Marketplace Settings instead. That rejects them before the pre-filter, for nothing. It goes by
-where the seller is, so an import sold from somewhere else still reaches the reviewer. To see
+where the seller is, so an import sold from somewhere else still reaches the reviewer. If an item
+is only ever worth it from one country, its *Only sellers located in* (Marketplace Settings, or a
+single plan's own) asks eBay for those sellers alone; the rest are never fetched, so, unlike an
+exclusion, they leave nothing to check. To see
 which countries your reviews come from:
 
 ```sh
