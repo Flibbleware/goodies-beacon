@@ -704,8 +704,10 @@ Marketplace Settings instead. That rejects them before the pre-filter, for nothi
 where the seller is, so an import sold from somewhere else still reaches the reviewer. If an item
 is only ever worth it from one country, its *Only sellers located in* (Marketplace Settings, or a
 single plan's own) asks eBay for those sellers alone; the rest are never fetched, so, unlike an
-exclusion, they leave nothing to check. To see
-which countries your reviews come from:
+exclusion, they leave nothing to check. And when what reaches the reviewer is the cheap stuff — a
+loose manual or an empty box listed beside the game you want — a minimum in the item's *Price
+range* (General Settings) rejects fixed-price listings under it, for nothing. It never rejects an
+auction, whose bid can only rise. To see which countries your reviews come from:
 
 ```sh
 docker compose exec db psql -U goodies_beacon -c "
@@ -911,11 +913,13 @@ dead-lettered; they run when the month rolls over or when you raise the cap.
 
 ### The real-time email
 
-Phase 1 sends one kind of notification: a plain-text email for a `match` or an `uncertain`, on an
-item set to **realtime**, for a candidate that came from a **poll**. A rejection sends nothing, a
-digest-mode item sends nothing, and a backfill sends nothing — a backfill sweeps everything
-already listed, and mailing it one listing at a time is how someone learns to ignore the mail.
-Digests and templates are the notifications phase.
+Phase 1 sends one kind of notification: a plain-text email for a `match` or an `uncertain`, for a
+candidate that came from a **poll**, when the item's Notifications tab sets that verdict to
+**email** — *Matches* and *Possible matches* are set apart, so an item can email its
+matches and leave the uncertain ones to the Candidates page. A rejection sends nothing, a verdict
+set to *digest* or *none* sends nothing, and a backfill sends nothing — a backfill sweeps
+everything already listed, and mailing it one listing at a time is how someone learns to ignore the
+mail. Digests and templates are the notifications phase.
 
 An uncertain email names exactly what could not be established, because that is the whole reason
 the verdict exists rather than being quietly dropped.
@@ -1004,7 +1008,7 @@ A wanted item is a title, a status and a **spec**: what you are hunting for, the
 queries to look on, and the criteria the reviewer judges each listing against. Until the chat
 interviewer arrives in Phase 3 the spec is JSON you write yourself, on **Wanted items → New wanted
 item**. It is checked against the real schema as you type, so a mistake names the field it is in
-(`criteria.0.text`, `settings.priceCeiling.currency`) and the Save button stays disabled until it
+(`criteria.0.text`, `settings.priceRange.max`) and the Save button stays disabled until it
 parses. Two worked examples to copy from are in the repository, at
 `packages/core/src/domain/fixtures/`.
 
@@ -1054,8 +1058,8 @@ keeps its stats and is shown as removed, because the candidates it found are sti
 **Scan Current Listings** is on the page and disabled: the on-demand sweep, its rate limit and its
 summary email are Phase 5.
 
-Four settings live in the spec *and* on the item row, because they are one field on screen:
-`notificationMode`, `pollEvery`, `gradingScaleId` and `minimumGrade`. The document is what you
+Five settings live in the spec *and* on the item row, because they are one field on screen:
+`matchNotifications`, `uncertainNotifications`, `pollEvery`, `gradingScaleId` and `minimumGrade`. The document is what you
 edit; saving copies them onto the row, which is what the scheduler and the review pipeline
 actually read. Changing them in the database by hand will therefore be undone by the next save.
 
@@ -1083,8 +1087,8 @@ click away; an item page's counts are for all time, so they open *All*.
 | Rejected | A hard criterion failed, or a filter stopped it before a model was ever called |
 | Queued | Found, and still in the queue or part-way through the pipeline |
 
-A rejection made before the reviewer says which filter did it — over the price ceiling, a negative
-keyword in the title, or discarded by the pre-filter — and those cost nothing, so the verdict's
+A rejection made before the reviewer says which filter did it — over the maximum price, under the
+minimum, a negative keyword in the title, or discarded by the pre-filter — and those cost nothing, so the verdict's
 model columns are empty rather than pretending a model was consulted.
 
 Opening one shows the photographs, the English summary, the seller's description and the verdict

@@ -9,7 +9,11 @@
 export const WANTED_ITEM_STATUSES = ['draft', 'active', 'paused', 'found', 'archived'] as const;
 export type WantedItemStatus = (typeof WANTED_ITEM_STATUSES)[number];
 
-export const NOTIFICATION_MODES = ['realtime', 'digest'] as const;
+/**
+ * How a match, or separately an uncertain verdict, reaches the owner (P1-37): an email as it is
+ * found, a line in the daily digest, or nothing beyond the candidate list.
+ */
+export const NOTIFICATION_MODES = ['email', 'digest', 'none'] as const;
 export type NotificationMode = (typeof NOTIFICATION_MODES)[number];
 
 /**
@@ -96,6 +100,7 @@ export type CriterionResult = (typeof CRITERION_RESULTS)[number];
  */
 export const REJECTION_REASONS = [
   'over_budget',
+  'under_minimum',
   'negative_keyword',
   'excluded_location',
   'prefilter',

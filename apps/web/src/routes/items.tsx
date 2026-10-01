@@ -13,6 +13,7 @@ import { CategoryCover, CategoryIcon } from '../components/category-icon.js';
 import { LastPoll } from '../components/last-poll.js';
 import { Pill } from '../components/pill.js';
 import { CreateItemModal } from '../items/create-item.js';
+import { matchesPill } from '../items/labels.js';
 import { appLayoutRoute } from './app-layout.js';
 
 export interface ItemsSearch {
@@ -174,7 +175,7 @@ function Card({ item, category }: { item: ItemRow; category: CategoryRow | undef
 
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Pill>{item.status}</Pill>
-          <Pill>{item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}</Pill>
+          <Pill>{matchesPill(item.matchNotifications)}</Pill>
         </div>
 
         <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs">

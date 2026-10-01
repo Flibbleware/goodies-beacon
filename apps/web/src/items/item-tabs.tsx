@@ -1,5 +1,6 @@
 import { type KeyboardEvent, type ReactNode, useId, useLayoutEffect, useRef } from 'react';
 import {
+  BellIcon,
   CriteriaIcon,
   DetailsIcon,
   EditIcon,
@@ -14,6 +15,7 @@ export const ITEM_TABS = {
   'search-plans': 'Search Plans',
   criteria: 'Criteria',
   settings: 'Settings',
+  notifications: 'Notifications',
   images: 'Images',
 } as const;
 
@@ -24,6 +26,7 @@ const TAB_ICONS: Record<ItemTabId, typeof DetailsIcon> = {
   'search-plans': SearchIcon,
   criteria: CriteriaIcon,
   settings: SettingsIcon,
+  notifications: BellIcon,
   images: ImageIcon,
 };
 

@@ -151,7 +151,8 @@ export interface ItemSummary extends PollState {
   status: WantedItemStatus;
   categoryId: string | null;
   displayImageId: string | null;
-  notificationMode: NotificationMode;
+  /** How a match is notified (P1-37); the list's pill, which leaves uncertain verdicts to the item page. */
+  matchNotifications: NotificationMode;
   currentVersion: number | null;
   updatedAt: Date;
   counts: CandidateCounts;

@@ -4,7 +4,7 @@
   "settings": {
     "sources": ["ebay", "yahoo_auctions_jp"],
     "listingTypes": ["auction", "fixed"],
-    "priceCeiling": { "amount": 400, "currency": "GBP" },
+    "priceRange": { "min": null, "max": 400, "currency": "GBP" },
     "shipsToUk": "flag",
     "conditionCategory": "any",
     "gradingScaleId": null,
@@ -12,7 +12,8 @@
     "negativeKeywords": ["logic board only", "motherboard only", "spares or repair lot", "empty case"],
     "excludedCountries": [],
     "sellerCountry": null,
-    "notificationMode": "digest",
+    "matchNotifications": "digest",
+    "uncertainNotifications": "digest",
     "pollEvery": "PT8H",
     "relists": "show",
     "defaultOnUnknown": "surface",

@@ -84,7 +84,6 @@ export function SpecSettings({
   onEdit?: ((group: 'marketplace' | 'general') => void) | undefined;
 }) {
   const s = spec.settings;
-  const ceiling = s.priceCeiling;
 
   // In the editors' order and words; grading and the backfill sweep wait for Phase 5 and are not
   // shown (P1-26, P1-36).
@@ -99,9 +98,7 @@ export function SpecSettings({
     ['Sellers excluded in', s.excludedCountries.map(countryName).join(', ') || 'None'],
   ];
   const general: [string, string][] = [
-    ['Price ceiling', ceiling ? `£${ceiling.amount}` : 'Any price'],
-    ['Poll every', pollEvery(s.pollEvery)],
-    ['Notifications', NOTIFICATION_LABELS[s.notificationMode]],
+    ['Price range', priceRange(s.priceRange)],
     ['When unknown', ON_UNKNOWN_LABELS[s.defaultOnUnknown]],
   ];
 
@@ -122,6 +119,34 @@ export function SpecSettings({
   );
 }
 
+/**
+ * The Notifications tab (P1-37): how each verdict is sent, and how often the item looks. One group,
+ * so its editor is the panel's button, as Details' is.
+ */
+export function SpecNotifications({ spec }: { spec: WantedSpec }) {
+  const s = spec.settings;
+  return (
+    <Unboxed>
+      <SettingsGroup
+        title="Notification Settings"
+        rows={[
+          ['Matches', NOTIFICATION_LABELS[s.matchNotifications]],
+          ['Possible matches', NOTIFICATION_LABELS[s.uncertainNotifications]],
+          ['Poll every', pollEvery(s.pollEvery)],
+        ]}
+        onEdit={undefined}
+      />
+    </Unboxed>
+  );
+}
+
+function priceRange({ min, max }: WantedSpec['settings']['priceRange']): string {
+  if (min === null && max === null) return 'Any price';
+  if (min === null) return `Up to £${max}`;
+  if (max === null) return `£${min} or more`;
+  return `£${min} to £${max}`;
+}
+
 function SettingsGroup({
   title,
   rows,
@@ -134,10 +159,12 @@ function SettingsGroup({
   // No visible subtitle: the button names the group, and the section keeps it for a screen reader.
   return (
     <section aria-label={title}>
-      <div className="flex min-h-8 items-center justify-end">
-        {onEdit ? <PanelAction kind="edit" label={`Edit ${title}`} onClick={onEdit} /> : null}
-      </div>
-      <dl className="mt-3 grid gap-y-2">
+      {onEdit ? (
+        <div className="mb-3 flex min-h-8 items-center justify-end">
+          <PanelAction kind="edit" label={`Edit ${title}`} onClick={onEdit} />
+        </div>
+      ) : null}
+      <dl className="grid gap-y-2">
         {rows.map(([label, value]) => (
           <div key={label} className="grid grid-cols-[9rem_1fr] gap-x-4 text-sm">
             <dt className="text-ink-dim dark:text-ink-dim-dark">{label}</dt>

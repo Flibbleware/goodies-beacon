@@ -6,6 +6,7 @@ import {
   searchPlanSchema,
   specSettingsSchema,
   unknownRegions,
+  upgradeSettings,
   wantedSpecSchema,
 } from '@goodies-beacon/core/schemas';
 import { z } from 'zod';
@@ -19,7 +20,7 @@ import { z } from 'zod';
  */
 
 export interface SpecIssue {
-  /** Dotted path into the document: `settings.priceCeiling.currency`, `criteria.2.text`. */
+  /** Dotted path into the document: `settings.priceRange.max`, `criteria.2.text`. */
   path: string;
   message: string;
 }
@@ -37,16 +38,22 @@ export interface SpecIssue {
  * rule everything else depends on. Only the shape is still enforced: a string where a string goes.
  */
 const draftSpecSchema = wantedSpecSchema.extend({
-  settings: specSettingsSchema.extend({
-    listingTypes: z.array(z.enum(BUYING_TYPES)).default([...BUYING_TYPES]),
-    priceCeiling: z
-      .object({ amount: z.number(), currency: z.literal('GBP') })
-      .nullable()
-      .default(null),
-    gradingScaleId: z.string().nullable().default(null),
-    negativeKeywords: z.array(z.string()).default([]),
-    pollEvery: z.string().nullable().default(null),
-  }),
+  settings: z.preprocess(
+    upgradeSettings,
+    specSettingsSchema.extend({
+      listingTypes: z.array(z.enum(BUYING_TYPES)).default([...BUYING_TYPES]),
+      priceRange: z
+        .object({
+          min: z.number().nullable().default(null),
+          max: z.number().nullable().default(null),
+          currency: z.literal('GBP').default('GBP'),
+        })
+        .default({ min: null, max: null, currency: 'GBP' }),
+      gradingScaleId: z.string().nullable().default(null),
+      negativeKeywords: z.array(z.string()).default([]),
+      pollEvery: z.string().nullable().default(null),
+    }),
+  ),
   criteria: z.array(criterionSchema.extend({ text: z.string() })).default([]),
   searchPlans: z
     .array(searchPlanSchema.extend({ query: z.string(), region: z.string() }))
@@ -65,13 +72,14 @@ export const STARTING_SPEC = `{
   "settings": {
     "sources": ["ebay"],
     "listingTypes": ["auction", "fixed"],
-    "priceCeiling": null,
+    "priceRange": { "min": null, "max": null, "currency": "GBP" },
     "shipsToUk": "show_all",
     "conditionCategory": "any",
     "gradingScaleId": null,
     "minimumGrade": null,
     "negativeKeywords": [],
-    "notificationMode": "digest",
+    "matchNotifications": "digest",
+    "uncertainNotifications": "digest",
     "pollEvery": null,
     "relists": "show",
     "defaultOnUnknown": "surface",

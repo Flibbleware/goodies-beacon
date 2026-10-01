@@ -119,7 +119,8 @@ async function stages(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcome> 
  * the audit view without pretending a model was consulted — the model columns stay null.
  *
  * Seller location joined them in P1-35: a listing from a country the item excludes is rejected on
- * the `itemLocationCountry` every search result carries, so it costs nothing either.
+ * the `itemLocationCountry` every search result carries, so it costs nothing either. The price
+ * ceiling became a range in P1-37, its minimum rejecting as `under_minimum`.
  *
  * Relist detection is the third thing §7 lists at this step and is **not** implemented here: the
  * task's own scope was the price ceiling and the negative keywords. It is also not simply missing
@@ -129,11 +130,16 @@ async function stages(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcome> 
  */
 async function hardFilters(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcome | null> {
   const { listing, spec } = loaded;
-  const ceiling = spec.settings.priceCeiling;
+  const { min, max } = spec.settings.priceRange;
 
   const priceGbp = await priceInGbp(deps, listing);
-  if (ceiling && priceGbp !== null && priceGbp > ceiling.amount) {
-    return stopEarly(deps, loaded, 'over_budget', `£${priceGbp.toFixed(2)} is over the ceiling`);
+  if (max !== null && priceGbp !== null && priceGbp > max) {
+    return stopEarly(deps, loaded, 'over_budget', `£${priceGbp.toFixed(2)} is over the maximum`);
+  }
+  // Fixed price only: an auction's bid only rises, so one under the minimum now may not end there.
+  // A listing whose type is not known keeps going, as a price that cannot be read does.
+  if (min !== null && priceGbp !== null && priceGbp < min && listing.buyingType === 'fixed') {
+    return stopEarly(deps, loaded, 'under_minimum', `£${priceGbp.toFixed(2)} is under the minimum`);
   }
 
   const title = listing.title.toLowerCase();
@@ -157,8 +163,8 @@ async function hardFilters(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutc
  * The price in GBP, converting it now if the poll could not.
  *
  * A listing normally arrives converted (P1-06 runs at ingest), so this is the case where the rate
- * was unavailable then. A price that still cannot be converted returns null and the ceiling does
- * not fire: §1's asymmetry again — showing the owner a listing that turns out to be too dear is a
+ * was unavailable then. A price that still cannot be converted returns null and neither end of the
+ * range fires: §1's asymmetry again — showing the owner a listing that turns out to be too dear is a
  * great deal better than silently dropping one that was not.
  */
 async function priceInGbp(
@@ -173,7 +179,7 @@ async function priceInGbp(
       Number(listing.priceAmount),
       listing.priceCurrency,
     );
-    // No rate for that currency, even now. The ceiling does not fire on a price nobody can read.
+    // No rate for that currency, even now. The range does not fire on a price nobody can read.
     if (!converted) return null;
 
     await deps.db
@@ -182,7 +188,7 @@ async function priceInGbp(
       .where(eq(listings.id, listing.id));
     return converted.amountGbp;
   } catch (error) {
-    deps.logger.warn('could not convert the price; the ceiling was not applied', {
+    deps.logger.warn('could not convert the price; the price range was not applied', {
       listingId: listing.id,
       error: error instanceof Error ? error.message : String(error),
     });
@@ -377,9 +383,10 @@ async function review(deps: ReviewDeps, loaded: Loaded): Promise<ReviewOutcome> 
 }
 
 /**
- * §10, at the size P1-12 gives it: a `match` or `uncertain`, on a real-time item, from a poll.
+ * §10, at the size P1-12 gives it: a `match` or `uncertain` from a poll, on an item that emails
+ * that verdict as it is found — each has its own setting since P1-37.
  *
- * A `reject`, a digest-mode item and a backfill candidate all send nothing — a backfill is a
+ * A `reject`, a verdict set to the digest or to nothing, and a backfill candidate all send nothing — a backfill is a
  * sweep of everything already listed, and mailing its results one at a time is how someone comes
  * to ignore the mail.
  */
@@ -393,7 +400,8 @@ async function maybeNotify(
   const { candidate, item, listing, spec } = loaded;
 
   if (decision === 'reject') return false;
-  if (item.notificationMode !== 'realtime') return false;
+  const mode = decision === 'match' ? item.matchNotifications : item.uncertainNotifications;
+  if (mode !== 'email') return false;
   if (candidate.origin !== 'poll') return false;
 
   try {

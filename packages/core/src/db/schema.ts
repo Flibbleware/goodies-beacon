@@ -186,7 +186,11 @@ export const wantedItems = pgTable(
       .$type<(typeof WANTED_ITEM_STATUSES)[number]>()
       .notNull()
       .default('draft'),
-    notificationMode: text('notification_mode')
+    matchNotifications: text('match_notifications')
+      .$type<(typeof NOTIFICATION_MODES)[number]>()
+      .notNull()
+      .default('digest'),
+    uncertainNotifications: text('uncertain_notifications')
       .$type<(typeof NOTIFICATION_MODES)[number]>()
       .notNull()
       .default('digest'),
@@ -226,7 +230,11 @@ export const wantedItems = pgTable(
   },
   (table) => [
     check('wanted_items_status', oneOf(table.status, WANTED_ITEM_STATUSES)),
-    check('wanted_items_notification_mode', oneOf(table.notificationMode, NOTIFICATION_MODES)),
+    check('wanted_items_match_notifications', oneOf(table.matchNotifications, NOTIFICATION_MODES)),
+    check(
+      'wanted_items_uncertain_notifications',
+      oneOf(table.uncertainNotifications, NOTIFICATION_MODES),
+    ),
     index('wanted_items_status_idx').on(table.status),
   ],
 );

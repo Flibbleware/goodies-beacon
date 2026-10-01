@@ -37,6 +37,23 @@ export const priceCeilingSchema = z.object({
   currency: z.literal('GBP'),
 });
 
+/**
+ * What the item may cost, in GBP (P1-37). Either end may be null: no minimum is zero, no maximum is
+ * any price. The maximum is checked against every listing, an auction's current bid included; the
+ * minimum only against a fixed price, because an auction's bid only rises.
+ */
+export const priceRangeSchema = z
+  .object({
+    min: z.number().nonnegative('cannot be below zero').nullable().default(null),
+    max: z.number().positive('must be more than zero').nullable().default(null),
+    /** GBP only: §4 converts every source's price to GBP before comparing. */
+    currency: z.literal('GBP').default('GBP'),
+  })
+  .refine((range) => range.min === null || range.max === null || range.min <= range.max, {
+    message: 'must be at least the minimum',
+    path: ['max'],
+  });
+
 export const backfillSchema = z.object({
   enabled: z.boolean().default(false),
   depth: z.enum(BACKFILL_DEPTHS).default('top_200'),
@@ -49,7 +66,7 @@ export const specSettingsSchema = z.object({
     .array(z.enum(BUYING_TYPES))
     .min(1, 'at least one listing type must be allowed')
     .default([...BUYING_TYPES]),
-  priceCeiling: priceCeilingSchema.nullable().default(null),
+  priceRange: priceRangeSchema.default({ min: null, max: null, currency: 'GBP' }),
   shipsToUk: z.enum(SHIPS_TO_UK_POLICIES).default('show_all'),
   conditionCategory: z.enum(CONDITION_CATEGORIES).default('any'),
   gradingScaleId: z.uuid().nullable().default(null),
@@ -65,12 +82,46 @@ export const specSettingsSchema = z.object({
    * Asked of the source's search, so the rest are never fetched; null is anywhere.
    */
   sellerCountry: z.enum(COUNTRY_CODES).nullable().default(null),
-  notificationMode: z.enum(NOTIFICATION_MODES).default('digest'),
+  /** A `match` (P1-37), and below it an `uncertain`, each notified on its own terms. */
+  matchNotifications: z.enum(NOTIFICATION_MODES).default('digest'),
+  uncertainNotifications: z.enum(NOTIFICATION_MODES).default('digest'),
   pollEvery: durationSchema.nullable().default(null),
   relists: z.enum(RELIST_POLICIES).default('show'),
   defaultOnUnknown: z.enum(ON_UNKNOWN).default('surface'),
   backfill: backfillSchema.default({ enabled: false, depth: 'top_200' }),
 });
+
+/**
+ * Settings written before P1-37, read as the fields that replaced them.
+ *
+ * A spec version is immutable (§4), so the old keys are translated on the way in rather than
+ * rewritten in place: `priceCeiling` is the range's maximum, and the single `notificationMode`
+ * applies to matches and uncertain verdicts alike, `realtime` being what is now `email`. A key the
+ * document already has in its new form wins, so a form that writes one new field over an old
+ * document does not lose what the old key said about the other.
+ */
+export function upgradeSettings(settings: unknown): unknown {
+  if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) {
+    return settings;
+  }
+  const { priceCeiling, notificationMode, ...rest } = settings as Record<string, unknown>;
+  const upgraded: Record<string, unknown> = { ...rest };
+
+  if (!('priceRange' in rest) && priceCeiling !== undefined) {
+    const ceiling = priceCeiling as { amount?: unknown; currency?: unknown } | null;
+    upgraded.priceRange = {
+      min: null,
+      max: ceiling?.amount ?? null,
+      currency: ceiling?.currency ?? 'GBP',
+    };
+  }
+  if (notificationMode !== undefined) {
+    const mode = notificationMode === 'realtime' ? 'email' : notificationMode;
+    if (!('matchNotifications' in rest)) upgraded.matchNotifications = mode;
+    if (!('uncertainNotifications' in rest)) upgraded.uncertainNotifications = mode;
+  }
+  return upgraded;
+}
 
 export const criterionSchema = z.object({
   /** Stable across versions when the criterion is unchanged, so feedback stays attached (§4). */
@@ -137,7 +188,7 @@ export const wantedSpecSchema = z.object({
    * Performa and Power Mac 5xxx listings are plausible".
    */
   plausibilityNote: z.string().nullable().default(null),
-  settings: specSettingsSchema,
+  settings: z.preprocess(upgradeSettings, specSettingsSchema),
   criteria: z.array(criterionSchema).default([]),
   searchPlans: z.array(searchPlanSchema).default([]),
   referenceImages: z.array(referenceImageSchema).default([]),
@@ -146,6 +197,7 @@ export const wantedSpecSchema = z.object({
 });
 
 export type PriceCeiling = z.infer<typeof priceCeilingSchema>;
+export type PriceRange = z.infer<typeof priceRangeSchema>;
 export type SpecSettings = z.infer<typeof specSettingsSchema>;
 export type Criterion = z.infer<typeof criterionSchema>;
 export type SearchPlan = z.infer<typeof searchPlanSchema>;

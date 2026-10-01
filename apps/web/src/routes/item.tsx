@@ -28,10 +28,16 @@ import {
   RemoveFromSpec,
 } from '../items/entry-actions.js';
 import { type ItemTab, type ItemTabId, ItemTabs, isItemTab } from '../items/item-tabs.js';
-import { criterionName, planName } from '../items/labels.js';
+import { criterionName, matchesPill, planName } from '../items/labels.js';
 import { PlanTable } from '../items/plan-table.js';
 import { type EditTarget, SectionEditor } from '../items/section-editor.js';
-import { CriteriaList, ReferenceList, SpecDescription, SpecSettings } from '../items/spec-card.js';
+import {
+  CriteriaList,
+  ReferenceList,
+  SpecDescription,
+  SpecNotifications,
+  SpecSettings,
+} from '../items/spec-card.js';
 import { STATUS_LABELS } from '../items/status.js';
 import { VersionList } from '../items/version-history.js';
 import { appLayoutRoute } from './app-layout.js';
@@ -187,6 +193,15 @@ function ItemPage() {
           ),
         },
         {
+          id: 'notifications',
+          action: {
+            kind: 'edit',
+            label: 'Edit Notifications',
+            onClick: () => setEditing('notifications'),
+          },
+          content: <SpecNotifications spec={spec} />,
+        },
+        {
           id: 'images',
           action: {
             kind: 'edit',
@@ -298,7 +313,7 @@ function Header({
             ) : null}
           </div>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-            <Pill>{item.notificationMode === 'realtime' ? 'Real-time email' : 'Daily digest'}</Pill>
+            <Pill>{matchesPill(item.matchNotifications)}</Pill>
             {item.current ? <Pill>{`Version ${item.current.version}`}</Pill> : null}
           </p>
         </div>

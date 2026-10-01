@@ -148,8 +148,9 @@ describe.skipIf(!databaseUrl)('the wanted item store against a real Postgres', (
 
   /**
    * The scheduler reads `poll_every` from the item row and the review pipeline reads
-   * `notification_mode` from it, so a spec saying `realtime` with the column left at `digest`
-   * would be an item that agrees with itself on screen and emails nobody.
+   * `match_notifications` and `uncertain_notifications` from it, so a spec saying `email` with
+   * the column left at `digest` would be an item that agrees with itself on screen and emails
+   * nobody.
    */
   it('projects the settings the runtime reads from the row onto the item', async () => {
     const spec = example('carmageddon') as Record<string, unknown>;
@@ -159,12 +160,17 @@ describe.skipIf(!databaseUrl)('the wanted item store against a real Postgres', (
       db,
       input('Carmageddon big box', {
         ...spec,
-        settings: { ...settings, notificationMode: 'realtime', pollEvery: 'PT4H' },
+        settings: {
+          ...settings,
+          matchNotifications: 'email',
+          uncertainNotifications: 'none',
+          pollEvery: 'PT4H',
+        },
       }),
     );
 
     const [row] = await db.select().from(wantedItems).where(eq(wantedItems.id, itemId));
-    expect(row?.notificationMode).toBe('realtime');
+    expect(row).toMatchObject({ matchNotifications: 'email', uncertainNotifications: 'none' });
     expect(row?.pollEvery).toBe('PT4H');
 
     await saveItem(
@@ -172,12 +178,17 @@ describe.skipIf(!databaseUrl)('the wanted item store against a real Postgres', (
       itemId,
       input('Carmageddon big box', {
         ...spec,
-        settings: { ...settings, notificationMode: 'digest', pollEvery: null },
+        settings: {
+          ...settings,
+          matchNotifications: 'digest',
+          uncertainNotifications: 'digest',
+          pollEvery: null,
+        },
       }),
     );
 
     const [after] = await db.select().from(wantedItems).where(eq(wantedItems.id, itemId));
-    expect(after?.notificationMode).toBe('digest');
+    expect(after).toMatchObject({ matchNotifications: 'digest', uncertainNotifications: 'digest' });
     expect(after?.pollEvery).toBeNull();
   });
 
