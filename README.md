@@ -2,7 +2,7 @@
 
 **Status: pre-alpha — nothing works yet.** This repository is being built phase by phase from [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
 
-Goodies Beacon is a self-hosted, open-source "wanted list" for collectors. You describe an item to an AI interviewer, which asks questions until the criteria are unambiguous and then freezes an agreed wanted spec (text criteria, search queries, price ceiling, reference images). Goodies Beacon polls marketplaces on a schedule, an AI reviewer inspects every new listing (title, description, photos) against the spec, and you get an email for real matches — immediately, or in an 8am digest. Anything the reviewer cannot decide is surfaced, not hidden. Everything the reviewer rejected is visible in the web UI so you can audit it, challenge it, and have your challenge folded back into the spec.
+Goodies Beacon is a self-hosted, open-source "wanted list" for collectors. You describe an item to an AI interviewer, which asks questions until the criteria are unambiguous and then freezes an agreed wanted spec (text criteria, search queries, price range, reference images). Goodies Beacon polls marketplaces on a schedule, an AI reviewer inspects every new listing (title, description, photos) against the spec, and you get an email for real matches — immediately, or in an 8am digest. Anything the reviewer cannot decide is surfaced, not hidden. Everything the reviewer rejected is visible in the web UI so you can audit it, challenge it, and have your challenge folded back into the spec.
 
 It is single-user, runs from one `docker compose up`, and every marketplace and AI credential is supplied by whoever runs the instance.
 

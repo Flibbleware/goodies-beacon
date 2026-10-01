@@ -314,6 +314,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-34 | Rejections filtered by the stage that decided them | S | P1-33 |
 | P1-35 | Exclude sellers by country | S | P1-34 |
 | P1-36 | Only sellers located in | S | P1-35 |
+| P1-37 | Notifications tab and price range | S | P1-36 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1890,6 +1891,58 @@ Done when:
 - [x] The option is refused on save unless it is an ISO country code, with the error beside it; one written in lower case is read upper-cased, so a plan saved that way through the JSON editor keeps polling rather than being skipped as unparseable; a plan with none is unchanged. Unit-tested.
 - [x] The Search Plans table names the country a plan asks for sellers in, its own or its item's. Tested against a real Postgres.
 - [x] Checked by hand on a phone and in both themes.
+
+#### P1-37 Notifications tab and price range — S
+
+Two changes to an item's settings, asked for together.
+
+**Notifications get a tab of their own.** General Settings held the poll interval and one
+notification mode beside the price and the unknown-criterion default, and the mode treated a match
+and an uncertain verdict alike: an item set to real-time emailed every listing the reviewer could
+not settle as readily as every match. The item page gains a *Notifications* tab, after Settings,
+holding *Matches* and *Possible matches* — each *email*, *digest* or *none* — and
+*Poll every*, which works as before. The spec's `notificationMode` becomes `matchNotifications` and
+`uncertainNotifications`, and so do the item row's columns the pipeline reads (§4, §10). *none*
+sends nothing, by email or in the digest; the verdict is still on the Candidates page. The
+digest itself is still Phase 2, so for now *digest* is stored and sends nothing yet, as
+before.
+
+**The price ceiling becomes a price range.** *Price range* in General Settings takes a minimum and
+a maximum in GBP, either left empty: no minimum is zero, no maximum is any price. Both are hard
+filters at §7 step 2, before the pre-filter, so a listing outside the range costs nothing — the
+ceiling already ran there. The maximum applies to every listing, an auction by its current bid (or
+its starting price before a bid), which is the price eBay reports for it. The minimum applies to
+fixed prices only: an auction's bid only rises, so one under the minimum now says nothing about
+where it ends. A listing below the minimum is rejected as `under_minimum`, which *Decided by:
+Rules* (P1-34) picks up with no change.
+
+Decided with the owner before it was built: the pill on the item's card and in its header names
+how a match is sent — *Matches: email*, *Matches: digest*, *Matches: off* — and leaves possible
+matches to the Notifications tab, rather than squeezing both into one pill or dropping it.
+
+Decided in the building: a spec version is immutable (§4), so the old keys are read rather than
+rewritten — `priceCeiling` as the range's maximum, and `notificationMode` as both new settings,
+`realtime` being `email` — and the next save writes the new shape. A new key the document already
+has wins over the old one, so the form writing one setting over an old document keeps what the old
+key said about the other; the form drops the old keys as it writes, so the JSON says one thing. The
+item row's column is split by a migration that copies the mode into both, so an item that emailed
+on every verdict still does. A listing whose type is unknown is never rejected on the minimum, as a
+price that cannot be read never trips either end. The Notifications tab's editor is the button at
+the top of its panel, as Details' is, since it has one group; that group is named *Notification
+Settings* rather than *Notifications*, which is the toasts' region (P1-32).
+
+Depends on P1-36.
+
+Done when:
+
+- [x] `priceRange` is a spec setting of `{ min, max, currency: 'GBP' }`, either end null, refusing a negative minimum, a maximum of zero or less and a maximum under the minimum, with the error on the maximum. Unit-tested.
+- [x] `matchNotifications` and `uncertainNotifications` are spec settings of `email`, `digest` or `none`, defaulting to the digest, and projected onto the item row on every save. Unit-tested, and tested against a real Postgres.
+- [x] A spec written before this task parses: its ceiling is the maximum, its one mode both settings with `realtime` read as `email`, and a new key wins over an old one. Unit-tested in core and in the web form's parse.
+- [x] The migration splits the item's mode into the two columns, a real-time item emailing on both and a digest item on neither; checked by hand against a database migrated to the step before, with one item of each.
+- [x] A listing over the maximum is rejected as `over_budget`, an auction by its current bid; a fixed price under the minimum as `under_minimum`; neither calls a model or writes to the ledger. An auction, or a listing of unknown type, under the minimum goes on, as does a price that cannot be converted; a spec saved with a ceiling still rejects over it. Tested against a real Postgres through the pipeline.
+- [x] A match is emailed only when matches are set to email, and an uncertain verdict only when possible matches are, each regardless of the other. Tested against a real Postgres.
+- [x] The item page has a *Notifications* tab after Settings, showing *Matches*, *Possible matches* and *Poll every*, edited from *Edit Notifications*; General Settings holds *Price range*, as a minimum and a maximum, and what an unsettled criterion does. The card and header pill says *Matches: email*, *digest* or *off*. The Playwright run finds the six tabs in order, the range in General Settings with its error and no poll interval, saves a change from the Notifications tab and finds it on the tab, and finds the pill.
+- [x] The candidate says a listing was under the minimum price. Checked by hand on a phone and in both themes.
 
 #### P1-XX Phase 1 exit — S
 

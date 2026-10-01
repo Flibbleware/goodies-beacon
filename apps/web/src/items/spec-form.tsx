@@ -64,6 +64,7 @@ export type SpecFormPart =
   | 'describe'
   | 'marketplaceSettings'
   | 'generalSettings'
+  | 'notifications'
   | 'criterion'
   | 'searchPlan';
 
@@ -77,7 +78,12 @@ export interface EntryFocus {
   adding: boolean;
 }
 
-const ALL_PARTS: readonly SpecFormPart[] = ['describe', 'marketplaceSettings', 'generalSettings'];
+const ALL_PARTS: readonly SpecFormPart[] = [
+  'describe',
+  'marketplaceSettings',
+  'generalSettings',
+  'notifications',
+];
 
 /**
  * The typed editing surface for a spec (P1-18), beside the JSON editor rather than instead of it.
@@ -141,7 +147,22 @@ export function SpecForm({
         />
       ) : null}
       {parts.includes('generalSettings') ? (
-        <GeneralSettings spec={spec} setting={setting} errors={errors} titled={titled} />
+        <GeneralSettings
+          spec={spec}
+          setting={setting}
+          patchSettings={patchSettings}
+          errors={errors}
+          titled={titled}
+        />
+      ) : null}
+      {parts.includes('notifications') ? (
+        <NotificationSettings
+          spec={spec}
+          setting={setting}
+          patchSettings={patchSettings}
+          errors={errors}
+          titled={titled}
+        />
       ) : null}
       {parts.includes('criterion') && focus ? (
         <CriterionFields
@@ -161,6 +182,7 @@ export function SpecForm({
 
 type Edit = (mutate: (document: SpecDocument) => void) => void;
 type Setting = (key: string, value: unknown) => void;
+type PatchSettings = (patch: Record<string, unknown>) => void;
 type Errors = (path: string) => string | undefined;
 
 /** Merges `patch` into row `index` of one of the document's arrays, if both are there to edit. */
@@ -465,57 +487,26 @@ function MarketplaceSettings({
 function GeneralSettings({
   spec,
   setting,
+  patchSettings,
   errors,
   titled,
 }: {
   spec: WantedSpec;
   setting: Setting;
+  patchSettings: PatchSettings;
   errors: Errors;
   titled: boolean;
 }) {
   const s = spec.settings;
-  const ids = { price: useId() };
 
   return (
     <Group title="General Settings" titled={titled}>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field
-          id={ids.price}
-          label="Price ceiling"
-          hint="In GBP; every other currency is converted before comparing. Empty means any price."
-          error={errors('settings.priceCeiling.amount')}
-        >
-          <input
-            id={ids.price}
-            type="number"
-            step="any"
-            value={s.priceCeiling ? s.priceCeiling.amount : ''}
-            placeholder="any price"
-            onChange={(event) =>
-              setting(
-                'priceCeiling',
-                event.target.value === ''
-                  ? null
-                  : { amount: Number(event.target.value), currency: 'GBP' },
-              )
-            }
-            className={CONTROL}
-          />
-        </Field>
-
-        <PollHours
-          value={s.pollEvery}
-          onChange={(pollEvery) => setting('pollEvery', pollEvery)}
-          error={errors('settings.pollEvery')}
-        />
-
-        <Choice
-          label="Notifications"
-          hint="Real-time emails on sight; digest waits for the 08:00 round-up."
-          value={s.notificationMode}
-          options={NOTIFICATION_MODES}
-          onPick={(value: NotificationMode) => setting('notificationMode', value)}
-          labels={NOTIFICATION_LABELS}
+        <PriceRange
+          range={s.priceRange}
+          // `priceCeiling` is what the range replaced (P1-37); dropped so the JSON says one thing.
+          onChange={(priceRange) => patchSettings({ priceRange, priceCeiling: undefined })}
+          errors={errors}
         />
 
         <Choice
@@ -530,6 +521,122 @@ function GeneralSettings({
     </Group>
   );
 }
+
+/**
+ * The price range (P1-37): two amounts in GBP, either left empty. Checked before any model is
+ * called, so a listing outside it costs nothing; the hint says which listings each end applies to,
+ * because the minimum passing every auction is not something anyone would guess.
+ */
+function PriceRange({
+  range,
+  onChange,
+  errors,
+}: {
+  range: PriceRangeValue;
+  onChange: (range: PriceRangeValue) => void;
+  errors: Errors;
+}) {
+  const hintId = useId();
+  const error = errors('settings.priceRange.min') ?? errors('settings.priceRange.max');
+  const amount = (text: string) => (text === '' ? null : Number(text));
+
+  return (
+    <fieldset aria-describedby={hintId}>
+      <legend className="block text-sm font-medium">Price range</legend>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          step="any"
+          min={0}
+          aria-label="Minimum price"
+          value={range.min ?? ''}
+          placeholder="£0"
+          onChange={(event) => onChange({ ...range, min: amount(event.target.value) })}
+          className={CONTROL}
+        />
+        <span className="mt-2 text-sm text-ink-dim dark:text-ink-dim-dark">to</span>
+        <input
+          type="number"
+          step="any"
+          min={0}
+          aria-label="Maximum price"
+          value={range.max ?? ''}
+          placeholder="any"
+          onChange={(event) => onChange({ ...range, max: amount(event.target.value) })}
+          className={CONTROL}
+        />
+      </div>
+      <p
+        id={hintId}
+        className={`mt-1.5 text-xs ${error ? 'text-red-600 dark:text-red-400' : 'text-ink-dim dark:text-ink-dim-dark'}`}
+      >
+        {error ??
+          'In GBP, other currencies converted first. The maximum applies to every listing, an auction by its current bid; the minimum to fixed prices only.'}
+      </p>
+    </fieldset>
+  );
+}
+
+/**
+ * How the item tells the owner what it found, and how often it looks (P1-37): its own tab, apart
+ * from the settings that decide what is found.
+ */
+function NotificationSettings({
+  spec,
+  setting,
+  patchSettings,
+  errors,
+  titled,
+}: {
+  spec: WantedSpec;
+  setting: Setting;
+  patchSettings: PatchSettings;
+  errors: Errors;
+  titled: boolean;
+}) {
+  const s = spec.settings;
+  // Both written, and the single mode they replaced dropped, so the JSON says what the form does.
+  const notify = (patch: Partial<Pick<WantedSpec['settings'], NotifySetting>>) =>
+    patchSettings({
+      matchNotifications: s.matchNotifications,
+      uncertainNotifications: s.uncertainNotifications,
+      ...patch,
+      notificationMode: undefined,
+    });
+
+  return (
+    <Group title="Notification Settings" titled={titled}>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Choice
+          label="Matches"
+          hint="An email sends each one as it is found; the digest waits for the daily round-up."
+          value={s.matchNotifications}
+          options={NOTIFICATION_MODES}
+          onPick={(value: NotificationMode) => notify({ matchNotifications: value })}
+          labels={NOTIFICATION_LABELS}
+        />
+
+        <Choice
+          label="Possible matches"
+          hint="What the reviewer could not settle. Listed under Candidates whatever is chosen."
+          value={s.uncertainNotifications}
+          options={NOTIFICATION_MODES}
+          onPick={(value: NotificationMode) => notify({ uncertainNotifications: value })}
+          labels={NOTIFICATION_LABELS}
+        />
+
+        <PollHours
+          value={s.pollEvery}
+          onChange={(pollEvery) => setting('pollEvery', pollEvery)}
+          error={errors('settings.pollEvery')}
+        />
+      </div>
+    </Group>
+  );
+}
+
+type NotifySetting = 'matchNotifications' | 'uncertainNotifications';
+type PriceRangeValue = WantedSpec['settings']['priceRange'];
 
 const toggleIn = <T extends string>(list: readonly T[], value: T, on: boolean): T[] =>
   on ? [...list, value] : list.filter((entry) => entry !== value);

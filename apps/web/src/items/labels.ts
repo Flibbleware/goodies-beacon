@@ -49,9 +49,15 @@ export const CONDITION_LABELS: Record<ConditionCategory, string> = {
 };
 
 export const NOTIFICATION_LABELS: Record<NotificationMode, string> = {
-  realtime: 'Real-time email',
-  digest: 'Daily digest',
+  email: 'email',
+  digest: 'digest',
+  none: 'none',
 };
+
+/** The pill on an item's card and page, which names how a match is sent and nothing else (P1-37). */
+export function matchesPill(mode: NotificationMode): string {
+  return `Matches: ${{ email: 'email', digest: 'digest', none: 'off' }[mode]}`;
+}
 
 export const RELIST_LABELS: Record<RelistPolicy, string> = {
   show: 'Show, flagged as seen before',

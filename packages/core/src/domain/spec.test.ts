@@ -49,13 +49,15 @@ describe('specSettingsSchema', () => {
     expect(settings.shipsToUk).toBe('show_all');
     expect(settings.relists).toBe('show');
     expect(settings.defaultOnUnknown).toBe('surface');
-    expect(settings.priceCeiling).toBeNull();
+    expect(settings.priceRange).toEqual({ min: null, max: null, currency: 'GBP' });
+    expect(settings.matchNotifications).toBe('digest');
+    expect(settings.uncertainNotifications).toBe('digest');
     expect(settings.listingTypes).toEqual(['auction', 'fixed']);
   });
 
-  it('rejects a price ceiling in a currency other than GBP, since §4 compares in GBP', () => {
+  it('rejects a price range in a currency other than GBP, since §4 compares in GBP', () => {
     const result = specSettingsSchema.safeParse({
-      priceCeiling: { amount: 120, currency: 'USD' },
+      priceRange: { min: null, max: 120, currency: 'USD' },
     });
 
     expect(result.success).toBe(false);
@@ -71,9 +73,89 @@ describe('specSettingsSchema', () => {
   });
 
   it('names the offending path, which is what the P1-13 editor shows', () => {
-    const result = specSettingsSchema.safeParse({ priceCeiling: { amount: -5, currency: 'GBP' } });
+    const result = specSettingsSchema.safeParse({ priceRange: { max: -5 } });
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.path).toEqual(['priceCeiling', 'amount']);
+    expect(result.error?.issues[0]?.path).toEqual(['priceRange', 'max']);
+  });
+
+  it('takes either end of the price range alone, and refuses a maximum under the minimum', () => {
+    expect(specSettingsSchema.parse({ priceRange: { min: 20 } }).priceRange).toEqual({
+      min: 20,
+      max: null,
+      currency: 'GBP',
+    });
+    expect(specSettingsSchema.safeParse({ priceRange: { min: 0, max: 50 } }).success).toBe(true);
+    expect(specSettingsSchema.safeParse({ priceRange: { min: 50, max: 50 } }).success).toBe(true);
+    expect(specSettingsSchema.safeParse({ priceRange: { min: -1 } }).success).toBe(false);
+
+    const result = specSettingsSchema.safeParse({ priceRange: { min: 60, max: 50 } });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(['priceRange', 'max']);
+  });
+
+  it('notifies a match and an uncertain verdict each by email, digest or not at all', () => {
+    const settings = specSettingsSchema.parse({
+      matchNotifications: 'email',
+      uncertainNotifications: 'none',
+    });
+    expect(settings).toMatchObject({ matchNotifications: 'email', uncertainNotifications: 'none' });
+    expect(specSettingsSchema.safeParse({ matchNotifications: 'realtime' }).success).toBe(false);
+  });
+});
+
+describe('a spec written before P1-37', () => {
+  const legacy = (settings: Record<string, unknown>) =>
+    wantedSpecSchema.parse({ settings }).settings;
+
+  it('reads the price ceiling as the maximum of the range', () => {
+    expect(legacy({ priceCeiling: { amount: 120, currency: 'GBP' } }).priceRange).toEqual({
+      min: null,
+      max: 120,
+      currency: 'GBP',
+    });
+    expect(legacy({ priceCeiling: null }).priceRange).toEqual({
+      min: null,
+      max: null,
+      currency: 'GBP',
+    });
+  });
+
+  it('still refuses a ceiling in another currency', () => {
+    const result = wantedSpecSchema.safeParse({
+      settings: { priceCeiling: { amount: 120, currency: 'USD' } },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('reads one notification mode as both, real-time being email', () => {
+    expect(legacy({ notificationMode: 'realtime' })).toMatchObject({
+      matchNotifications: 'email',
+      uncertainNotifications: 'email',
+    });
+    expect(legacy({ notificationMode: 'digest' })).toMatchObject({
+      matchNotifications: 'digest',
+      uncertainNotifications: 'digest',
+    });
+  });
+
+  it('lets a field already written in its new form win over the old key', () => {
+    const settings = legacy({
+      notificationMode: 'realtime',
+      matchNotifications: 'none',
+      priceCeiling: { amount: 120, currency: 'GBP' },
+      priceRange: { min: 10, max: null, currency: 'GBP' },
+    });
+    expect(settings).toMatchObject({
+      matchNotifications: 'none',
+      uncertainNotifications: 'email',
+      priceRange: { min: 10, max: null },
+    });
+  });
+
+  it('drops the old keys once read', () => {
+    const settings = legacy({ notificationMode: 'digest', priceCeiling: null });
+    expect(settings).not.toHaveProperty('notificationMode');
+    expect(settings).not.toHaveProperty('priceCeiling');
   });
 });

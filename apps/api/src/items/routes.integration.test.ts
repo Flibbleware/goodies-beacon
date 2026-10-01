@@ -206,18 +206,21 @@ describe.skipIf(!databaseUrl)('the wanted item routes', () => {
     });
   });
 
-  it('refuses a price ceiling in a currency it cannot compare', async () => {
+  it('refuses a price range in a currency it cannot compare', async () => {
     const spec = example('carmageddon');
     const settings = spec.settings as Record<string, unknown>;
 
     const res = await send('POST', '/api/items', {
       title: 'Carmageddon big box',
-      spec: { ...spec, settings: { ...settings, priceCeiling: { amount: 120, currency: 'USD' } } },
+      spec: {
+        ...spec,
+        settings: { ...settings, priceRange: { min: null, max: 120, currency: 'USD' } },
+      },
     });
 
     expect(res.status).toBe(400);
     const body = (await res.json()) as { error: { message: string } };
-    expect(body.error.message).toContain('spec.settings.priceCeiling.currency');
+    expect(body.error.message).toContain('spec.settings.priceRange.currency');
   });
 
   it('refuses an item with no title', async () => {

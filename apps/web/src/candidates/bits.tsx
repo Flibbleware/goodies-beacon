@@ -61,7 +61,8 @@ export function DecisionChip({ decision }: { decision: VerdictDecision | null })
 
 /** What stopped it before a model was asked, in words rather than in the enum's own terms. */
 export const REJECTION_REASONS: Record<string, string> = {
-  over_budget: 'over the price ceiling',
+  over_budget: 'over the maximum price',
+  under_minimum: 'under the minimum price',
   negative_keyword: 'a negative keyword in the title',
   excluded_location: 'the seller is in an excluded country',
   prefilter: 'discarded by the pre-filter',

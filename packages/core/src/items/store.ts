@@ -39,7 +39,7 @@ export interface LoadedItem extends PollState {
   status: ItemSummary['status'];
   categoryId: ItemSummary['categoryId'];
   displayImageId: ItemSummary['displayImageId'];
-  notificationMode: ItemSummary['notificationMode'];
+  matchNotifications: ItemSummary['matchNotifications'];
   pollEvery: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -108,7 +108,7 @@ export async function listItems(db: Database): Promise<ItemSummary[]> {
         status: wantedItems.status,
         categoryId: wantedItems.categoryId,
         displayImageId: wantedItems.displayImageId,
-        notificationMode: wantedItems.notificationMode,
+        matchNotifications: wantedItems.matchNotifications,
         currentVersion: specVersions.version,
         updatedAt: wantedItems.updatedAt,
       })
@@ -205,7 +205,7 @@ export async function loadItem(db: Database, id: string): Promise<LoadedItem | u
     status: item.status,
     categoryId: item.categoryId,
     displayImageId: item.displayImageId,
-    notificationMode: item.notificationMode,
+    matchNotifications: item.matchNotifications,
     pollEvery: item.pollEvery,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
@@ -332,13 +332,14 @@ async function writeVersion(
 }
 
 /**
- * The four settings §4 gives both the item and its spec, projected onto the columns on save.
+ * The settings §4 gives both the item and its spec, projected onto the columns on save.
  *
  * They are one field in the UI and the document is the one the owner edits, so the columns follow
  * it rather than the other way about — and they have to, because the runtime reads the columns:
  * the scheduler takes `pollEvery` from the item row (§6) and the review pipeline takes
- * `notificationMode` from it (§10). Writing a spec that says `realtime` and leaving the column at
- * `digest` would give an item that agrees with itself on screen and emails nobody.
+ * `matchNotifications` and `uncertainNotifications` from it (§10). Writing a spec that says `email`
+ * and leaving the column at `digest` would give an item that agrees with itself on screen and
+ * emails nobody.
  */
 function itemColumns(input: ItemSaveInput) {
   const settings = input.spec.settings;
@@ -346,7 +347,8 @@ function itemColumns(input: ItemSaveInput) {
     title: input.title,
     status: input.status,
     categoryId: input.categoryId,
-    notificationMode: settings.notificationMode,
+    matchNotifications: settings.matchNotifications,
+    uncertainNotifications: settings.uncertainNotifications,
     pollEvery: settings.pollEvery,
     gradingScaleId: settings.gradingScaleId,
     minimumGrade: settings.minimumGrade,

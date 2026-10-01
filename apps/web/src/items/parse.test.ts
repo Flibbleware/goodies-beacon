@@ -44,7 +44,7 @@ describe('parseSpecText', () => {
   it('names the path of every field the schema rejects', () => {
     const result = parseSpecText(
       JSON.stringify({
-        settings: { priceCeiling: { amount: 120, currency: 'USD' } },
+        settings: { priceRange: { min: null, max: 120, currency: 'USD' } },
         criteria: [{ id: 'a', text: '', kind: 'hard', quantifiable: true }],
       }),
     );
@@ -52,7 +52,7 @@ describe('parseSpecText', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       const paths = result.issues.map((issue) => issue.path);
-      expect(paths).toContain('settings.priceCeiling.currency');
+      expect(paths).toContain('settings.priceRange.currency');
       expect(paths).toContain('criteria.0.text');
     }
   });
@@ -83,7 +83,8 @@ describe('parseSpecText', () => {
     ['pollEvery', 'P', 'settings.pollEvery'],
     ['pollEvery', 'PT', 'settings.pollEvery'],
     ['gradingScaleId', 'a', 'settings.gradingScaleId'],
-    ['priceCeiling', { amount: 0, currency: 'GBP' }, 'settings.priceCeiling.amount'],
+    ['priceRange', { min: null, max: 0, currency: 'GBP' }, 'settings.priceRange.max'],
+    ['priceRange', { min: 60, max: 50, currency: 'GBP' }, 'settings.priceRange.max'],
     ['listingTypes', [], 'settings.listingTypes'],
     ['negativeKeywords', [''], 'settings.negativeKeywords.0'],
   ])('keeps a draft to draw when %s is %j, and still refuses to save it', (key, value, path) => {
@@ -261,5 +262,42 @@ describe('withSettings', () => {
       sellerCountry: 'GB',
       excludedCountries: [],
     });
+  });
+
+  /** P1-37's form writes the new keys with the old ones as `undefined`, which JSON leaves out. */
+  it('drops a key patched to undefined, so a legacy setting does not linger', () => {
+    const updated = withSettings(
+      '{"settings":{"notificationMode":"realtime","priceCeiling":{"amount":5,"currency":"GBP"}}}',
+      {
+        matchNotifications: 'none',
+        uncertainNotifications: 'email',
+        notificationMode: undefined,
+        priceCeiling: undefined,
+      },
+    );
+
+    expect(JSON.parse(updated as string).settings).toEqual({
+      matchNotifications: 'none',
+      uncertainNotifications: 'email',
+    });
+  });
+});
+
+describe('a document written before P1-37', () => {
+  it('draws its ceiling as the maximum and its one mode as both', () => {
+    const result = parseSpecText(
+      JSON.stringify({
+        settings: { priceCeiling: { amount: 80, currency: 'GBP' }, notificationMode: 'realtime' },
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.spec.settings).toMatchObject({
+        priceRange: { min: null, max: 80 },
+        matchNotifications: 'email',
+        uncertainNotifications: 'email',
+      });
+    }
   });
 });

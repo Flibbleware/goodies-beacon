@@ -5,7 +5,7 @@ import type { Criterion, WantedSpec } from './spec.js';
  *
  * ARCHITECTURE.md §4 originally asked for a linter that also flagged criteria *mentioning* prices,
  * countries or listing types. That was dropped in v1.24, because it was guarding something that
- * is not actually loose: `priceCeiling` is `{ amount, currency: 'GBP' }`, `listingTypes` is an
+ * is not actually loose: `priceRange` is `{ min, max, currency: 'GBP' }`, `listingTypes` is an
  * enum, and a region is a field on the search plan. A price in a criterion is only reachable by
  * hand-typing one into P1-13's raw JSON editor, and both of Phase 3's deliverables close that —
  * the typed form gives the ceiling a number field, and `propose_spec` is typed so the interviewer

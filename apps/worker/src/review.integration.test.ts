@@ -12,6 +12,7 @@ import {
   listings,
   media,
   type NotificationMessage,
+  type NotificationMode,
   notifications,
   type ReviewPortRequest,
   type ReviewPortResult,
@@ -126,11 +127,15 @@ function fakePorts(
 
 interface SeedOptions {
   priceGbp?: string | null;
-  priceCeiling?: { amount: number; currency: 'GBP' } | null;
+  priceRange?: { min?: number | null; max?: number | null };
+  buyingType?: 'auction' | 'fixed' | null;
+  /** Written into the stored settings as they are, for a spec saved before P1-37. */
+  legacySettings?: Record<string, unknown>;
   negativeKeywords?: string[];
   excludedCountries?: string[];
   itemLocationCountry?: string | null;
-  notificationMode?: 'realtime' | 'digest';
+  matchNotifications?: NotificationMode;
+  uncertainNotifications?: NotificationMode;
   origin?: 'poll' | 'backfill';
   title?: string;
   /** Set to attribute the candidate to a plan, so P1-14's per-query stats can be asserted. */
@@ -145,7 +150,8 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
     .values({
       title: 'Carmageddon big box',
       status: 'active',
-      notificationMode: options.notificationMode ?? 'realtime',
+      matchNotifications: options.matchNotifications ?? 'email',
+      uncertainNotifications: options.uncertainNotifications ?? 'email',
     })
     .returning({ id: wantedItems.id });
   if (!item) throw new Error('could not seed the item');
@@ -160,10 +166,11 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
       settings: {
         sources: ['_template'],
         listingTypes: ['auction', 'fixed'],
-        priceCeiling: options.priceCeiling === undefined ? null : options.priceCeiling,
+        ...(options.priceRange ? { priceRange: { currency: 'GBP', ...options.priceRange } } : {}),
         negativeKeywords: options.negativeKeywords ?? [],
         excludedCountries: options.excludedCountries ?? [],
         defaultOnUnknown: 'surface',
+        ...options.legacySettings,
       },
       criteria: [
         {
@@ -195,6 +202,7 @@ async function seed(options: SeedOptions = {}): Promise<{ candidateId: string; i
       priceCurrency: 'GBP',
       priceGbp: options.priceGbp === undefined ? '25.00' : options.priceGbp,
       itemLocationCountry: options.itemLocationCountry ?? null,
+      buyingType: options.buyingType === undefined ? 'fixed' : options.buyingType,
       images: [],
     })
     .returning({ id: listings.id });
@@ -305,11 +313,8 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
   });
 
   describe('the hard filters, which cost nothing', () => {
-    it('rejects a listing over the price ceiling without asking a model', async () => {
-      const { candidateId } = await seed({
-        priceGbp: '250.00',
-        priceCeiling: { amount: 120, currency: 'GBP' },
-      });
+    it('rejects a listing over the maximum price without asking a model', async () => {
+      const { candidateId } = await seed({ priceGbp: '250.00', priceRange: { max: 120 } });
       const ports = fakePorts();
 
       const outcome = await runReview(depsWith(ports), candidateId);
@@ -321,6 +326,71 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
       const [verdict] = await db.select().from(verdicts);
       // The model columns stay null: nothing pretends a model was consulted (§7 step 2).
       expect(verdict).toMatchObject({ decision: 'reject', reason: 'over_budget', model: null });
+    });
+
+    /** P1-37: the auction's price is its current bid, which has already passed the maximum. */
+    it('rejects an auction whose bid is already over the maximum', async () => {
+      const { candidateId } = await seed({
+        priceGbp: '250.00',
+        priceRange: { max: 120 },
+        buyingType: 'auction',
+      });
+
+      expect(await runReview(depsWith(fakePorts()), candidateId)).toMatchObject({
+        status: 'rejected',
+        reason: 'over_budget',
+      });
+    });
+
+    it('rejects a fixed price under the minimum without asking a model', async () => {
+      const { candidateId } = await seed({ priceGbp: '5.00', priceRange: { min: 20 } });
+      const ports = fakePorts();
+
+      const outcome = await runReview(depsWith(ports), candidateId);
+
+      expect(outcome).toMatchObject({ status: 'rejected', reason: 'under_minimum' });
+      expect(ports.spy).toMatchObject({ prefilterCalls: 0, reviewCalls: 0, enrichCalls: 0 });
+      expect(await db.select().from(costLedger)).toHaveLength(0);
+      const [verdict] = await db.select().from(verdicts);
+      expect(verdict).toMatchObject({ decision: 'reject', reason: 'under_minimum', model: null });
+    });
+
+    /** An auction's bid only rises, and a listing of no known type is given the benefit (§1). */
+    it('lets an auction, or a listing of unknown type, under the minimum through', async () => {
+      const auction = await seed({
+        priceGbp: '5.00',
+        priceRange: { min: 20 },
+        buyingType: 'auction',
+      });
+      const unknown = await seed({ priceGbp: '5.00', priceRange: { min: 20 }, buyingType: null });
+
+      expect(await runReview(depsWith(fakePorts()), auction.candidateId)).toMatchObject({
+        status: 'reviewed',
+      });
+      expect(await runReview(depsWith(fakePorts()), unknown.candidateId)).toMatchObject({
+        status: 'reviewed',
+      });
+    });
+
+    it('lets a price inside the range through', async () => {
+      const { candidateId } = await seed({ priceGbp: '25.00', priceRange: { min: 20, max: 30 } });
+
+      expect(await runReview(depsWith(fakePorts()), candidateId)).toMatchObject({
+        status: 'reviewed',
+      });
+    });
+
+    /** A spec version is immutable, so one saved before P1-37 still says `priceCeiling`. */
+    it('applies the ceiling of a spec saved before the range as its maximum', async () => {
+      const { candidateId } = await seed({
+        priceGbp: '250.00',
+        legacySettings: { priceCeiling: { amount: 120, currency: 'GBP' } },
+      });
+
+      expect(await runReview(depsWith(fakePorts()), candidateId)).toMatchObject({
+        status: 'rejected',
+        reason: 'over_budget',
+      });
     });
 
     it('rejects a negative keyword in the title without asking a model', async () => {
@@ -362,11 +432,7 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
     });
 
     /** §1's asymmetry: a price nobody can read must not silently discard the listing. */
-    it('does not apply the ceiling to a price it cannot convert', async () => {
-      const { candidateId } = await seed({
-        priceGbp: null,
-        priceCeiling: { amount: 1, currency: 'GBP' },
-      });
+    it('does not apply the range to a price it cannot convert', async () => {
       const unconvertible: Converter = {
         async toGbp() {
           return null;
@@ -374,12 +440,14 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
         invalidate() {},
       };
 
-      const outcome = await runReview(
-        { ...depsWith(fakePorts()), converter: unconvertible },
-        candidateId,
-      );
-
-      expect(outcome).toMatchObject({ status: 'reviewed' });
+      for (const priceRange of [{ max: 1 }, { min: 100 }]) {
+        const { candidateId } = await seed({ priceGbp: null, priceRange });
+        const outcome = await runReview(
+          { ...depsWith(fakePorts()), converter: unconvertible },
+          candidateId,
+        );
+        expect(outcome, JSON.stringify(priceRange)).toMatchObject({ status: 'reviewed' });
+      }
     });
   });
 
@@ -569,14 +637,40 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
       expect(await db.select().from(notifications)).toHaveLength(0);
     });
 
-    it('sends nothing for a digest-mode item', async () => {
-      const { candidateId } = await seed({ notificationMode: 'digest' });
-      const ports = fakePorts();
+    it('sends nothing for a match set to the digest or to nothing', async () => {
+      for (const matchNotifications of ['digest', 'none'] as const) {
+        const { candidateId } = await seed({ matchNotifications });
+        const ports = fakePorts();
 
-      await runReview(depsWith(ports), candidateId);
+        await runReview(depsWith(ports), candidateId);
 
-      expect(ports.spy.emails).toHaveLength(0);
+        expect(ports.spy.emails, matchNotifications).toHaveLength(0);
+      }
       expect(await db.select().from(notifications)).toHaveLength(0);
+    });
+
+    /** P1-37: each verdict is notified on its own setting, not the other's. */
+    it('emails a possible match by its own setting, whatever matches are set to', async () => {
+      const unknown = {
+        reviewResult: {
+          criteriaResults: [
+            { criterionId: 'big-box', result: 'unknown' as const, evidence: 'no photo of the box' },
+          ],
+        },
+      };
+
+      const quiet = await seed({ matchNotifications: 'none', uncertainNotifications: 'email' });
+      const quietPorts = fakePorts(unknown);
+      await runReview(depsWith(quietPorts), quiet.candidateId);
+      expect(quietPorts.spy.emails).toHaveLength(1);
+
+      const off = await seed({ matchNotifications: 'email', uncertainNotifications: 'none' });
+      const offPorts = fakePorts(unknown);
+      expect(await runReview(depsWith(offPorts), off.candidateId)).toMatchObject({
+        decision: 'uncertain',
+        notified: false,
+      });
+      expect(offPorts.spy.emails).toHaveLength(0);
     });
 
     /** A backfill sweeps everything already listed; mailing it one at a time trains you to ignore it. */
@@ -685,7 +779,7 @@ describe.skipIf(!databaseUrl)('the review pipeline against a real Postgres', () 
     it('charges nothing for a candidate stopped by a hard filter', async () => {
       const { candidateId } = await seed({
         searchPlanId: 'plan-stats-filtered',
-        priceCeiling: { amount: 10, currency: 'GBP' },
+        priceRange: { max: 10 },
       });
 
       await runReview(depsWith(fakePorts()), candidateId);

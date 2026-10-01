@@ -4,6 +4,14 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-37 Notifications tab and price range. An item's page has a *Notifications* tab, after
+  Settings, with *Poll every* and separate choices for *Matches* and *Possible matches*: email as
+  found, daily digest, or none. Existing items keep what they did, for both. The item's pill now
+  says how matches are sent (*Matches: email*).
+- The price ceiling is now a *Price range* in General Settings, with an optional minimum as well as
+  the maximum. Listings outside it are rejected before any AI is used; the minimum applies to
+  fixed-price listings only, since an auction's bid can still rise. Rejections under the minimum
+  show under *Rejected → Decided by: Rules*.
 - P1-36 Only sellers located in. An item's Marketplace Settings can ask eBay for sellers in one
   country only, for every search plan; a plan can choose a different country for itself. The
   Search Plans table shows the country beside the region. eBay drops the rest before they reach

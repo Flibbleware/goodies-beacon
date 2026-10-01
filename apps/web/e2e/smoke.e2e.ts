@@ -421,17 +421,25 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(general.getByLabel('Relists')).toHaveCount(0);
     await expect(general.getByRole('checkbox')).toHaveCount(0);
 
-    await general.getByLabel('Price ceiling').fill('95');
+    // P1-37: the poll interval and notifications have a tab of their own.
+    await expect(general.getByLabel('Poll every')).toHaveCount(0);
+    await expect(general.getByLabel('Matches')).toHaveCount(0);
 
-    // Hours, not ISO 8601, and the hint says what a schedule can actually run (P1-26).
-    await general.getByLabel('Poll every').pressSequentially('5');
-    await expect(general.getByLabel('Poll every')).toHaveValue('5');
-    await expect(general).toContainText('so this polls every 6 hours');
+    // A range, either end optional; a maximum under the minimum is refused beside it.
+    const range = general.getByRole('group', { name: 'Price range' });
+    await expect(range.getByLabel('Maximum price')).toHaveValue('120');
+    await expect(range.getByLabel('Minimum price')).toHaveValue('');
+    await range.getByLabel('Minimum price').fill('130');
+    await expect(range).toContainText('must be at least the minimum');
+    await expect(general.getByRole('button', { name: 'Save as version 3' })).toBeDisabled();
+    await range.getByLabel('Minimum price').fill('20');
+    await range.getByLabel('Maximum price').fill('');
+    await expect(general.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
 
     // A price with pence must not trip the browser's own validation and block Save.
-    await general.getByLabel('Price ceiling').fill('149.99');
-    const valid = await general
-      .getByLabel('Price ceiling')
+    await range.getByLabel('Maximum price').fill('149.99');
+    const valid = await range
+      .getByLabel('Maximum price')
       .evaluate((input) => (input as unknown as { checkValidity(): boolean }).checkValidity());
     expect(valid).toBe(true);
     await expect(general.getByRole('button', { name: 'Save as version 3' })).toBeEnabled();
@@ -442,7 +450,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await page.getByRole('button', { name: 'Edit marketplace settings' }).click();
     const marketplace = page.getByRole('dialog', { name: 'Edit Marketplace Settings' });
-    await expect(marketplace.getByLabel('Price ceiling')).toHaveCount(0);
+    await expect(marketplace.getByLabel('Maximum price')).toHaveCount(0);
     await expect(marketplace.getByLabel('Poll every')).toHaveCount(0);
 
     await marketplace.getByLabel('Relists').selectOption('suppress');
@@ -495,7 +503,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await page.getByRole('button', { name: 'JSON', exact: true }).click();
     const json = page.getByRole('dialog', { name: 'Edit JSON' });
-    await expect(json.getByLabel('Spec')).toHaveValue(/"amount": 120/);
+    await expect(json.getByLabel('Spec')).toHaveValue(/"max": 120/);
     await expect(json.getByLabel('Spec')).toHaveValue(/"relists": "show"/);
     await json.getByRole('button', { name: 'Cancel' }).click();
     await expect(json).toBeHidden();
@@ -562,7 +570,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     const row = page.getByRole('listitem').filter({ hasText: 'Carmageddon big box' });
 
     await expect(row).toContainText('active');
-    await expect(row).toContainText('Real-time email');
+    // P1-37: the pill names how a match is sent, and leaves possible matches to the item page.
+    await expect(row).toContainText('Matches: email');
     await expect(row).toContainText('Never polled');
     await expect(row).toContainText('0 matched');
     await expect(row).toContainText('0 uncertain');
@@ -603,6 +612,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
       'Search Plans',
       'Criteria',
       'Settings',
+      'Notifications',
       'Images',
     ]);
     await expect(tab('Details')).toHaveAttribute('aria-selected', 'true');
@@ -622,8 +632,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(marketplaceGroup).toContainText('Sellers excluded in');
     await expect(marketplaceGroup).toContainText('Only sellers in');
     const generalGroup = spec.getByRole('region', { name: 'General Settings' });
-    await expect(generalGroup).toContainText('£120');
-    await expect(generalGroup).toContainText('Real-time email');
+    await expect(generalGroup).toContainText('Up to £120');
+    await expect(generalGroup).not.toContainText('Poll every');
     await expect(marketplaceGroup).toContainText('Auction and Fixed price');
     await expect(marketplaceGroup).not.toContainText('£120');
     await expect(spec).not.toContainText('Grading');
@@ -730,7 +740,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     const dialog = page.getByRole('dialog', { name: 'Add a Criterion' });
     const save = dialog.getByRole('button', { name: 'Save as version 4' });
     // One criterion: the settings, search plans and the other criteria are not here.
-    await expect(dialog.getByLabel('Price ceiling')).toHaveCount(0);
+    await expect(dialog.getByLabel('Maximum price')).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Add a search plan' })).toHaveCount(0);
     await expect(dialog.getByLabel('Criterion', { exact: true })).toHaveValue('');
     await expect(save).toBeDisabled();
@@ -1586,6 +1596,34 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // It never ran, so there are no stats to keep and it leaves the table.
     await expect(table).not.toContainText('carmageddon mac');
     await latestNote(before + 3, 'Removed the search plan “carmageddon mac” on EBAY_DE.');
+  });
+
+  await test.step('notifications are a tab of their own, each verdict set apart', async () => {
+    await page.goto(`/items/${carmageddonId}`);
+    const before = await (await itemHistory()).getByRole('listitem').count();
+    await closeHistory();
+
+    const panel = await openTab('Notifications');
+    await expect(panel).toContainText('Matchesemail');
+    await expect(panel).toContainText('Possible matchesemail');
+    await expect(panel).toContainText('Poll every8 hours (the default)');
+
+    await panel.getByRole('button', { name: 'Edit notifications' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit Notifications' });
+    await expect(dialog.getByRole('group', { name: 'Price range' })).toHaveCount(0);
+    // Hours, not ISO 8601, and the hint says what a schedule can actually run (P1-26).
+    await dialog.getByLabel('Poll every').pressSequentially('5');
+    await expect(dialog.getByLabel('Poll every')).toHaveValue('5');
+    await expect(dialog).toContainText('so this polls every 6 hours');
+    await dialog.getByLabel('Possible matches').selectOption('none');
+    await dialog.getByRole('button', { name: `Save as version ${before + 1}` }).click();
+    await expect(dialog).toBeHidden();
+    await expect(toasts).toContainText(`Saved as version ${before + 1}`);
+
+    await expect(panel).toContainText('Matchesemail');
+    await expect(panel).toContainText('Possible matchesnone');
+    await expect(panel).toContainText('Poll every6 hours (5 asked for)');
+    await expect(page.getByText('Matches: email')).toBeVisible();
   });
 
   await test.step('the password can be changed, and the new one is what signs you in', async () => {

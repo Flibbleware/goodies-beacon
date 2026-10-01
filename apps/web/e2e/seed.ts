@@ -29,7 +29,7 @@ export interface SeedOptions {
   title: string;
   externalId: string;
   decision: 'match' | 'uncertain' | 'reject';
-  reason?: 'over_budget' | 'negative_keyword' | 'prefilter';
+  reason?: 'over_budget' | 'under_minimum' | 'negative_keyword' | 'prefilter';
   criteriaResults?: { criterionId: string; result: string; evidence: string }[];
   englishSummary?: string;
   description?: string;

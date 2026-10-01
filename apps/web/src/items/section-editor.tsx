@@ -26,6 +26,7 @@ export type EditableSection =
   | 'describe'
   | 'marketplaceSettings'
   | 'generalSettings'
+  | 'notifications'
   | 'addCriterion'
   | 'images'
   | 'addSearchPlan'
@@ -59,6 +60,12 @@ const SECTIONS: Record<EditableSection, SectionConfig> = {
     title: 'Edit General Settings',
     parts: ['generalSettings'],
     note: 'Edited the general settings.',
+    wide: true,
+  },
+  notifications: {
+    title: 'Edit Notifications',
+    parts: ['notifications'],
+    note: 'Edited the notifications.',
     wide: true,
   },
   addCriterion: {

@@ -36,7 +36,7 @@ export interface LoadedItem {
   status: WantedItemStatus;
   categoryId: string | null;
   displayImageId: string | null;
-  notificationMode: NotificationMode;
+  matchNotifications: NotificationMode;
   pollEvery: string | null;
   createdAt: string;
   updatedAt: string;
