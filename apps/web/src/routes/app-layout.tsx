@@ -30,15 +30,48 @@ export const appLayoutRoute = createRoute({
   component: AppLayout,
 });
 
-/** The pages from §14. The ones without a route yet name the task that brings them. */
+/**
+ * The pages from §14. The ones without a route yet name the task that brings them, and stay grey
+ * until it does; every other page's icon has a hue of its own, a step lighter on the dark theme.
+ */
 const NAV = [
-  { to: '/', label: 'Dashboard', Icon: DashboardIcon, soon: undefined },
-  { to: '/items', label: 'Wanted Items', Icon: WantedIcon, soon: undefined },
-  { to: '/candidates', label: 'Candidates', Icon: CandidatesIcon, soon: undefined },
-  { to: '/criteria', label: 'Criteria', Icon: CriteriaIcon, soon: undefined },
-  { to: '/wishes', label: 'Wish List', Icon: WishIcon, soon: undefined },
-  { to: '/scales', label: 'Grading scales', Icon: GradingIcon, soon: 'Phase 5' },
-  { to: '/costs', label: 'Costs', Icon: CostsIcon, soon: 'Phase 5' },
+  {
+    to: '/',
+    label: 'Dashboard',
+    Icon: DashboardIcon,
+    hue: 'text-sky-600 dark:text-sky-400',
+    soon: undefined,
+  },
+  {
+    to: '/items',
+    label: 'Wanted Items',
+    Icon: WantedIcon,
+    hue: 'text-rose-600 dark:text-rose-400',
+    soon: undefined,
+  },
+  {
+    to: '/candidates',
+    label: 'Candidates',
+    Icon: CandidatesIcon,
+    hue: 'text-emerald-600 dark:text-emerald-400',
+    soon: undefined,
+  },
+  {
+    to: '/criteria',
+    label: 'Criteria',
+    Icon: CriteriaIcon,
+    hue: 'text-violet-600 dark:text-violet-400',
+    soon: undefined,
+  },
+  {
+    to: '/wishes',
+    label: 'Wish List',
+    Icon: WishIcon,
+    hue: 'text-amber-600 dark:text-amber-400',
+    soon: undefined,
+  },
+  { to: '/scales', label: 'Grading scales', Icon: GradingIcon, hue: '', soon: 'Phase 5' },
+  { to: '/costs', label: 'Costs', Icon: CostsIcon, hue: '', soon: 'Phase 5' },
 ] as const;
 
 /** Beneath a Settings heading that is not itself a page (P1-23): most used first. */
@@ -90,7 +123,7 @@ function AppLayout() {
         </div>
 
         <ul className="flex-1 space-y-0.5 p-3">
-          {NAV.map(({ to, label, Icon, soon }) => (
+          {NAV.map(({ to, label, Icon, hue, soon }) => (
             <li key={to}>
               {soon ? (
                 <span
@@ -109,7 +142,7 @@ function AppLayout() {
                   className={LINK}
                   activeProps={{ className: ACTIVE }}
                 >
-                  <Icon className="size-4 shrink-0" />
+                  <Icon className={`size-4 shrink-0 ${hue}`} />
                   {label}
                 </Link>
               )}
@@ -117,7 +150,7 @@ function AppLayout() {
           ))}
           <li>
             <span id={settingsId} className={ROW}>
-              <SettingsIcon className="size-4 shrink-0" />
+              <SettingsIcon className="size-4 shrink-0 text-slate-500 dark:text-slate-400" />
               Settings
             </span>
             <ul aria-labelledby={settingsId} className={CHILDREN}>

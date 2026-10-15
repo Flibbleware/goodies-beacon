@@ -1,4 +1,5 @@
 import type { SourceId } from '../sources.js';
+import type { BuyingType } from './constants.js';
 import type { SearchPlan } from './spec.js';
 
 export interface Region {
@@ -63,6 +64,32 @@ export function withSellerCountry<T extends Pick<SearchPlan, 'source' | 'options
   const country = sellerCountryOf(plan, itemCountry);
   if (!key || !country || plan.options[key] === country) return plan;
   return { ...plan, options: { ...plan.options, [key]: country } };
+}
+
+/**
+ * Each listing type in the words of the sources whose search filters by it. eBay's must always be
+ * told: with no `buyingOptions` it returns only what can be bought outright — fixed prices, and
+ * auctions that carry a Buy It Now — and no plain auction at all, measured on 15 October 2026.
+ */
+const BUYING_OPTIONS: Partial<Record<SourceId, Record<BuyingType, string>>> = {
+  ebay: { auction: 'AUCTION', fixed: 'FIXED_PRICE' },
+};
+
+/**
+ * The plan with its item's listing types written into its options, as `withSellerCountry` writes
+ * the country. A plan given its own `buyingOptions` in the JSON editor keeps them.
+ */
+export function withListingTypes<T extends Pick<SearchPlan, 'source' | 'options'>>(
+  plan: T,
+  listingTypes: readonly BuyingType[],
+): T {
+  const names = BUYING_OPTIONS[plan.source];
+  const own = plan.options.buyingOptions;
+  if (!names || (Array.isArray(own) && own.length > 0)) return plan;
+  return {
+    ...plan,
+    options: { ...plan.options, buyingOptions: listingTypes.map((type) => names[type]) },
+  };
 }
 
 export interface RegionIssue {

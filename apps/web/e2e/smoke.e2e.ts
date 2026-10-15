@@ -907,6 +907,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
         title: 'Carmageddon PC CD-ROM big box, complete',
         externalId: 'e2e-match',
         decision: 'match',
+        availability: 'sold',
         englishSummary: 'A complete big box copy with the manual and disc pictured.',
         description: 'Boxed & complete — no water damage.',
         promptText: 'SYSTEM\n\n# The wanted item\nCarmageddon\n\n# The listing\nBig box, complete',
@@ -927,6 +928,7 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
         title: 'Carmageddon, box only, no disc',
         externalId: 'e2e-uncertain',
         decision: 'uncertain',
+        availability: 'ended',
         englishSummary: 'The box is shown but nothing inside it is.',
         criteriaResults: [
           { criterionId: 'big-box', result: 'pass', evidence: 'the big box is pictured' },
@@ -970,6 +972,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     await expect(page.getByText('1 candidate', { exact: true })).toBeVisible();
     await expect(page.getByText('Carmageddon PC CD-ROM big box, complete')).toBeVisible();
     await expect(page.getByText('Carmageddon t-shirt, size L')).toBeHidden();
+    // P1-38: the check found the match sold, so it says so beside the verdict.
+    await expect(page.getByText('Sold', { exact: true })).toBeVisible();
+    await expect(page.getByText('Ended', { exact: true })).toBeHidden();
   });
 
   await test.step('the filters narrow it and survive a reload, so a view can be linked to', async () => {
@@ -996,6 +1001,9 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
 
     await verdictFilter.getByRole('link', { name: 'Uncertain' }).click();
     await expect(page.getByText('Carmageddon, box only, no disc')).toBeVisible();
+    // Gone without a confirmed sale is Ended, never Sold.
+    await expect(page.getByText('Ended', { exact: true })).toBeVisible();
+    await expect(page.getByText('Sold', { exact: true })).toBeHidden();
     // Only a rejection can be decided by more than one stage, so the filter goes with the verdict.
     await expect(decidedBy).toHaveCount(0);
 
@@ -1034,6 +1042,8 @@ test('first run, settings, a wanted item, and deep links survive a refresh', asy
     // Price in GBP with the original beside it, and the ships-to-UK flag §1 asks for.
     await expect(page.getByText('£95.00 (USD 120.00)')).toBeVisible();
     await expect(page.getByText('ships to the UK')).toBeVisible();
+    await expect(page.getByText('Sold', { exact: true })).toBeVisible();
+    await expect(page.getByText(/^Sold — found by the availability check /)).toBeVisible();
 
     const verdict = section('Verdict');
     await expect(verdict).toContainText('the big box is pictured front and back');

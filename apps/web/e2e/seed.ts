@@ -34,6 +34,8 @@ export interface SeedOptions {
   englishSummary?: string;
   description?: string;
   promptText?: string;
+  /** What the two-hourly check found (P1-38); available when absent. */
+  availability?: 'available' | 'sold' | 'ended';
 }
 
 export async function seedCandidates(
@@ -70,6 +72,9 @@ export async function seedCandidates(
           itemLocationCountry: 'US',
           shipsToUk: entry.decision === 'uncertain' ? 'unknown' : 'yes',
           images: photo ? [{ url: 'https://example.invalid/photo.jpg', mediaId: photo.id }] : [],
+          availability: entry.availability ?? 'available',
+          unavailableAt:
+            entry.availability && entry.availability !== 'available' ? new Date() : null,
         })
         .returning({ id: listings.id });
       if (!listing) throw new Error('could not seed the listing');

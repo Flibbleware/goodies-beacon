@@ -27,6 +27,7 @@ export {
 } from './adapter/http.js';
 export type {
   AdapterContext,
+  AvailabilityQuery,
   BrowserFactory,
   BrowserPage,
   CookieJar,
@@ -72,6 +73,14 @@ export {
   USER_ID,
   updatePassword,
 } from './auth/user.js';
+export {
+  AVAILABILITY_CHECK_LIMIT,
+  AVAILABILITY_CRON,
+  type AvailabilityOutcome,
+  listingsDueACheck,
+  type RunAvailabilityCheckOptions,
+  runAvailabilityCheck,
+} from './availability/check.js';
 export {
   CANDIDATE_STAGE_LABELS,
   type CandidateDetail,
@@ -242,6 +251,8 @@ export {
   type FeedbackType,
   IMAGE_STRATEGIES,
   type ImageStrategy,
+  LISTING_AVAILABILITY,
+  type ListingAvailability,
   MEDIA_KINDS,
   type MediaKind,
   NOTIFICATION_CHANNELS,
@@ -303,6 +314,7 @@ export {
   SOURCE_REGIONS,
   sellerCountryOf,
   unknownRegions,
+  withListingTypes,
   withSellerCountry,
 } from './domain/regions.js';
 export {
@@ -482,6 +494,7 @@ export {
   recordHeartbeat,
 } from './queue/heartbeat.js';
 export {
+  availabilityQueueName,
   HEARTBEAT_ROLES,
   type HeartbeatRole,
   heartbeatQueueName,

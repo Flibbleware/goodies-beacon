@@ -134,6 +134,13 @@
       "when": 1790869673389,
       "tag": "0018_funny_kitty_pryde",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792089937126,
+      "tag": "0019_mean_stark_industries",
+      "breakpoints": true
     }
   ]
 }

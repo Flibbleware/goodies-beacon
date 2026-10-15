@@ -76,6 +76,14 @@ export type BuyingType = (typeof BUYING_TYPES)[number];
 export const SHIPS_TO_UK = ['yes', 'no', 'unknown'] as const;
 export type ShipsToUk = (typeof SHIPS_TO_UK)[number];
 
+/**
+ * Whether a listing can still be bought, as the two-hourly check last found it (P1-38). `sold` only
+ * when the source confirms a sale; a listing that is merely gone — an auction that ended unsold, a
+ * listing withdrawn — is `ended`, because a sold pill that is sometimes a guess is one nobody trusts.
+ */
+export const LISTING_AVAILABILITY = ['available', 'sold', 'ended'] as const;
+export type ListingAvailability = (typeof LISTING_AVAILABILITY)[number];
+
 /** Decides notification routing: only `poll` reaches a real-time email (§10). */
 export const CANDIDATE_ORIGINS = ['poll', 'backfill', 'scan'] as const;
 export type CandidateOrigin = (typeof CANDIDATE_ORIGINS)[number];

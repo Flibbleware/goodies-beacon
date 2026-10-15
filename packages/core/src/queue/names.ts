@@ -12,6 +12,14 @@ export function pollQueueName(source: SourceId): string {
 }
 
 /**
+ * The two-hourly availability check for one source (P1-38). Per source for the reason a poll is:
+ * the worker that can reach a marketplace is the one that should ask it whether a listing sold.
+ */
+export function availabilityQueueName(source: SourceId): string {
+  return `availability.${source}`;
+}
+
+/**
  * The queue a poll drops each new candidate on (§3's review worker, built in P1-12).
  *
  * It exists from P1-07 so a poll has somewhere to send, and is deliberately created without a

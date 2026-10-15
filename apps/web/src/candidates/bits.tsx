@@ -59,6 +59,32 @@ export function DecisionChip({ decision }: { decision: VerdictDecision | null })
   );
 }
 
+/**
+ * Red for a sale the source confirmed, pale grey for a listing that is merely gone (P1-38) — not an
+ * outline, which is what Retained wears beside it, nor Rejected's darker grey. The
+ * title says when the two-hourly check found it, which is all that is known of when it happened.
+ */
+export function AvailabilityChip({ listing }: { listing: ListingLike }) {
+  if (listing.availability === 'available') return null;
+  const sold = listing.availability === 'sold';
+  const found = listing.unavailableAt
+    ? ` — found ${new Date(listing.unavailableAt).toLocaleString()}`
+    : '';
+
+  return (
+    <span
+      title={`${sold ? 'Sold' : 'No longer listed'}${found}`}
+      className={`inline-block rounded px-1.5 py-0.5 text-[0.625rem] font-medium uppercase tracking-wide ${
+        sold
+          ? 'bg-red-600 text-white'
+          : 'bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-200'
+      }`}
+    >
+      {sold ? 'Sold' : 'Ended'}
+    </span>
+  );
+}
+
 /** What stopped it before a model was asked, in words rather than in the enum's own terms. */
 export const REJECTION_REASONS: Record<string, string> = {
   over_budget: 'over the maximum price',

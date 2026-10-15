@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { specVersions, wantedItems } from '../db/schema.js';
-import { withSellerCountry } from '../domain/regions.js';
+import { withListingTypes, withSellerCountry } from '../domain/regions.js';
 import { type SearchPlan, searchPlanSchema, specSettingsSchema } from '../domain/spec.js';
 import type { Logger } from '../logger.js';
 import { isMarketplaceSourceId, type MarketplaceSourceId } from '../sources.js';
@@ -111,7 +111,10 @@ function plansOf(row: ItemRow, logger?: Logger): ActivePlan[] {
       wantedItemId: row.wantedItemId,
       itemTitle: row.itemTitle,
       specVersionId: row.specVersionId,
-      plan: withSellerCountry(plan, settings.data.sellerCountry),
+      plan: withListingTypes(
+        withSellerCountry(plan, settings.data.sellerCountry),
+        settings.data.listingTypes,
+      ),
       source: plan.source,
       pollEvery: row.pollEvery,
     });

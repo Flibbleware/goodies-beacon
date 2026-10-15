@@ -269,6 +269,39 @@ describe.skipIf(!databaseUrl)('the item stats against a real Postgres', () => {
       expect(plans.length).toBeGreaterThan(0);
       expect(plans.every((entry) => entry.plan.options.itemLocationCountry === 'GB')).toBe(true);
     });
+
+    /** eBay returns no plain auction unless asked for one, so the item's types must reach it. */
+    it("hands the poll each plan with the item's listing types written in", async () => {
+      const spec = carmageddon();
+      const settings = spec.settings as Record<string, unknown>;
+      const create = (title: string, listingTypes: string[]) =>
+        createItem(
+          db,
+          itemSaveSchema.parse({
+            title,
+            status: 'active',
+            spec: { ...spec, settings: { ...settings, listingTypes } },
+          }),
+        );
+      const both = await create('Carmageddon, any listing', ['auction', 'fixed']);
+      const auctions = await create('Carmageddon, auctions', ['auction']);
+
+      const plans = await activePlans(db);
+      const optionsOf = (itemId: string) =>
+        plans.filter((entry) => entry.wantedItemId === itemId).map((entry) => entry.plan.options);
+
+      expect(optionsOf(both.itemId).length).toBeGreaterThan(0);
+      expect(optionsOf(both.itemId)).toEqual(
+        optionsOf(both.itemId).map(() =>
+          expect.objectContaining({ buyingOptions: ['AUCTION', 'FIXED_PRICE'] }),
+        ),
+      );
+      expect(optionsOf(auctions.itemId)).toEqual(
+        optionsOf(auctions.itemId).map(() =>
+          expect.objectContaining({ buyingOptions: ['AUCTION'] }),
+        ),
+      );
+    });
   });
 
   describe('when an item last polled', () => {

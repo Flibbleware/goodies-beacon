@@ -4,6 +4,15 @@ All notable changes to Goodies Beacon. Format follows conventional commits; rele
 
 ## Unreleased
 
+- P1-38 Sold listings. Every two hours, each match and possible match still for sale is checked on
+  eBay. One that has sold gets a red *Sold* pill beside its verdict on the Candidates page and the
+  candidate's own page; one that has ended without a confirmed sale (an auction nobody won, a
+  listing the seller withdrew) gets a grey *Ended* pill. Nothing is emailed.
+- Fixed: eBay auctions were never found. eBay's search only returns auctions when asked for them,
+  and the item's *Listing types* setting was not being passed on, so every poll saw Buy It Now
+  listings only. Polls now ask for whatever the item allows — auctions and fixed price by default —
+  so expect a few more candidates per poll.
+- The sidebar's icons are coloured, each page its own hue; pages not built yet stay grey.
 - P1-37 Notifications tab and price range. An item's page has a *Notifications* tab, after
   Settings, with *Poll every* and separate choices for *Matches* and *Possible matches*: email as
   found, daily digest, or none. Existing items keep what they did, for both. The item's pill now

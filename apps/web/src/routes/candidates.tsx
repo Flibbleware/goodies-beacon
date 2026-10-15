@@ -8,6 +8,7 @@ import {
 } from '../api/candidates.js';
 import { itemsQuery } from '../api/items.js';
 import {
+  AvailabilityChip,
   DecisionChip,
   Provenance,
   price,
@@ -242,6 +243,7 @@ function Row({ row, showItem }: { row: CandidateRowLike; showItem: boolean }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <DecisionChip decision={row.decision} />
+          <AvailabilityChip listing={row.listing} />
           {row.retain ? (
             <span className="rounded border border-edge px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide dark:border-edge-dark">
               Retained

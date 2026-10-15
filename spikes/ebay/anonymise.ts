@@ -58,7 +58,11 @@ const SYNTHETIC_DESCRIPTION =
 
 const IMAGE_HASH = /(i\.ebayimg\.com\/(?:thumbs\/)?images\/g\/)([A-Za-z0-9~_-]+)(\/)/g;
 
-export function createAnonymiser() {
+/**
+ * `idPrefix` is the made-up ids' leading digit. A second recording uses another, because every run
+ * counts from one and its ids would otherwise coincide with the first run's for other listings.
+ */
+export function createAnonymiser({ idPrefix = '9' }: { idPrefix?: string } = {}) {
   const sellers = new Map<string, string>();
   const ids = new Map<string, string>();
   const images = new Map<string, string>();
@@ -71,12 +75,12 @@ export function createAnonymiser() {
     return next;
   };
 
-  /** Same length, so nothing that measures an id changes behaviour; leading 9 marks it as made up. */
+  /** Same length, so nothing that measures an id changes behaviour; the prefix marks it as made up. */
   const fakeId = (real: string): string => {
     const existing = ids.get(real);
     if (existing) return existing;
     const serial = String(ids.size + 1).padStart(Math.max(real.length - 1, 1), '0');
-    const next = `9${serial}`.slice(0, real.length);
+    const next = `${idPrefix}${serial}`.slice(0, real.length);
     ids.set(real, next);
     return next;
   };

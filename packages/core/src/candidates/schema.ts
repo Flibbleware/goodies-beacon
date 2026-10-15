@@ -5,6 +5,7 @@ import {
   type CandidateStage,
   type CriterionResult,
   DECIDERS,
+  type ListingAvailability,
   type RejectionReason,
   type ShipsToUk,
   VERDICT_DECISIONS,
@@ -81,6 +82,9 @@ export interface ListingView {
   images: string[];
   listedAt: Date | null;
   endsAt: Date | null;
+  /** As the two-hourly check last found it; `available` until it finds otherwise (P1-38). */
+  availability: ListingAvailability;
+  unavailableAt: Date | null;
 }
 
 export interface CandidateList {
