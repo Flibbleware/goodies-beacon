@@ -27,6 +27,7 @@ import {
   EVENT_LEVELS,
   FEEDBACK_RESOLUTIONS,
   FEEDBACK_TYPES,
+  LISTING_AVAILABILITY,
   MEDIA_KINDS,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_MODES,
@@ -380,6 +381,14 @@ export const listings = pgTable(
     images: jsonb('images').$type<unknown[]>().notNull().default([]),
     listedAt: timestamp('listed_at', { withTimezone: true }),
     endsAt: timestamp('ends_at', { withTimezone: true }),
+    availability: text('availability')
+      .$type<(typeof LISTING_AVAILABILITY)[number]>()
+      .notNull()
+      .default('available'),
+    /** The last time the availability check asked, whatever it heard; it orders the next run (P1-38). */
+    availabilityCheckedAt: timestamp('availability_checked_at', { withTimezone: true }),
+    /** When the check first found it sold or ended, which is no later than the sale itself. */
+    unavailableAt: timestamp('unavailable_at', { withTimezone: true }),
     firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
     raw: jsonb('raw').$type<Record<string, unknown>>(),
@@ -389,6 +398,7 @@ export const listings = pgTable(
   (table) => [
     check('listings_source', oneOf(table.source, SOURCE_IDS)),
     check('listings_ships_to_uk', oneOf(table.shipsToUk, SHIPS_TO_UK)),
+    check('listings_availability', oneOf(table.availability, LISTING_AVAILABILITY)),
     check(
       'listings_buying_type',
       sql`${table.buyingType} is null or ${oneOf(table.buyingType, BUYING_TYPES)}`,

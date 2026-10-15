@@ -8,7 +8,13 @@ import {
   type VerdictLike,
 } from '../api/candidates.js';
 import { ApiError } from '../api/client.js';
-import { DecisionChip, Provenance, price, REJECTION_REASONS } from '../candidates/bits.js';
+import {
+  AvailabilityChip,
+  DecisionChip,
+  Provenance,
+  price,
+  REJECTION_REASONS,
+} from '../candidates/bits.js';
 import { Alert, Button } from '../components/form.js';
 import { appLayoutRoute } from './app-layout.js';
 
@@ -46,6 +52,7 @@ function CandidatePage() {
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <DecisionChip decision={latest?.decision ?? null} />
+        <AvailabilityChip listing={candidate.listing} />
         {candidate.relistOf ? (
           <span className="text-[0.625rem] uppercase tracking-wide text-ink-dim dark:text-ink-dim-dark">
             Seen before
@@ -69,6 +76,12 @@ function CandidatePage() {
       <p className="mt-1 text-sm text-ink-dim dark:text-ink-dim-dark">
         {price(candidate.listing)} · <Provenance listing={candidate.listing} />
       </p>
+      {candidate.listing.availability !== 'available' && candidate.listing.unavailableAt ? (
+        <p className="mt-1 text-sm text-ink-dim dark:text-ink-dim-dark">
+          {candidate.listing.availability === 'sold' ? 'Sold' : 'No longer listed'} — found by the
+          availability check {new Date(candidate.listing.unavailableAt).toLocaleString()}
+        </p>
+      ) : null}
 
       {candidate.stage === 'failed' ? (
         <Alert tone="error">

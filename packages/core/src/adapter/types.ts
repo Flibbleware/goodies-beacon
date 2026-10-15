@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { BackfillDepth } from '../domain/constants.js';
+import type { BackfillDepth, ListingAvailability } from '../domain/constants.js';
 import type { ListingImage, NormalisedListing, RawListingShape } from '../domain/listing.js';
 import type { SearchPlan } from '../domain/spec.js';
 import type { Logger } from '../logger.js';
@@ -166,6 +166,17 @@ export interface SourceAdapter {
 
   /** Full description and every image. Only called for candidates that survive the pre-filter. */
   enrich(listing: RawListing, ctx: AdapterContext): Promise<EnrichedListing>;
+
+  /**
+   * Whether a listing can still be bought, asked every two hours of each match and uncertain
+   * (P1-38). Optional: a source without it is never checked. `sold` only when the source confirms
+   * a sale — anything merely gone is `ended`. Throw when the source could not be asked, so a
+   * failure is never recorded as an answer.
+   */
+  checkAvailability?(listing: AvailabilityQuery, ctx: AdapterContext): Promise<ListingAvailability>;
 }
+
+/** What the availability check knows of a stored listing when it asks about it. */
+export type AvailabilityQuery = Pick<RawListing, 'externalId' | 'url' | 'buyingType' | 'endsAt'>;
 
 export type { ListingImage, NormalisedListing, SearchPlan };

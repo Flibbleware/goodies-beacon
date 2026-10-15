@@ -26,6 +26,7 @@ describe('workerRegistrations', () => {
   it('subscribes to every source and the shared queues when WORKER_SOURCES is empty', () => {
     expect(names([])).toEqual([
       ...MARKETPLACE_SOURCE_IDS.map((id) => `poll.${id}`),
+      'availability.ebay',
       'heartbeat.worker',
       'rates.refresh',
       REVIEW_QUEUE,
@@ -35,8 +36,19 @@ describe('workerRegistrations', () => {
 
   /** A narrowed worker is a satellite: it polls, and the core keeps the shared jobs. */
   it('subscribes only to the named poll queues when WORKER_SOURCES narrows it', () => {
-    expect(names(['ebay'])).toEqual(['poll.ebay']);
+    expect(names(['ebay'])).toEqual(['poll.ebay', 'availability.ebay']);
     expect(names(['vinted', 'mercari_jp'])).toEqual(['poll.vinted', 'poll.mercari_jp']);
+  });
+
+  /** P1-38: only a source whose adapter can answer is asked, and by the worker that polls it. */
+  it('checks availability every two hours for each polled source whose adapter can', () => {
+    const check = workerRegistrations(deps(['ebay'])).find(
+      ({ name }) => name === 'availability.ebay',
+    );
+
+    expect(check?.schedule?.cron).toBe('0 */2 * * *');
+    expect(check?.handler).toBeDefined();
+    expect(names(['vinted'])).not.toContain('availability.vinted');
   });
 
   /**

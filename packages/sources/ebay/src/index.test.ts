@@ -7,7 +7,7 @@ import {
   sellerHash,
 } from '@goodies-beacon/core';
 import { describe, expect, it } from 'vitest';
-import { buildFilter, ebayAdapter } from './index.js';
+import { availabilityOf, buildFilter, ebayAdapter } from './index.js';
 
 const FIXTURES = fileURLToPath(new URL('../fixtures', import.meta.url));
 const SALT = 'test-instance-salt';
@@ -403,5 +403,63 @@ describe('request pacing', () => {
 describe('describeSearchOptions', () => {
   it('offers the regions the spec form lists and the store accepts (P1-29)', () => {
     expect(ebayAdapter.describeSearchOptions().regions).toEqual(SOURCE_REGIONS.ebay);
+  });
+});
+
+/**
+ * P1-38. The three fixtures are `getItem` recorded on 15 October 2026 for an auction that ended
+ * with a winning bid, one that ended with none, and a multi-quantity listing still selling.
+ */
+describe('checkAvailability', () => {
+  const query = { externalId: 'v1|800000000001|0', url: '', buyingType: null, endsAt: null };
+
+  const asking = (route: Omit<FixtureRoute, 'match'>) => {
+    const test = harness([{ match: '/buy/browse/v1/item/', ...route }]);
+    return ebayAdapter.checkAvailability?.(query, test.ctx);
+  };
+
+  it('calls an auction won by a bid sold, and one that ended without a bid ended', async () => {
+    await expect(asking({ fixture: 'item-sold.json' })).resolves.toBe('sold');
+    await expect(asking({ fixture: 'item-ended.json' })).resolves.toBe('ended');
+  });
+
+  /** It has sold thousands and is still for sale: a sold quantity alone is not a sale. */
+  it('leaves a multi-quantity listing that is still selling available', async () => {
+    await expect(asking({ fixture: 'item-multi-quantity.json' })).resolves.toBe('available');
+  });
+
+  it('calls a listing eBay no longer has ended, with no sale seen', async () => {
+    const notFound = {
+      errors: [{ errorId: 11001, message: 'The specified item Id was not found.' }],
+    };
+
+    await expect(asking({ status: 404, body: notFound })).resolves.toBe('ended');
+  });
+
+  it('throws when eBay could not be asked, rather than answering', async () => {
+    await expect(asking({ status: 500, body: {} })).rejects.toThrow('HTTP 500');
+  });
+});
+
+describe('availabilityOf', () => {
+  const now = new Date('2026-10-15T19:00:00Z');
+
+  it('calls a listing out of stock with nothing sold ended, not sold', () => {
+    const item = {
+      estimatedAvailabilities: [
+        { estimatedAvailabilityStatus: 'OUT_OF_STOCK', estimatedSoldQuantity: 0 },
+      ],
+    };
+
+    expect(availabilityOf(item, now)).toBe('ended');
+  });
+
+  it('keeps an auction with time left available', () => {
+    const item = {
+      itemEndDate: '2026-10-15T20:00:00Z',
+      estimatedAvailabilities: [{ estimatedAvailabilityStatus: 'IN_STOCK' }],
+    };
+
+    expect(availabilityOf(item, now)).toBe('available');
   });
 });

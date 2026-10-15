@@ -231,6 +231,8 @@ function listingView(listing: typeof listings.$inferSelect): ListingView {
       .filter((mediaId): mediaId is string => typeof mediaId === 'string'),
     listedAt: listing.listedAt,
     endsAt: listing.endsAt,
+    availability: listing.availability,
+    unavailableAt: listing.unavailableAt,
   };
 }
 

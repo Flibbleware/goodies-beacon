@@ -1,8 +1,10 @@
 import {
   type AdapterContext,
+  type AvailabilityQuery,
   EBAY_MARKETPLACES,
   type EnrichedListing,
   type HealthResult,
+  type ListingAvailability,
   type RawListing,
   type SearchOptionSchema,
   type SearchPlan,
@@ -53,6 +55,10 @@ interface EbaySummary {
   description?: string;
   shortDescription?: string;
   shipToLocations?: ShipToLocations;
+  estimatedAvailabilities?: {
+    estimatedAvailabilityStatus?: string;
+    estimatedSoldQuantity?: number;
+  }[];
 }
 
 interface SearchResponse {
@@ -336,7 +342,36 @@ export const ebayAdapter: SourceAdapter = {
       priceRateDate: listing.priceRateDate,
     };
   },
+
+  async checkAvailability(
+    listing: AvailabilityQuery,
+    ctx: AdapterContext,
+  ): Promise<ListingAvailability> {
+    const url = `${EBAY_API_BASE}/buy/browse/v1/item/${encodeURIComponent(listing.externalId)}`;
+    const response = await authorisedFetch(ctx, url, 'EBAY_GB');
+    // eBay's 404 is errorId 11001, "The specified item Id was not found": gone, with no sale seen.
+    if (response.status === 404) return 'ended';
+    if (!response.ok) throw new Error(`eBay getItem failed: HTTP ${response.status}`);
+    return availabilityOf((await response.json()) as EbaySummary, new Date());
+  },
 };
+
+/**
+ * What `getItem` says about whether a listing can still be bought (P1-38), from how it was measured
+ * to answer on 15 October 2026 (docs/SPIKES.md). An ended auction is still returned, for a while at
+ * least: with a winning bid it is `OUT_OF_STOCK` with one sold, and with none it stays `IN_STOCK`
+ * with its end date past. A multi-quantity listing counts its sales while still `IN_STOCK`, so a
+ * sold quantity alone is not a sale — out of stock is.
+ */
+export function availabilityOf(item: EbaySummary, now: Date): ListingAvailability {
+  const entries = item.estimatedAvailabilities ?? [];
+  if (entries.some((entry) => entry.estimatedAvailabilityStatus === 'OUT_OF_STOCK')) {
+    const sold = entries.some((entry) => (entry.estimatedSoldQuantity ?? 0) > 0);
+    return sold ? 'sold' : 'ended';
+  }
+  if (item.itemEndDate && new Date(item.itemEndDate) <= now) return 'ended';
+  return 'available';
+}
 
 async function readQuota(
   ctx: AdapterContext,

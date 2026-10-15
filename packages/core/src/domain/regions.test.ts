@@ -4,6 +4,7 @@ import {
   EBAY_MARKETPLACES,
   sellerCountryOf,
   unknownRegions,
+  withListingTypes,
   withSellerCountry,
 } from './regions.js';
 import { wantedSpecSchema } from './spec.js';
@@ -78,5 +79,28 @@ describe('the seller country a plan searches with (P1-36)', () => {
 
     expect(sellerCountryOf(vinted, 'GB')).toBeNull();
     expect(withSellerCountry(vinted, 'GB')).toBe(vinted);
+  });
+});
+
+describe('withListingTypes', () => {
+  const ebay = (options: Record<string, unknown> = {}) => ({ source: 'ebay' as const, options });
+
+  /** eBay's search returns no plain auction unless asked for one, so both are always named. */
+  it('asks eBay for every listing type the item allows', () => {
+    expect(withListingTypes(ebay(), ['auction', 'fixed']).options).toEqual({
+      buyingOptions: ['AUCTION', 'FIXED_PRICE'],
+    });
+    expect(withListingTypes(ebay({ conditions: ['USED'] }), ['auction']).options).toEqual({
+      conditions: ['USED'],
+      buyingOptions: ['AUCTION'],
+    });
+  });
+
+  it("keeps a plan's own buying options, and leaves a source that has none alone", () => {
+    const own = ebay({ buyingOptions: ['FIXED_PRICE'] });
+    const vinted = { source: 'vinted' as const, options: {} };
+
+    expect(withListingTypes(own, ['auction', 'fixed'])).toBe(own);
+    expect(withListingTypes(vinted, ['auction'])).toBe(vinted);
   });
 });

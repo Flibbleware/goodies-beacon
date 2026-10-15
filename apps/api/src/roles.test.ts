@@ -11,7 +11,8 @@ import { describe, expect, it } from 'vitest';
 import { processRegistrations } from './roles.js';
 
 const logger = createSilentLogger();
-const POLL_QUEUES = MARKETPLACE_SOURCE_IDS.map((id) => `poll.${id}`);
+/** Each source's poll, then the availability check of each source whose adapter has one (P1-38). */
+const POLL_QUEUES = [...MARKETPLACE_SOURCE_IDS.map((id) => `poll.${id}`), 'availability.ebay'];
 /** The shared queues an unrestricted worker keeps, in the order it registers them. */
 const SHARED_QUEUES = ['heartbeat.worker', 'rates.refresh', REVIEW_QUEUE, SCHEDULE_QUEUE];
 
@@ -38,6 +39,6 @@ describe('processRegistrations', () => {
   });
 
   it('narrows a sources-only worker to the queues in WORKER_SOURCES', async () => {
-    expect(await names('worker', ['ebay'])).toEqual(['poll.ebay']);
+    expect(await names('worker', ['ebay'])).toEqual(['poll.ebay', 'availability.ebay']);
   });
 });

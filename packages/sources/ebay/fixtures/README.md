@@ -47,6 +47,7 @@ credentials, in a fork's CI.
 | `gb-page-1`, `gb-page-2` | Pagination, so a pagination stop can be tested |
 | `gb-location-us` | A second single-value location filter, proving the filter works before judging the set form |
 | `item-1`, `item-2`, `item-3` | `getItem`: description HTML, full images, `shipToLocations`, `sellerLegalInfo` |
+| `item-sold`, `item-ended`, `item-multi-quantity` | `getItem` after an auction was won, after one ended unbid, and on a multi-quantity listing still selling (P1-38). Recorded by `spikes/ebay/availability.ts`, whose ids begin `8` so they never coincide with the search fixtures' |
 
 Re-record them by running the spike again. Do not hand-edit: a fixture that no longer matches
 what eBay returns is worse than no fixture.

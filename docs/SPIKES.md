@@ -232,6 +232,45 @@ must be run from both origins, because for them the origin *is* the question.
 
 S1-01 is complete.
 
+### Run 3 — production, from the Mac, 15 October 2026: auctions, and is it still for sale?
+
+Two questions P1-38 needed answered, measured with the production keyset.
+
+**A search with no `buyingOptions` returns no plain auction.** The same newest-first query with no
+filter, with `{AUCTION}` and with `{FIXED_PRICE|AUCTION}`, on `EBAY_GB`:
+
+| Query | No filter | `{AUCTION}` | `{FIXED_PRICE\|AUCTION}` |
+|---|---|---|---|
+| carmageddon | 200 fixed, 0 auction (total 362) | 6 auction (total 6) | 196 fixed, 4 auction (total 369) |
+| game boy | 197 fixed, 3 auction + Buy It Now | 182 auction, 18 + Buy It Now | 175 fixed, 22 auction, 3 + Buy It Now |
+| macintosh | 194 fixed, 6 auction + Buy It Now | 167 auction, 33 + Buy It Now | 187 fixed, 7 auction, 6 + Buy It Now |
+
+The default is what can be bought outright: fixed prices, and auctions that carry a Buy It Now.
+The recorded `gb-broad-macintosh` fixture shows the same — 50 results, no plain auction. Nothing
+had been sending the filter, so every poll since P1-07 had missed every plain auction. P1-38 sends
+the item's listing types (ARCHITECTURE.md §5).
+
+**`getItems`, the batch lookup, answers 403** — `errorId 1100`, *Insufficient permissions* — to a
+standard keyset; it is a restricted method. An availability check is one `getItem` per listing.
+
+**What `getItem` says once a listing has gone.** 60 auctions ending within twenty minutes, from six
+broad queries sorted `endingSoonest`, and five multi-quantity fixed-price listings, read at 18:43
+UTC and again after the last auction ended, 5 to 22 minutes after each end:
+
+| State | Answer |
+|---|---|
+| Auction ended with a winning bid (25) | 200; `estimatedAvailabilityStatus: OUT_OF_STOCK`, `estimatedSoldQuantity: 1`, `estimatedAvailableQuantity: 0`; `itemEndDate` past; `bidCount` present |
+| Auction ended with no bid (35) | 200; still `IN_STOCK`, sold 0, available 1; `itemEndDate` past |
+| Multi-quantity fixed price, live (5) | 200; `IN_STOCK` with `estimatedSoldQuantity` from 4 to 12,276; no `itemEndDate` |
+| An id eBay does not have | 404, `errorId 11001`, *The specified item Id was not found* — also for a malformed id |
+
+An ended listing is still served, so "gone" is read from the stock status and end date rather than
+from a 404, and a sold quantity alone is not a sale. Not yet observed: how long an ended listing
+stays readable before it becomes a 404, a reserve not met, and a single fixed-price listing that
+sold or was withdrawn. The adapter calls a 404 `ended`, never `sold`, so none of the three can
+produce a wrong *Sold*. `item-sold`, `item-ended` and `item-multi-quantity` in the fixtures are
+three of these responses, recorded by `spikes/ebay/availability.ts`.
+
 ---
 
 ## S1-02 — Vinted

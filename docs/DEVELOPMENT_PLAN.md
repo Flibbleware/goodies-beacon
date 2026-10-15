@@ -315,6 +315,7 @@ Done when `docs/SPIKES.md` has a one-page summary per source with a recommendati
 | P1-35 | Exclude sellers by country | S | P1-34 |
 | P1-36 | Only sellers located in | S | P1-35 |
 | P1-37 | Notifications tab and price range | S | P1-36 |
+| P1-38 | Sold listings | S | P1-37 |
 | P1-XX | Phase 1 exit | S | all above, S1-05 |
 
 **Phase 1 stays open until the MVP is where the owner wants it**, rather than closing when the tasks first listed here are done (decided 22 September 2026). Tasks are added to this table as they are identified, numbered on from P1-18, and the exit keeps the id P1-XX so that it is always the last row and "all above" always means everything Phase 1 has taken on.
@@ -1943,6 +1944,58 @@ Done when:
 - [x] A match is emailed only when matches are set to email, and an uncertain verdict only when possible matches are, each regardless of the other. Tested against a real Postgres.
 - [x] The item page has a *Notifications* tab after Settings, showing *Matches*, *Possible matches* and *Poll every*, edited from *Edit Notifications*; General Settings holds *Price range*, as a minimum and a maximum, and what an unsettled criterion does. The card and header pill says *Matches: email*, *digest* or *off*. The Playwright run finds the six tabs in order, the range in General Settings with its error and no poll interval, saves a change from the Notifications tab and finds it on the tab, and finds the pill.
 - [x] The candidate says a listing was under the minimum price. Checked by hand on a phone and in both themes.
+
+#### P1-38 Sold listings — S
+
+A match is emailed when it is found, and then nothing more is heard of it: a listing that sold an
+hour later looks on the Candidates page exactly as one still waiting to be bought. Every two hours
+an `availability.<source>` job now asks the marketplace whether each match and uncertain listing is
+still for sale, and one that has sold carries a red *Sold* pill beside its verdict (§6, §14).
+
+Decided with the owner before it was built: *Sold* only when the marketplace confirms a sale, and
+a grey *Ended* for a listing that has merely gone — an auction that ended unsold, a listing the
+seller withdrew — because eBay's API reports both as no longer available, and a red pill that is
+sometimes a guess is one nobody trusts. Possible matches are checked as well as matches, since they
+are listings the owner might still buy; rejected and queued candidates are not. Nothing is emailed.
+
+Decided in the building: availability is the listing's rather than the candidate's (§4), since one
+listing can be a candidate of two items and it sells once; it only ever moves away from
+`available`, so a sold or ended listing is never asked about again. `checkAvailability` is an
+optional method on the adapter contract (§5), and the job is per source and registered by the
+worker that polls that source, as a poll is, so a satellite would check what it can reach. eBay's
+batch `getItems` answers 403 to an ordinary keyset — it is a restricted method — so each listing is
+one `getItem` call; a run asks at most a hundred, never-checked first and then the longest
+unchecked, which bounds it at 1,200 of the 5,000 daily calls. A listing whose check failed is
+stamped all the same, so it goes to the back of the queue rather than holding the front; a run in
+which every check failed fails the job.
+
+Also in this task, found while it was open: **eBay auctions were never polled.** The owner saw
+only Buy It Now listings among the candidates. eBay's search returns no plain auction unless
+`buyingOptions` asks for one — measured live, all six "carmageddon" auctions on `EBAY_GB` were
+missing — and nothing read the item's *Listing types* setting, so no poll ever asked. The item's
+listing types are now written into each eBay plan's options where the poll hands the plans over,
+beside P1-36's seller country, and a plan's own `buyingOptions` from the JSON editor wins (§5).
+Every existing item allows both, so from the next poll each search also returns auctions — a few
+more candidates per poll, and a little more pre-filter spend.
+
+Also in this task, at the owner's request: the sidebar's icons take a hue each — Dashboard sky,
+Wanted Items rose, Candidates emerald, Criteria violet, Wish List amber, Settings slate — a step
+lighter on the dark theme, and the Phase 5 pages stay grey until they exist (§14). Decided with the
+owner over lighting only the open page's icon, or one accent for all.
+
+Decided in the checking: *Ended* is a pale grey fill rather than the outline first drawn, which
+looked like the *Retained* tag that can sit beside it.
+
+Depends on P1-37.
+
+Done when:
+
+- [x] Every eBay plan is polled with the item's listing types as `buyingOptions`, a plan's own winning, so plain auctions are found. Unit-tested, and tested against a real Postgres through the plans the poll is handed.
+- [x] Listings carry `availability` (`available`, `sold` or `ended`, defaulting to available), when it was last checked and when it was found gone, added by a migration that leaves every existing listing available.
+- [x] Every two hours, each listing behind a match or uncertain verdict — by the newest verdict — that is still available is asked about, on its own source only, never-checked first and at most a hundred a run; a sold or ended listing is recorded with when it was found and never asked again; one failure does not stop the run, and a run where every check failed fails. Tested against a real Postgres.
+- [x] The job is registered, on a two-hourly schedule, by each worker that polls a source whose adapter implements `checkAvailability`, and by no other. Unit-tested.
+- [x] eBay reports *sold* only for a sale it confirms, *ended* for a listing gone without one, and *available* otherwise, from how `getItem` was measured to answer for live, sold and ended listings (recorded in `docs/SPIKES.md`); a failed request throws rather than answering. Unit-tested against recorded responses.
+- [x] The Candidates list and the candidate page show a red *Sold* pill, or a grey *Ended* one, beside the verdict; the candidate page says when the check found it. The Playwright run finds *Sold* on a match and *Ended* on an uncertain, and neither where they do not belong. Checked by hand on a phone and in both themes.
 
 #### P1-XX Phase 1 exit — S
 

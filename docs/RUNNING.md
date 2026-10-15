@@ -514,6 +514,26 @@ before — pg-boss retries it three times with a widening gap. An empty `last_er
 `last_success_at` is a healthy plan. A `backlog_until` that is not null means the plan is still
 draining a window an earlier capped run skipped, and will keep doing so until it is.
 
+## Sold and ended listings
+
+An `availability.<source>` job runs every two hours, on the hour in UTC, on whichever worker polls
+that source, and asks the marketplace about every match and uncertain listing still marked
+available. Only eBay can be asked so far. A listing it finds sold gets a red *Sold* pill on the
+Candidates page and is never asked about again; one that has gone without a confirmed sale gets
+*Ended*. Rejected and queued candidates are not checked.
+
+A run asks at most a hundred listings, never-checked first, then the longest unchecked. eBay has no
+batch lookup open to an ordinary keyset, so each listing is one Browse call: at most 1,200 a day of
+the 5,000, and in practice one per open match every two hours. With more than a hundred open, each
+is simply checked less often. A failed check is logged as `availability check failed` and tried
+again in two hours; a run in which every check failed shows as a failed job, which is the keyset or
+the network rather than a listing. What the checks have found:
+
+```sh
+docker compose exec db psql -U goodies_beacon -c \
+  'select availability, count(*), max(availability_checked_at) from listings group by 1'
+```
+
 ## Liveness
 
 A `heartbeat.<role>` job runs every five minutes and updates `process_heartbeat.last_seen_at` for
@@ -634,7 +654,9 @@ immediately.
 
 **Test** runs the adapter's own health check and reports the remaining daily quota, which is
 5,000 Browse calls. Polling uses a tiny fraction of that: a plan polled three times a day costs
-three search calls plus one per listing that reaches enrichment.
+three search calls plus one per listing that reaches enrichment. The availability check adds one
+call per open match or uncertain listing every two hours, capped at 1,200 a day
+([sold and ended listings](#sold-and-ended-listings)).
 
 The **proxy URL** is optional and eBay does not need one. It is there for the scraped sources,
 which are judged on where the request comes from; when set it applies to both the HTTP client and

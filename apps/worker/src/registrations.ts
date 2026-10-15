@@ -4,6 +4,7 @@ import {
   createConverter,
   type Database,
   heartbeatRegistration,
+  isMarketplaceSourceId,
   type Logger,
   type MarketplaceSourceId,
   pollSourcesFor,
@@ -15,6 +16,7 @@ import {
 } from '@goodies-beacon/core';
 import type { PgBoss } from 'pg-boss';
 import { adapters } from './adapters.js';
+import { availabilityRegistration } from './availability.js';
 import { pollRegistration } from './poll.js';
 import { reviewRegistration } from './review.js';
 
@@ -29,8 +31,8 @@ export interface WorkerDeps {
 
 /**
  * The queues a worker consumes. A worker restricted with `WORKER_SOURCES` is a sources-only worker
- * — possibly on a residential connection (§6) — so it takes its poll queues and nothing else; the
- * shared queues, and the role's heartbeat, stay with the unrestricted worker.
+ * — possibly on a residential connection (§6) — so it takes its poll and availability queues and
+ * nothing else; the shared queues, and the role's heartbeat, stay with the unrestricted worker.
  */
 export function workerRegistrations(deps: WorkerDeps): QueueRegistration[] {
   const { config, db, logger, boss } = deps;
@@ -47,12 +49,24 @@ export function workerRegistrations(deps: WorkerDeps): QueueRegistration[] {
     }),
   );
 
-  // A worker narrowed to particular sources is a satellite — it polls and nothing else, so it
-  // neither reports liveness for the whole role nor refreshes rates the core already has.
-  if (config.workerSources.length > 0) return polls;
+  // Checked by whichever worker polls the source, since that is the one that can reach it (P1-38).
+  const availability = pollSourcesFor(config.workerSources)
+    .filter(isMarketplaceSourceId)
+    .flatMap((source) => {
+      const adapter = adapters[source];
+      if (!adapter?.checkAvailability) return [];
+      const checkDeps = { db, config, logger, browser: deps.browser ?? null };
+      return [availabilityRegistration(source, adapter, checkDeps)];
+    });
+
+  // A worker narrowed to particular sources is a satellite — it polls and checks its own sources
+  // and nothing else, so it neither reports liveness for the whole role nor refreshes rates the
+  // core already has.
+  if (config.workerSources.length > 0) return [...polls, ...availability];
 
   return [
     ...polls,
+    ...availability,
     heartbeatRegistration(db, 'worker', logger),
     ratesRefreshRegistration(db, logger, converter),
     reviewRegistration({

@@ -8,9 +8,10 @@ import type {
 import { api } from './client.js';
 
 /** The wire shapes: JSON carries timestamps as ISO strings, not Dates. */
-export type ListingLike = Omit<ListingView, 'listedAt' | 'endsAt'> & {
+export type ListingLike = Omit<ListingView, 'listedAt' | 'endsAt' | 'unavailableAt'> & {
   listedAt: string | null;
   endsAt: string | null;
+  unavailableAt: string | null;
 };
 
 export type CandidateRowLike = Omit<CandidateRow, 'createdAt' | 'listing'> & {
